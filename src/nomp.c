@@ -4,6 +4,10 @@
 #define ESCAPE 27
 #define QUIT 113
 
+FIELD *field_login[5];
+FORM *form_login;
+WINDOW *win_login; 
+
 void init()
 {
     initscr();
@@ -11,11 +15,10 @@ void init()
     noecho();
     curs_set(0);
     cbreak();
-    //keypad(stdscr, TRUE);
 
     if (has_colors()) {
         start_color();
-        init_pair(1, COLOR_BLACK, COLOR_WHITE); //TODO: Si acepta colores, modificar el par 0.
+        init_pair(1, COLOR_BLACK, COLOR_WHITE);
         init_pair(2, COLOR_WHITE, COLOR_BLACK);
     }
 
@@ -45,7 +48,6 @@ void login()
     scale_form(form_login, &rows, &cols);
     
     win_login = create_window(rows + 6, cols + 4, ((LINES - 14) / 2), ((COLS - 36) / 2));
-    //box(win_login, 0, 2);
     keypad(win_login, TRUE);
     
     set_form_win(form_login, win_login);
@@ -77,7 +79,6 @@ WINDOW *create_window(int height, int width, int starty, int startx)
 
 void cmd()
 {
-   //system("omp -h 127.0.0.1 -p 9390 -u user -w ak474747**OPENVAS -g > temp");
 }
 
 void driver()
@@ -89,19 +90,19 @@ void driver()
         switch(key)
 		{	
             case KEY_DOWN:
-				form_driver(form_login, REQ_NEXT_FIELD);
-				form_driver(form_login, REQ_END_LINE);
-				break;
-			case KEY_UP:
-				form_driver(form_login, REQ_PREV_FIELD);
-				form_driver(form_login, REQ_END_LINE);
-				break;
-			default:
-				form_driver(form_login, key);
-				break;
-		}
+                form_driver(form_login, REQ_NEXT_FIELD);
+                form_driver(form_login, REQ_END_LINE);
+                break;
+            case KEY_UP:
+                form_driver(form_login, REQ_PREV_FIELD);
+                form_driver(form_login, REQ_END_LINE);
+                break;
+            default:
+                form_driver(form_login, key);
+                break;
+        }
     } while (key != QUIT);
-    
+
     cleanup();
 }
 
@@ -118,8 +119,3 @@ void cleanup()
     delwin(win_login);
     endwin();
 }
-
-//WINDOW *win_login = create_window(12, 110, 0, ((COLS - 110) / 2));
-//WINDOW *win_target = create_window(12, 110, ((LINES / 2) - 11), ((COLS - 110) / 2));
-//WINDOW *win_task = create_window(12, 110, ((LINES / 2) + 2), ((COLS - 110) / 2));
-//WINDOW *win_launch = create_window(12, 110, (LINES - 10), ((COLS - 110) / 2));
