@@ -6,7 +6,7 @@
 
 FIELD *field[9];
 FORM *form;
-WINDOW *window; 
+WINDOW *window;
 
 int i;
 int n_fields = ((sizeof(field) / sizeof(field[0])) - 2);
@@ -37,14 +37,14 @@ void ui()
     int rows;
     int cols;
     
-    field[0] = new_field(1, 30, 0, 1, 0, 0);
-    field[1] = new_field(1, 30, 3, 1, 0, 0);
-    field[2] = new_field(1, 30, 6, 1, 0, 0);
-    field[3] = new_field(1, 30, 9, 1, 0, 0);
-    field[4] = new_field(1, 30, 14, 1, 0, 0);
-    field[5] = new_field(1, 30, 17, 1, 0, 0);
-    field[6] = new_field(1, 30, 22, 1, 0, 0);
-    field[7] = new_field(1, 30, 25, 1, 0, 0);
+    field[0] = new_field(1, 30, 1, 13, 0, 0);
+    field[1] = new_field(1, 30, 3, 13, 0, 0);
+    field[2] = new_field(1, 30, 5, 13, 0, 0);
+    field[3] = new_field(1, 30, 7, 13, 0, 0);
+    field[4] = new_field(1, 30, 11, 13, 0, 0);
+    field[5] = new_field(1, 30, 13, 13, 0, 0);
+    field[6] = new_field(1, 30, 17, 13, 0, 0);
+    field[7] = new_field(1, 30, 19, 13, 0, 0);
     field[8] = NULL;
     
     set_field_back(field[0], COLOR_PAIR(3));
@@ -54,7 +54,7 @@ void ui()
         field_opts_off(field[i], O_AUTOSKIP);
         if (i >= 4) {
             field_opts_off(field[i], O_ACTIVE);
-            set_field_back(field[i], COLOR_PAIR(4));
+            set_field_back(field[i], COLOR_PAIR(1));
         }
     }
     
@@ -64,7 +64,7 @@ void ui()
     form = new_form(field);
     scale_form(form, &rows, &cols);
 
-    window = create_window(rows + 6, cols + 4, 1, ((COLS - 36) / 2));
+    window = create_window((LINES - 24), 120, ((LINES - 25) / 2), ((COLS - 120) / 2), 4);
     keypad(window, TRUE);
     
     set_form_win(form, window);
@@ -72,30 +72,33 @@ void ui()
 
     post_form(form);
     
-    wattron(window,  A_ITALIC | COLOR_PAIR(1));
-    mvwprintw(window, 1, 3, "HOST");
-    mvwprintw(window, 4, 3, "PORT");
-    mvwprintw(window, 7, 3, "USER");
-    mvwprintw(window, 10, 3, "PASSWORD");
-    mvwprintw(window, 15, 3, "TARGET");
-    mvwprintw(window, 18, 3, "SCAN");
-    mvwprintw(window, 23, 3, "TASK");
-    mvwprintw(window, 26, 3, "UPDATE");
-    wattroff(window, A_ITALIC | COLOR_PAIR(1));
-
+    wattron(window, A_BOLD | COLOR_PAIR(4));
+    mvwprintw(window, 3, 6,   "    HOST");
+    mvwprintw(window, 5, 6,   "    PORT");
+    mvwprintw(window, 7, 6,   "    USER");
+    mvwprintw(window, 9, 6,   "PASSWORD");
+    mvwprintw(window, 13, 6,  "  TARGET");
+    mvwprintw(window, 15, 6,  "    SCAN");
+    mvwprintw(window, 19, 6,  "    TASK");
+    mvwprintw(window, 21, 6,  "  UPDATE");
+    mvwprintw(window, 3, 90,  "STATUS");
+    mvwprintw(window, 13, 90, " SCANS");
+    mvwprintw(window, 19, 90, "TARGETS");
+    wattroff(window, A_BOLD | COLOR_PAIR(4));
+    
     wrefresh(stdscr);
     wrefresh(window);
 
     driver();
 }
 
-WINDOW *create_window(int height, int width, int starty, int startx)
+WINDOW *create_window(int height, int width, int starty, int startx, int color_pair)
 {	
-    WINDOW *win;
-    win = newwin(height, width, starty, startx);
-    wbkgd(win, COLOR_PAIR(1));
+    WINDOW *w;
+    w = newwin(height, width, starty, startx);
+    wbkgd(w, COLOR_PAIR(color_pair));
     
-    return win;
+    return w;
 }
 
 void cmd()
