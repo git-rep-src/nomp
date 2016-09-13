@@ -2,7 +2,8 @@
 
 void init();
 void ui();
-WINDOW *create_window(int height, int width, int starty, int startx, int color_pair);
-void cmd();
 void driver();
+int run(char *cmd, char *arg);
+char *clean_string(char *str);
+WINDOW *create_window(int nl, int nc, int par_y, int par_x, int cp);
 void quit();
