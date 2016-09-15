@@ -4,6 +4,6 @@ void init();
 void ui();
 void driver();
 int run(char *cmd, char *arg);
+void parse_string(char ***arr, int x, int y, int err);
 char *clean_string(char *str);
-WINDOW *create_window(int nl, int nc, int par_y, int par_x, int cp);
 void quit();

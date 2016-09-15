@@ -16,6 +16,8 @@ char *host;
 char *port;
 char *user;
 char *password;
+char **scans;// = NULL;
+char cmd_ret[BUFSIZ];
 
 int n_fields = ((sizeof(fields) / sizeof(fields[0])) - 2);
 
@@ -36,7 +38,7 @@ void init()
         init_pair(3, COLOR_WHITE, COLOR_GREEN);
         init_pair(4, COLOR_WHITE, COLOR_BLUE);
     }
-
+    
     ui();
 }
 
@@ -74,7 +76,8 @@ void ui()
     form = new_form(fields);
     scale_form(form, &rows, &cols);
 
-    window = create_window((LINES - 24), 120, ((LINES - 25) / 2), ((COLS - 120) / 2), 4);
+    window = newwin((LINES - 24), 120, ((LINES - 25) / 2), ((COLS - 120) / 2));
+    wbkgd(window, COLOR_PAIR(4));
     keypad(window, TRUE);
     
     set_form_win(form, window);
@@ -144,8 +147,11 @@ void driver()
                         set_field_back(fields[i], COLOR_PAIR(2));
                         field_opts_on(fields[i], O_ACTIVE);
                     }
+                    parse_string(&scans, 3, 80, 0);
+                } else {
+                    parse_string(&scans, 3, 80, 1);
                 }
-                //field_opts_off(fields[i], O_AUTOSKIP | O_EDIT);
+                //printf("%.36s", scans[0]);
                 break;
             default:
                 form_driver(form, key);
@@ -158,26 +164,50 @@ void driver()
 
 int run(char *cmd, char *arg)
 {
-    char cmd_buf[BUFSIZ];
+    char buf[BUFSIZ];
     char path[BUFSIZ];
     FILE *fp;
-    
+
     if (strcmp(cmd, "omp") == 0)
-        snprintf(cmd_buf, sizeof(cmd_buf), "%s -h %s -p %s -u %s -w %s %s 2>&1", cmd, host, port, user, password, arg);
+        snprintf(buf, sizeof(buf), "%s -h %s -p %s -u %s -w %s %s 2>&1", cmd, host, port, user, password, arg);
     else
-        snprintf(cmd_buf, sizeof(cmd_buf), "%s %s 2>&1", cmd, arg);
+        snprintf(buf, sizeof(buf), "%s %s 2>&1", cmd, arg);
    
-    int i = 4;
-    if ((fp = popen(cmd_buf, "r")) != NULL) {
-        while (fgets(path, BUFSIZ, fp) != NULL) {
-            mvwprintw(window, i, 50, path);
-            ++i;
-        }
+    if ((fp = popen(buf, "r")) != NULL) {
+        while (fgets(path, BUFSIZ, fp) != NULL)
+            strcat(cmd_ret, path);
     } else {
+        strcpy(cmd_ret, "ERROR.");
         return 1;
     }
 
     return pclose(fp);    
+}
+
+void parse_string(char ***arr, int x, int y, int err)
+{
+    int i = 0;
+    char buf[BUFSIZ];
+    char buf2[BUFSIZ];
+    char *token;
+
+    strcpy(buf, cmd_ret);
+
+    token = strtok(buf, "\n");                        
+    while (token != NULL) {
+        if (err == 0) {
+            *arr = realloc(*arr, (i + 1) * sizeof(**arr));
+            // TODO: Dejar solo el hash.
+            (*arr)[i] = token;
+            snprintf(buf2, sizeof(buf2), "%i%s", i, token += 36);
+        } else {
+            snprintf(buf2, sizeof(buf2), "%s", token);
+        }
+        mvwprintw(window, x + 1, y, buf2);
+        token = strtok(NULL, "\n");
+        ++i;
+        ++x;
+    }
 }
 
 char *clean_string(char *str)
@@ -200,17 +230,10 @@ char *clean_string(char *str)
     return str;
 }
 
-WINDOW *create_window(int nl, int nc, int par_y, int par_x, int cp)
-{	
-    WINDOW *w;
-    w = newwin(nl, nc, par_y, par_x);
-    wbkgd(w, COLOR_PAIR(cp));
-    
-    return w;
-}
-
 void quit()
 {
+    free(scans);
+    
     unpost_form(form);
     
     free_form(form);
