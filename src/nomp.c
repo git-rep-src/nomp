@@ -9,7 +9,7 @@
 #define KEY_ESCAPE 27
 #define KEY_QUIT 113
 
-FIELD *fields[5];
+FIELD *fields[7];
 FIELD *fields_login[6];
 FIELD **p_fields = NULL;
 
@@ -19,10 +19,10 @@ FORM **p_form = NULL;
 
 WINDOW *window;
 
-char *host; // TODO: REVISAR ESTOS CHAR.
-char *port;
-char *user;
-char *password;
+char host[BUFSIZ]; // TODO: REVISAR ESTOS CHAR.
+char port[BUFSIZ];
+char user[BUFSIZ];
+char password[BUFSIZ];
 char **scans = NULL;
 char **targets = NULL;
 char **tasks = NULL;
@@ -64,15 +64,15 @@ void ui_login()
 
     n_fields = ((sizeof(fields_login) / sizeof(fields_login[0])) - 2);
     
-    window = newwin((LINES - 24), 120, ((LINES - 25) / 2), ((COLS - 120) / 2));
+    window = newwin((LINES - 24), 80, ((LINES - 25) / 2), ((COLS - 80) / 2));
     wbkgd(window, COLOR_PAIR(3));
     keypad(window, TRUE);
     
-    fields_login[0] = new_field(1, 30, 6, 42, 0, 0);
-    fields_login[1] = new_field(1, 30, 8, 42, 0, 0);
-    fields_login[2] = new_field(1, 30, 10, 42, 0, 0);
-    fields_login[3] = new_field(1, 30, 12, 42, 0, 0);
-    fields_login[4] = new_field(1, 7, 14, 54, 0, 0);
+    fields_login[0] = new_field(1, 30, 6, 24, 0, 0);
+    fields_login[1] = new_field(1, 30, 8, 24, 0, 0);
+    fields_login[2] = new_field(1, 30, 10, 24, 0, 0);
+    fields_login[3] = new_field(1, 30, 12, 24, 0, 0);
+    fields_login[4] = new_field(1, 7, 14, 35, 0, 0);
     fields_login[5] = NULL;
     
     for (i = 0; i <= n_fields; i++) {
@@ -89,6 +89,8 @@ void ui_login()
     
     set_field_buffer(fields_login[0], 0, "localhost");
     set_field_buffer(fields_login[1], 0, "9390");
+    set_field_buffer(fields_login[2], 0, "user"); // Borrar.
+    set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS"); // Borrar.
     set_field_buffer(fields_login[4], 0, " LOGIN ");
     
     form_login = new_form(fields_login);
@@ -100,10 +102,10 @@ void ui_login()
     post_form(form_login);
     
     wattron(window, A_BOLD | COLOR_PAIR(3));
-    mvwprintw(window, 8, 35,  "    HOST");
-    mvwprintw(window, 10, 35, "    PORT");
-    mvwprintw(window, 12, 35, "    USER");
-    mvwprintw(window, 14, 35, "PASSWORD");
+    mvwprintw(window, 8, 17,  "    HOST");
+    mvwprintw(window, 10, 17, "    PORT");
+    mvwprintw(window, 12, 17, "    USER");
+    mvwprintw(window, 14, 17, "PASSWORD");
     wattroff(window, A_BOLD | COLOR_PAIR(3));
     
     wrefresh(stdscr);
@@ -130,9 +132,11 @@ void ui()
 
     fields[0] = new_field(1, 30, 1, 13, 0, 0);
     fields[1] = new_field(1, 30, 3, 13, 0, 0);
-    fields[2] = new_field(1, 30, 8, 13, 0, 0);
+    fields[2] = new_field(1, 30, 5, 13, 0, 0);
     fields[3] = new_field(1, 30, 10, 13, 0, 0);
-    fields[4] = NULL;
+    fields[4] = new_field(1, 30, 12, 13, 0, 0);
+    fields[5] = new_field(1, 30, 14, 13, 0, 0);
+    fields[6] = NULL;
     
     for (i = 0; i <= n_fields; i++) {
         set_field_just(fields[i], JUSTIFY_CENTER);
@@ -148,10 +152,12 @@ void ui()
     post_form(form);
     
     wattron(window, A_BOLD | COLOR_PAIR(3));
-    mvwprintw(window, 3, 6,  "  TARGET");
-    mvwprintw(window, 5, 6,  "    SCAN");
-    mvwprintw(window, 10, 6,  "    TASK");
-    mvwprintw(window, 12, 6,  "  UPDATE");
+    mvwprintw(window, 3, 8,  "  NAME");
+    mvwprintw(window, 5, 8,  " HOSTS");
+    mvwprintw(window, 7, 8,  " PORTS");
+    mvwprintw(window, 12, 8, "  NAME");
+    mvwprintw(window, 14, 8, "TARGET");
+    mvwprintw(window, 16, 8, "  SCAN");
     //mvwprintw(window, 3, 90,  "STATUS");
     //mvwprintw(window, 13, 90, " SCANS");
     //mvwprintw(window, 19, 90, "TARGETS");
@@ -161,6 +167,10 @@ void ui()
     wrefresh(window);
 
     form_driver(*p_form, REQ_END_LINE);
+
+    get_scans();
+    get_targets();
+    get_tasks();
 }
 
 void driver()
@@ -224,10 +234,10 @@ void driver()
 int login()
 {
     // TODO: Validar.
-    host = clean_string(field_buffer(fields_login[0], 0));
-    port = clean_string(field_buffer(fields_login[1], 0));
-    user = clean_string(field_buffer(fields_login[2], 0));
-    password = "ak474747**OPENVAS"; //clean_string(field_buffer(fields_login[3], 0));
+    strcpy(&host[0], clean_string(field_buffer(fields_login[0], 0)));
+    strcpy(&port[0], clean_string(field_buffer(fields_login[1], 0)));
+    strcpy(&user[0], clean_string(field_buffer(fields_login[2], 0)));
+    strcpy(&password[0], clean_string(field_buffer(fields_login[3], 0)));
 
     if (get_status() == 0) {    
         int i;
@@ -256,9 +266,8 @@ int get_status()
 
 int get_scans()
 {
-        printf("%s", "OK");
     if (run("omp", "-g") == 0) {
-        parse_string(&scans, 14, 30, 0);
+        parse_string(&scans, 3, 70, 0);
     } else {
         parse_string(NULL, 3, 80, 1);
         return 1;
