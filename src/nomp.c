@@ -91,8 +91,6 @@ void ui_login()
     
     set_field_buffer(fields_login[0], 0, "localhost");
     set_field_buffer(fields_login[1], 0, "9390");
-    set_field_buffer(fields_login[2], 0, "user"); // Borrar.
-    set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS"); // Borrar.
     set_field_buffer(fields_login[4], 0, "     LOGIN ");
     set_field_buffer(fields_login[5], 0, "     EXIT ");
     
@@ -169,10 +167,6 @@ void ui()
 
     set_field_back(fields[0], COLOR_PAIR(4));
     form_driver(*p_form, REQ_END_LINE);
-
-    //get_scans();
-    //get_targets();
-    //get_tasks();
 }
 
 void driver()
@@ -211,7 +205,6 @@ void driver()
                 set_field_back(p_fields[c_field], COLOR_PAIR(4));
                 break;
             case KEY_DELCHAR:
-                // TODO: Que no salte al field anterior al borrar todo el texto.
                 form_driver(*p_form, REQ_DEL_PREV);
                 break;
             case KEY_RETURN:
@@ -238,7 +231,6 @@ void driver()
 
 int login()
 {
-    // TODO: Validar.
     strcpy(&host[0], clean_string(field_buffer(fields_login[0], 0)));
     strcpy(&port[0], clean_string(field_buffer(fields_login[1], 0)));
     strcpy(&user[0], clean_string(field_buffer(fields_login[2], 0)));
@@ -344,7 +336,6 @@ void parse_string(char ***p_arr, int y, int x, int err)
             snprintf(buf2, sizeof(buf2), "%s", token);
         } else {
             *p_arr = realloc(*p_arr, (i + 1) * sizeof(**p_arr));
-            // TODO: Dejar solo el hash.
             (*p_arr)[i] = token;
             snprintf(buf2, sizeof(buf2), "%i%s", i, token += 36);
         }
