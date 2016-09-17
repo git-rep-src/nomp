@@ -10,7 +10,7 @@
 #define KEY_QUIT 113
 
 FIELD *fields[7];
-FIELD *fields_login[6];
+FIELD *fields_login[7];
 FIELD **p_fields = NULL;
 
 FORM *form;
@@ -19,22 +19,24 @@ FORM **p_form = NULL;
 
 WINDOW *window;
 
-char host[BUFSIZ]; // TODO: REVISAR ESTOS CHAR.
+char host[BUFSIZ];
 char port[BUFSIZ];
 char user[BUFSIZ];
 char password[BUFSIZ];
+char cmd_ret[BUFSIZ];
+
 char **scans = NULL;
 char **targets = NULL;
 char **tasks = NULL;
-char cmd_ret[BUFSIZ];
 
-int logged = 0;
+int is_logged = FALSE;
 int n_fields;
 
 void init()
 {
     initscr();
     noecho();
+    curs_set(0);
     keypad(stdscr, TRUE);
     cbreak();
 
@@ -48,13 +50,14 @@ void init()
         init_pair(3, COLOR_WHITE, COLOR_CYAN);
         init_pair(4, COLOR_WHITE, COLOR_BLUE);
         init_pair(5, COLOR_WHITE, COLOR_GREEN);
+        init_pair(6, COLOR_WHITE, COLOR_RED);
     }
     
     ui_login();
 }
 
 void ui_login()
-{ 
+{
     int i;
     int rows;
     int cols;
@@ -63,35 +66,35 @@ void ui_login()
     p_form = &form_login;
 
     n_fields = ((sizeof(fields_login) / sizeof(fields_login[0])) - 2);
-    
-    window = newwin((LINES - 24), 80, ((LINES - 25) / 2), ((COLS - 80) / 2));
+   
+    window = newwin((LINES - 34), 62, ((LINES - 14) / 2), ((COLS - 63) / 2));
     wbkgd(window, COLOR_PAIR(3));
     keypad(window, TRUE);
     
-    fields_login[0] = new_field(1, 30, 6, 24, 0, 0);
-    fields_login[1] = new_field(1, 30, 8, 24, 0, 0);
-    fields_login[2] = new_field(1, 30, 10, 24, 0, 0);
-    fields_login[3] = new_field(1, 30, 12, 24, 0, 0);
-    fields_login[4] = new_field(1, 7, 14, 35, 0, 0);
-    fields_login[5] = NULL;
+    fields_login[0] = new_field(1, 30, 1, 14, 0, 0);
+    fields_login[1] = new_field(1, 30, 3, 14, 0, 0);
+    fields_login[2] = new_field(1, 30, 5, 14, 0, 0);
+    fields_login[3] = new_field(1, 30, 7, 14, 0, 0);
+    fields_login[4] = new_field(1, 14, 9, 14, 0, 0);
+    fields_login[5] = new_field(1, 14, 9, 30, 0, 0);
+    fields_login[6] = NULL;
     
     for (i = 0; i <= n_fields; i++) {
         field_opts_off(fields_login[i], O_AUTOSKIP);
         if (i == 3)
             field_opts_off(fields_login[i], O_PUBLIC);
-        else if (i == 4)
+        else if ((i == 4) || (i == 5))
             field_opts_off(fields_login[i], O_EDIT);
         else
             set_field_just(fields_login[i], JUSTIFY_CENTER);
     }
     
-    set_field_back(fields_login[0], COLOR_PAIR(4));
-    
     set_field_buffer(fields_login[0], 0, "localhost");
     set_field_buffer(fields_login[1], 0, "9390");
     set_field_buffer(fields_login[2], 0, "user"); // Borrar.
     set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS"); // Borrar.
-    set_field_buffer(fields_login[4], 0, " LOGIN ");
+    set_field_buffer(fields_login[4], 0, "     LOGIN ");
+    set_field_buffer(fields_login[5], 0, "     EXIT ");
     
     form_login = new_form(fields_login);
     scale_form(form_login, &rows, &cols);
@@ -102,15 +105,16 @@ void ui_login()
     post_form(form_login);
     
     wattron(window, A_BOLD | COLOR_PAIR(3));
-    mvwprintw(window, 8, 17,  "    HOST");
-    mvwprintw(window, 10, 17, "    PORT");
-    mvwprintw(window, 12, 17, "    USER");
-    mvwprintw(window, 14, 17, "PASSWORD");
+    mvwprintw(window, 3, 7, "    HOST");
+    mvwprintw(window, 5, 7, "    PORT");
+    mvwprintw(window, 7, 7, "    USER");
+    mvwprintw(window, 9, 7, "PASSWORD");
     wattroff(window, A_BOLD | COLOR_PAIR(3));
     
     wrefresh(stdscr);
     wrefresh(window);
 
+    set_field_back(fields_login[0], COLOR_PAIR(4));
     form_driver(*p_form, REQ_END_LINE);
     
     driver();
@@ -126,16 +130,16 @@ void ui()
     p_form = &form;
     n_fields = ((sizeof(fields) / sizeof(fields[0])) - 2);
     
-    window = newwin((LINES - 24), 120, ((LINES - 25) / 2), ((COLS - 120) / 2));
+    window = newwin((LINES - 24), 62, ((LINES - 25) / 2), ((COLS - 63) / 2));
     wbkgd(window, COLOR_PAIR(3));
     keypad(window, TRUE);
 
-    fields[0] = new_field(1, 30, 1, 13, 0, 0);
-    fields[1] = new_field(1, 30, 3, 13, 0, 0);
-    fields[2] = new_field(1, 30, 5, 13, 0, 0);
-    fields[3] = new_field(1, 30, 10, 13, 0, 0);
-    fields[4] = new_field(1, 30, 12, 13, 0, 0);
-    fields[5] = new_field(1, 30, 14, 13, 0, 0);
+    fields[0] = new_field(1, 30, 1, 14, 0, 0);
+    fields[1] = new_field(1, 30, 3, 14, 0, 0);
+    fields[2] = new_field(1, 30, 5, 14, 0, 0);
+    fields[3] = new_field(1, 30, 10, 14, 0, 0);
+    fields[4] = new_field(1, 30, 12, 14, 0, 0);
+    fields[5] = new_field(1, 30, 14, 14, 0, 0);
     fields[6] = NULL;
     
     for (i = 0; i <= n_fields; i++) {
@@ -152,25 +156,23 @@ void ui()
     post_form(form);
     
     wattron(window, A_BOLD | COLOR_PAIR(3));
-    mvwprintw(window, 3, 8,  "  NAME");
-    mvwprintw(window, 5, 8,  " HOSTS");
-    mvwprintw(window, 7, 8,  " PORTS");
-    mvwprintw(window, 12, 8, "  NAME");
-    mvwprintw(window, 14, 8, "TARGET");
-    mvwprintw(window, 16, 8, "  SCAN");
-    //mvwprintw(window, 3, 90,  "STATUS");
-    //mvwprintw(window, 13, 90, " SCANS");
-    //mvwprintw(window, 19, 90, "TARGETS");
+    mvwprintw(window, 3, 9,  "  NAME");
+    mvwprintw(window, 5, 9,  " HOSTS");
+    mvwprintw(window, 7, 9,  " PORTS");
+    mvwprintw(window, 12, 9, "  NAME");
+    mvwprintw(window, 14, 9, "TARGET");
+    mvwprintw(window, 16, 9, "  SCAN");
     wattroff(window, A_BOLD | COLOR_PAIR(3));
     
     wrefresh(stdscr);
     wrefresh(window);
 
+    set_field_back(fields[0], COLOR_PAIR(4));
     form_driver(*p_form, REQ_END_LINE);
 
-    get_scans();
-    get_targets();
-    get_tasks();
+    //get_scans();
+    //get_targets();
+    //get_tasks();
 }
 
 void driver()
@@ -213,14 +215,17 @@ void driver()
                 form_driver(*p_form, REQ_DEL_PREV);
                 break;
             case KEY_RETURN:
-                // FIX: si p_form == form_login
-                if (c_field == 4) {
-                    if (login() == 1) {
-                        logged = 1;
-                        c_field = 0;
-                        ui();
+                if (!is_logged) {
+                    if (c_field == 4) {
+                        if (login()) {
+                            is_logged = TRUE;
+                            c_field = 0;
+                            ui();
+                        }
+                    } else if (c_field == 5) {
+                        key = KEY_QUIT;
                     }
-                } 
+                }
                 break;
             default:
                 form_driver(*p_form, key);
@@ -239,65 +244,65 @@ int login()
     strcpy(&user[0], clean_string(field_buffer(fields_login[2], 0)));
     strcpy(&password[0], clean_string(field_buffer(fields_login[3], 0)));
 
-    if (get_status() == 0) {    
-        int i;
-        unpost_form(form_login);
-        free_form(form_login);
-        for (i = 0; i <= n_fields; i++)
-	        free_field(fields_login[i]);
+    if (!get_status())    
+        return FALSE;
 
-        delwin(window);
+    unpost_form(form_login);
+    free_form(form_login);
     
-        return 1;
-    }
+    int i;
+    for (i = 0; i <= n_fields; i++)
+        free_field(fields_login[i]);
+    
+    delwin(window);
 
-    return 0;
+    return TRUE;
 }
 
 int get_status()
 {
     if (run("omp", "--ping") != 0) {
-        parse_string(NULL, 3, 80, 1);
-        return 1;
+        parse_string(NULL, 3, 80, TRUE);
+        return FALSE;
     }
 
-    return 0;
+    return TRUE;
 }
 
 int get_scans()
 {
-    if (run("omp", "-g") == 0) {
-        parse_string(&scans, 3, 70, 0);
-    } else {
-        parse_string(NULL, 3, 80, 1);
-        return 1;
+    if (run("omp", "-g") != 0) {
+        parse_string(NULL, 3, 80, TRUE);
+        return FALSE;
     }
 
-    return 0;
+    parse_string(&scans, 3, 70, FALSE);
+
+    return TRUE;
 }
 
 int get_targets()
 {
-    if (run("omp", "-T") == 0) {
-        parse_string(&targets, 13, 70, 0);
-    } else {
-        parse_string(NULL, 3, 80, 1);
-        return 1;
+    if (run("omp", "-T") != 0) {
+        parse_string(NULL, 3, 80, TRUE);
+        return FALSE;
     }
-
-    return 0;
+    
+    parse_string(&targets, 13, 70, FALSE);
+    
+    return TRUE;
 }
 
 int get_tasks()
 {
-    if (run("omp", "-G") == 0) {
-        parse_string(&tasks, 19, 70, 0);
-    } else {
-        parse_string(NULL, 3, 80, 1);
-        return 1;
+    if (run("omp", "-G") != 0) {
+        parse_string(NULL, 3, 80, TRUE);
+        return FALSE;
     }
 
-    return 0;
+    parse_string(&tasks, 19, 70, FALSE);
+    
+    return TRUE;
 }
 
 int run(char *cmd, char *arg)
@@ -318,7 +323,7 @@ int run(char *cmd, char *arg)
             strcat(cmd_ret, path);
     } else {
         strcpy(cmd_ret, "ERROR.");
-        return 1;
+        return ERR;
     }
 
     return pclose(fp);    
@@ -335,13 +340,13 @@ void parse_string(char ***p_arr, int y, int x, int err)
 
     token = strtok(buf, "\n");                        
     while (token != NULL) {
-        if (err == 0) {
+        if (err) {
+            snprintf(buf2, sizeof(buf2), "%s", token);
+        } else {
             *p_arr = realloc(*p_arr, (i + 1) * sizeof(**p_arr));
             // TODO: Dejar solo el hash.
             (*p_arr)[i] = token;
             snprintf(buf2, sizeof(buf2), "%i%s", i, token += 36);
-        } else {
-            snprintf(buf2, sizeof(buf2), "%s", token);
         }
         mvwprintw(window, y, x, buf2);
         token = strtok(NULL, "\n");
@@ -378,10 +383,17 @@ void quit()
     free(targets);
     free(tasks);
     
-    unpost_form(*p_form);
-    free_form(*p_form);
-    for (i = 0; i <= n_fields; i++)
-	    free_field(p_fields[i]);
+    if (!is_logged) {
+        unpost_form(form_login);
+        free_form(form_login);
+        for (i = 0; i <= n_fields; i++)
+	        free_field(fields_login[i]);
+    } else {
+        unpost_form(form);
+        free_form(form);
+        for (i = 0; i <= n_fields; i++)
+	        free_field(fields[i]);
+    }
     
     delwin(window);
     endwin();
