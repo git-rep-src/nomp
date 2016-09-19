@@ -9,28 +9,36 @@
 #define KEY_ESCAPE 27
 #define KEY_QUIT 113
 
-FIELD *fields[7];
 FIELD *fields_login[7];
+FIELD *fields[7];
 FIELD **p_fields = NULL;
 
-FORM *form;
 FORM *form_login;
+FORM *form;
 FORM **p_form = NULL;
 
 WINDOW *window;
 
-char host[BUFSIZ];
-char port[BUFSIZ];
-char user[BUFSIZ];
-char password[BUFSIZ];
-char cmd_ret[BUFSIZ];
-
-char **scans = NULL;
-char **targets = NULL;
-char **tasks = NULL;
-
-int is_logged = FALSE;
+int n = 0;
 int n_fields;
+int is_logged = FALSE;
+
+char *config[4];
+char **scans;
+char **targets;
+char **tasks;
+char ret[BUFSIZ];
+const char *list_ports[] = {
+    "All IANA assigned TCP",
+    "All IANA assigned TCP/UDP",
+    "All privileged TCP",
+    "All privileged TCP/UDP",
+    "All TCP",
+    "All TCP & Nmap top 100 UDP",
+    "All TCP & Nmap top 1000 UDP",
+    "Nmap top 2000 TCP/100 UDP",
+    "OpenVAS Default"
+};
 
 void init()
 {
@@ -58,7 +66,6 @@ void init()
 
 void ui_login()
 {
-    int i;
     int rows;
     int cols;
     
@@ -79,7 +86,7 @@ void ui_login()
     fields_login[5] = new_field(1, 14, 9, 30, 0, 0);
     fields_login[6] = NULL;
     
-    for (i = 0; i <= n_fields; i++) {
+    for (int i = 0; i <= n_fields; i++) {
         field_opts_off(fields_login[i], O_AUTOSKIP);
         if (i == 3)
             field_opts_off(fields_login[i], O_PUBLIC);
@@ -91,8 +98,8 @@ void ui_login()
     
     set_field_buffer(fields_login[0], 0, "localhost");
     set_field_buffer(fields_login[1], 0, "9390");
-    set_field_buffer(fields_login[2], 0, "user"); // Borrar.
-    set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS"); // Borrar.
+    set_field_buffer(fields_login[2], 0, "user");
+    set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS");
     set_field_buffer(fields_login[4], 0, "     LOGIN ");
     set_field_buffer(fields_login[5], 0, "     EXIT ");
     
@@ -122,7 +129,6 @@ void ui_login()
 
 void ui()
 {
-    int i;
     int rows;
     int cols;
      
@@ -142,10 +148,15 @@ void ui()
     fields[5] = new_field(1, 30, 14, 14, 0, 0);
     fields[6] = NULL;
     
-    for (i = 0; i <= n_fields; i++) {
+    for (int i = 0; i <= n_fields; i++) {
         set_field_just(fields[i], JUSTIFY_CENTER);
         field_opts_off(fields[i], O_AUTOSKIP);
     }
+    field_opts_off(fields[2], O_EDIT);
+    field_opts_off(fields[4], O_EDIT);
+    field_opts_off(fields[5], O_EDIT);
+    
+    set_field_buffer(fields[2], 0, "All IANA assigned TCP");
     
     form = new_form(fields);
     scale_form(form, &rows, &cols);
@@ -169,17 +180,81 @@ void ui()
 
     set_field_back(fields[0], COLOR_PAIR(4));
     form_driver(*p_form, REQ_END_LINE);
+}
 
-    //get_scans();
-    //get_targets();
-    //get_tasks();
+WINDOW **create_menu(char ***p_arr, int rows)
+{
+    if (p_arr == NULL)
+        n = 9;
+
+    WINDOW **windows_menu;
+    windows_menu = (WINDOW **) malloc ((n + 1) * sizeof(WINDOW *));
+    
+    windows_menu[0] = newwin(n, 30, rows, 72);
+
+    wbkgd(windows_menu[0], COLOR_PAIR(2)); 
+    
+    for (int i = 0; i < n; i++) {
+        windows_menu[i + 1] = subwin(windows_menu[0], 1, 30, (i + rows), 72);
+        if (p_arr == NULL)
+            wprintw(windows_menu[i + 1], " %s", list_ports[i]);
+        else
+            wprintw(windows_menu[i + 1], " %s", (*p_arr)[i] += 37);
+    }
+
+    wbkgd(windows_menu[1], COLOR_PAIR(4));
+    
+    wrefresh(windows_menu[0]);
+
+    return windows_menu;
+}
+
+void delete_menu(WINDOW **p_windows_menu)
+{
+    for (int i = 0; i <= n; i++)
+        delwin(p_windows_menu[i]);
+    free(p_windows_menu);
+}
+
+int scroll_menu(WINDOW **p_windows_menu)
+{
+    int key;
+    int c_item = 0;
+    
+    do {
+        key = getch();
+        switch(key)
+        {
+            case KEY_UP:
+            case KEY_DOWN:
+                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(2));
+                wnoutrefresh(p_windows_menu[c_item + 1]);
+                if (key == KEY_DOWN)
+                    c_item = ((c_item + 1) % n);
+                else
+                    c_item = (((c_item + n) - 1) % n);
+                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(4));
+                wnoutrefresh(p_windows_menu[c_item + 1]);
+                doupdate();
+                break;
+            case KEY_RETURN:
+                return c_item;
+            default:
+                break;
+        }
+    } while (key != KEY_ESCAPE);
+    
+    return -1;
 }
 
 void driver()
 { 
     int key;
+    int c_item;
     int c_field = 0;
-
+    
+    WINDOW **p_windows_menu;
+    
     do {
         key = wgetch(window);
         switch(key)
@@ -217,14 +292,37 @@ void driver()
             case KEY_RETURN:
                 if (!is_logged) {
                     if (c_field == 4) {
-                        if (login()) {
-                            is_logged = TRUE;
+                        if (get_login()) {
                             c_field = 0;
+                            is_logged = TRUE;
                             ui();
                         }
                     } else if (c_field == 5) {
                         key = KEY_QUIT;
                     }
+                } else {
+                    if (c_field == 2) {
+                        p_windows_menu = create_menu(NULL, 19);
+                    } else if (c_field == 4) {
+                        get_targets();
+                        p_windows_menu = create_menu(&targets, 26);
+                    } else if (c_field == 5) {
+                        get_scans();
+                        p_windows_menu = create_menu(&scans, 28);
+                    }
+                    c_item = scroll_menu(p_windows_menu);
+                    delete_menu(p_windows_menu);
+                    if (c_item >= 0) {
+                        if (c_field == 2)
+                            set_field_buffer(fields[2], 0, list_ports[c_item]);
+                        else if (c_field == 4)
+                            set_field_buffer(fields[4], 0, targets[c_item]);
+                        else if (c_field == 5)
+                            set_field_buffer(fields[5], 0, scans[c_item]);
+                    }
+                    touchwin(stdscr);
+                    touchwin(window);
+                    wrefresh(stdscr);
                 }
                 break;
             default:
@@ -236,35 +334,27 @@ void driver()
     quit();
 }
 
-int login()
+int get_login()
 {
     // TODO: Validar.
-    strcpy(&host[0], clean_string(field_buffer(fields_login[0], 0)));
-    strcpy(&port[0], clean_string(field_buffer(fields_login[1], 0)));
-    strcpy(&user[0], clean_string(field_buffer(fields_login[2], 0)));
-    strcpy(&password[0], clean_string(field_buffer(fields_login[3], 0)));
+    int n_config = ((sizeof(config) / sizeof(config[0])));
+    for (int i = 0; i < n_config; i++) {
+        char *buf = clean_string(field_buffer(fields_login[i], 0));
+        int len = (strlen(buf) + 1);
+        config[i] = (char*) malloc (len * sizeof(char));
+        strcpy(config[i], buf);
+    }
 
-    if (!get_status())    
-        return FALSE;
-
-    unpost_form(form_login);
-    free_form(form_login);
-    
-    int i;
-    for (i = 0; i <= n_fields; i++)
-        free_field(fields_login[i]);
-    
-    delwin(window);
-
-    return TRUE;
-}
-
-int get_status()
-{
     if (run("omp", "--ping") != 0) {
-        parse_string(NULL, 3, 80, TRUE);
+        parse_string(NULL);
         return FALSE;
     }
+    
+    unpost_form(form_login);
+    free_form(form_login);
+    for (int i = 0; i <= n_fields; i++)
+        free_field(fields_login[i]);
+    delwin(window);
 
     return TRUE;
 }
@@ -272,11 +362,11 @@ int get_status()
 int get_scans()
 {
     if (run("omp", "-g") != 0) {
-        parse_string(NULL, 3, 80, TRUE);
+        parse_string(NULL);
         return FALSE;
     }
 
-    parse_string(&scans, 3, 70, FALSE);
+    parse_string(&scans);
 
     return TRUE;
 }
@@ -284,11 +374,11 @@ int get_scans()
 int get_targets()
 {
     if (run("omp", "-T") != 0) {
-        parse_string(NULL, 3, 80, TRUE);
+        parse_string(NULL);
         return FALSE;
     }
     
-    parse_string(&targets, 13, 70, FALSE);
+    parse_string(&targets);
     
     return TRUE;
 }
@@ -296,62 +386,58 @@ int get_targets()
 int get_tasks()
 {
     if (run("omp", "-G") != 0) {
-        parse_string(NULL, 3, 80, TRUE);
+        parse_string(NULL);
         return FALSE;
     }
 
-    parse_string(&tasks, 19, 70, FALSE);
+    parse_string(&tasks);
     
     return TRUE;
 }
 
 int run(char *cmd, char *arg)
 {
-    char buf[BUFSIZ];
+    char buf[1024];
     char path[BUFSIZ];
     FILE *fp;
-
-    memset(cmd_ret, 0x00, sizeof(cmd_ret));
+    
+    memset(ret, 0x00, sizeof(ret));
     
     if (strcmp(cmd, "omp") == 0)
-        snprintf(buf, sizeof(buf), "%s -h %s -p %s -u %s -w %s %s 2>&1", cmd, host, port, user, password, arg);
+        snprintf(buf, sizeof(buf), "%s -h %s -p %s -u %s -w %s %s 2>&1", cmd, config[0], config[1], config[2], config[3], arg);
     else
         snprintf(buf, sizeof(buf), "%s %s 2>&1", cmd, arg);
     
     if ((fp = popen(buf, "r")) != NULL) {
         while (fgets(path, BUFSIZ, fp) != NULL)
-            strcat(cmd_ret, path);
+            strcat(ret, path);
     } else {
-        strcpy(cmd_ret, "ERROR.");
+        strcpy(ret, "ERROR.");
         return ERR;
     }
 
     return pclose(fp);    
 }
 
-void parse_string(char ***p_arr, int y, int x, int err)
+void parse_string(char ***p_arr)
 {
     int i = 0;
-    char buf[BUFSIZ];
-    char buf2[BUFSIZ];
     char *token;
 
-    strcpy(buf, cmd_ret);
-
-    token = strtok(buf, "\n");                        
+    token = strtok(ret, "\n");                        
     while (token != NULL) {
-        if (err) {
-            snprintf(buf2, sizeof(buf2), "%s", token);
+        if (p_arr == NULL) {
+            if (is_logged)
+                mvwprintw(window, (i + 20), 7, token);
+            else
+                mvwprintw(window, (i + 13), 7, token);
         } else {
-            *p_arr = realloc(*p_arr, (i + 1) * sizeof(**p_arr));
-            // TODO: Dejar solo el hash.
+            *p_arr = realloc(*p_arr, ((i + 1) * sizeof(char*)));
             (*p_arr)[i] = token;
-            snprintf(buf2, sizeof(buf2), "%i%s", i, token += 36);
+            n = (i + 1);
         }
-        mvwprintw(window, y, x, buf2);
         token = strtok(NULL, "\n");
         ++i;
-        ++y;
     }
 }
 
@@ -377,8 +463,9 @@ char *clean_string(char *str)
 
 void quit()
 {
-    int i;
-    
+    int n_config = (sizeof(config) / sizeof(config[0]));
+    for (int i = 0; i < n_config; i++)
+        free(config[i]);
     free(scans);
     free(targets);
     free(tasks);
@@ -386,15 +473,14 @@ void quit()
     if (!is_logged) {
         unpost_form(form_login);
         free_form(form_login);
-        for (i = 0; i <= n_fields; i++)
+        for (int i = 0; i <= n_fields; i++)
 	        free_field(fields_login[i]);
     } else {
         unpost_form(form);
         free_form(form);
-        for (i = 0; i <= n_fields; i++)
+        for (int i = 0; i <= n_fields; i++)
 	        free_field(fields[i]);
     }
     
-    delwin(window);
     endwin();
 }
