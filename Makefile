@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall
-LIBS = -lform -lncurses
+CFLAGS = $(shell pkg-config libxml-2.0 --cflags) -Wall
+LIBS = $(shell pkg-config libxml-2.0 --libs) -lform -lncurses
 SOURCEDIR = src
 BUILDDIR = .build
 SOURCES = $(wildcard src/*.c)
