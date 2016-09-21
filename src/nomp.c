@@ -24,21 +24,11 @@ int n_fields;
 int is_logged = FALSE;
 
 char *config[4];
-char **scans;
+char **ports;
 char **targets;
-char **tasks;
+char **scans;
+
 char ret[BUFSIZ];
-const char *list_ports[] = {
-    "All IANA assigned TCP",
-    "All IANA assigned TCP/UDP",
-    "All privileged TCP",
-    "All privileged TCP/UDP",
-    "All TCP",
-    "All TCP & Nmap top 100 UDP",
-    "All TCP & Nmap top 1000 UDP",
-    "Nmap top 2000 TCP/100 UDP",
-    "OpenVAS Default"
-};
 
 void init()
 {
@@ -51,14 +41,13 @@ void init()
     if (has_colors()) {
         start_color();
         init_color(COLOR_CYAN, 150, 150, 150);
-        init_color(COLOR_BLUE, 70, 70, 70);
+        init_color(COLOR_BLUE, 80, 80, 80);
         init_color(COLOR_GREEN, 0, 200, 0);
-        init_pair(1, COLOR_BLACK, COLOR_WHITE);
-        init_pair(2, COLOR_WHITE, COLOR_BLACK);
-        init_pair(3, COLOR_WHITE, COLOR_CYAN);
-        init_pair(4, COLOR_WHITE, COLOR_BLUE);
-        init_pair(5, COLOR_WHITE, COLOR_GREEN);
-        init_pair(6, COLOR_WHITE, COLOR_RED);
+        init_pair(1, COLOR_WHITE, COLOR_BLACK);
+        init_pair(2, COLOR_WHITE, COLOR_CYAN);
+        init_pair(3, COLOR_WHITE, COLOR_BLUE);
+        init_pair(4, COLOR_WHITE, COLOR_GREEN);
+        init_pair(5, COLOR_WHITE, COLOR_RED);
     }
     
     ui_login();
@@ -75,7 +64,7 @@ void ui_login()
     n_fields = ((sizeof(fields_login) / sizeof(fields_login[0])) - 2);
    
     window = newwin((LINES - 34), 62, ((LINES - 14) / 2), ((COLS - 63) / 2));
-    wbkgd(window, COLOR_PAIR(3));
+    wbkgd(window, COLOR_PAIR(2));
     keypad(window, TRUE);
     
     fields_login[0] = new_field(1, 30, 1, 14, 0, 0);
@@ -111,17 +100,17 @@ void ui_login()
 
     post_form(form_login);
     
-    wattron(window, A_BOLD | COLOR_PAIR(3));
+    wattron(window, A_BOLD | COLOR_PAIR(2));
     mvwprintw(window, 3, 7, "    HOST");
     mvwprintw(window, 5, 7, "    PORT");
     mvwprintw(window, 7, 7, "    USER");
     mvwprintw(window, 9, 7, "PASSWORD");
-    wattroff(window, A_BOLD | COLOR_PAIR(3));
+    wattroff(window, A_BOLD | COLOR_PAIR(2));
     
     wrefresh(stdscr);
     wrefresh(window);
 
-    set_field_back(fields_login[0], COLOR_PAIR(4));
+    set_field_back(fields_login[0], COLOR_PAIR(3));
     form_driver(*p_form, REQ_END_LINE);
     
     driver();
@@ -137,7 +126,7 @@ void ui()
     n_fields = ((sizeof(fields) / sizeof(fields[0])) - 2);
     
     window = newwin((LINES - 24), 62, ((LINES - 25) / 2), ((COLS - 63) / 2));
-    wbkgd(window, COLOR_PAIR(3));
+    wbkgd(window, COLOR_PAIR(2));
     keypad(window, TRUE);
 
     fields[0] = new_field(1, 30, 1, 14, 0, 0);
@@ -166,43 +155,38 @@ void ui()
 
     post_form(form);
     
-    wattron(window, A_BOLD | COLOR_PAIR(3));
+    wattron(window, A_BOLD | COLOR_PAIR(2));
     mvwprintw(window, 3, 9,  "  NAME");
     mvwprintw(window, 5, 9,  " HOSTS");
     mvwprintw(window, 7, 9,  " PORTS");
     mvwprintw(window, 12, 9, "  NAME");
     mvwprintw(window, 14, 9, "TARGET");
     mvwprintw(window, 16, 9, "  SCAN");
-    wattroff(window, A_BOLD | COLOR_PAIR(3));
+    wattroff(window, A_BOLD | COLOR_PAIR(2));
     
     wrefresh(stdscr);
     wrefresh(window);
 
-    set_field_back(fields[0], COLOR_PAIR(4));
+    set_field_back(fields[0], COLOR_PAIR(3));
     form_driver(*p_form, REQ_END_LINE);
 }
 
 WINDOW **create_menu(char ***p_arr, int rows)
 {
-    if (p_arr == NULL)
-        n = 9;
-
     WINDOW **windows_menu;
     windows_menu = (WINDOW **) malloc ((n + 1) * sizeof(WINDOW *));
     
     windows_menu[0] = newwin(n, 30, rows, 72);
 
-    wbkgd(windows_menu[0], COLOR_PAIR(2)); 
+    wbkgd(windows_menu[0], COLOR_PAIR(1)); 
     
     for (int i = 0; i < n; i++) {
         windows_menu[i + 1] = subwin(windows_menu[0], 1, 30, (i + rows), 72);
-        if (p_arr == NULL)
-            wprintw(windows_menu[i + 1], " %s", list_ports[i]);
-        else
-            wprintw(windows_menu[i + 1], " %s", (*p_arr)[i] += 37);
+        //wprintw(windows_menu[i + 1], " %s", (*p_arr)[i] += 37);
+        wprintw(windows_menu[i + 1], " %s", (*p_arr)[i]);
     }
 
-    wbkgd(windows_menu[1], COLOR_PAIR(4));
+    wbkgd(windows_menu[1], COLOR_PAIR(3));
     
     wrefresh(windows_menu[0]);
 
@@ -227,13 +211,13 @@ int scroll_menu(WINDOW **p_windows_menu)
         {
             case KEY_UP:
             case KEY_DOWN:
-                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(2));
+                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(1));
                 wnoutrefresh(p_windows_menu[c_item + 1]);
                 if (key == KEY_DOWN)
                     c_item = ((c_item + 1) % n);
                 else
                     c_item = (((c_item + n) - 1) % n);
-                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(4));
+                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(3));
                 wnoutrefresh(p_windows_menu[c_item + 1]);
                 doupdate();
                 break;
@@ -266,24 +250,24 @@ void driver()
                 form_driver(*p_form, REQ_NEXT_CHAR);
                 break;
             case KEY_UP:
-                set_field_back(p_fields[c_field], COLOR_PAIR(2));
+                set_field_back(p_fields[c_field], COLOR_PAIR(1));
                 if (c_field == 0)
                     c_field = n_fields;
                 else
                     --c_field;
                 form_driver(*p_form, REQ_PREV_FIELD);
                 form_driver(*p_form, REQ_END_LINE);
-                set_field_back(p_fields[c_field], COLOR_PAIR(4));
+                set_field_back(p_fields[c_field], COLOR_PAIR(3));
                 break;
             case KEY_DOWN:
-                set_field_back(p_fields[c_field], COLOR_PAIR(2));
+                set_field_back(p_fields[c_field], COLOR_PAIR(1));
                 if (c_field == n_fields)
                     c_field = 0;
                 else
                     ++c_field;
                 form_driver(*p_form, REQ_NEXT_FIELD);
                 form_driver(*p_form, REQ_END_LINE);
-                set_field_back(p_fields[c_field], COLOR_PAIR(4));
+                set_field_back(p_fields[c_field], COLOR_PAIR(3));
                 break;
             case KEY_DELCHAR:
                 // TODO: Que no salte al field anterior al borrar todo el texto.
@@ -291,38 +275,58 @@ void driver()
                 break;
             case KEY_RETURN:
                 if (!is_logged) {
-                    if (c_field == 4) {
-                        if (get_login()) {
-                            c_field = 0;
-                            is_logged = TRUE;
-                            ui();
-                        }
-                    } else if (c_field == 5) {
-                        key = KEY_QUIT;
+                    switch(c_field)
+		            {	
+                        case 4:
+                            if (get_login()) {
+                                c_field = 0;
+                                is_logged = TRUE;
+                                ui();
+                            }
+                            break;
+                        case 5:
+                            key = KEY_QUIT;
+                            break;
+                        default:
+                            break;
                     }
                 } else {
-                    if (c_field == 2) {
-                        p_windows_menu = create_menu(NULL, 19);
-                    } else if (c_field == 4) {
-                        get_targets();
-                        p_windows_menu = create_menu(&targets, 26);
-                    } else if (c_field == 5) {
-                        get_scans();
-                        p_windows_menu = create_menu(&scans, 28);
+                    switch(c_field)
+		            {
+                        case 3:
+                            //if(!create_xml(0))
+                                //printf("%s", "ERROR");
+                            break;
+                        case 2:
+                        case 4:
+                        case 5:
+                            if (c_field == 2) {
+                                p_windows_menu = create_menu(NULL, 19);
+                            } else if (c_field == 4) {
+                                run("omp", "--xml='<get_targets/>'"); // FIX: AL ABRIR DOS VECES SE ROMPE.
+                                xml_parse_node();
+                                p_windows_menu = create_menu(&targets, 26);
+                            } else if (c_field == 5) {
+                                get_scans();
+                                p_windows_menu = create_menu(&scans, 28);
+                            }
+                            c_item = scroll_menu(p_windows_menu);
+                            delete_menu(p_windows_menu);
+                            if (c_item >= 0) {
+                                if (c_field == 2)
+                                    set_field_buffer(fields[2], 0, ports[c_item]);
+                                else if (c_field == 4)
+                                    set_field_buffer(fields[4], 0, targets[c_item]);
+                                else if (c_field == 5)
+                                    set_field_buffer(fields[5], 0, scans[c_item]);
+                            }
+                            touchwin(stdscr);
+                            touchwin(window);
+                            wrefresh(stdscr);
+                            break;
+                        default:
+                            break;
                     }
-                    c_item = scroll_menu(p_windows_menu);
-                    delete_menu(p_windows_menu);
-                    if (c_item >= 0) {
-                        if (c_field == 2)
-                            set_field_buffer(fields[2], 0, list_ports[c_item]);
-                        else if (c_field == 4)
-                            set_field_buffer(fields[4], 0, targets[c_item]);
-                        else if (c_field == 5)
-                            set_field_buffer(fields[5], 0, scans[c_item]);
-                    }
-                    touchwin(stdscr);
-                    touchwin(window);
-                    wrefresh(stdscr);
                 }
                 break;
             default:
@@ -332,6 +336,86 @@ void driver()
     } while (key != KEY_QUIT);
     
     quit();
+}
+
+int create_xml(int n)
+{
+    char arg[1024];
+
+    switch(n)
+    {
+        case 0:
+            snprintf(arg, sizeof(arg), "--xml='\
+                    <create_target>\
+                        <name>%s</name>\
+                        <hosts>%s</hosts>\
+                    </create_target>'"
+                    , clean_string(field_buffer(fields[0], 0)), clean_string(field_buffer(fields[1], 0)));
+            break;
+        default:
+            break;
+    }
+    
+    if (run("omp", arg) != 0)
+        return FALSE;
+
+    return TRUE;
+}
+
+void xml_parse_node()
+{
+    xmlDocPtr doc;
+    xmlNodePtr cur;
+
+    doc = xmlParseMemory(ret, BUFSIZ);
+
+    if (doc == NULL ) {
+        fprintf(stderr,"Document not parsed successfully. \n");
+    }
+
+    cur = xmlDocGetRootElement(doc);
+
+    if (cur == NULL) {
+        fprintf(stderr,"empty document\n");
+        //xmlFreeDoc(doc);
+    }
+
+    if (xmlStrcmp(cur->name, (const xmlChar *) "get_targets_response")) {
+        fprintf(stderr,"document of the wrong type, root node != story");
+        //xmlFreeDoc(doc);
+    }
+
+    n = 0;
+    cur = cur->xmlChildrenNode;
+    while (cur != NULL) {
+        if ((!xmlStrcmp(cur->name, (const xmlChar *)"target"))) {
+            xml_parse_string(doc, cur, &targets);
+        }
+        cur = cur->next;
+    }
+
+    xmlFreeDoc(doc);
+}
+
+void xml_parse_string(xmlDocPtr doc, xmlNodePtr cur, char ***p_arr)
+{
+    xmlChar *key;
+    
+    cur = cur->xmlChildrenNode;
+    while (cur != NULL) {
+        if ((!xmlStrcmp(cur->name, (const xmlChar *)"name"))) {
+            key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+            
+            int len = (strlen((char *)key) + 1);
+            *p_arr = realloc(*p_arr, (1 * sizeof(char *)));
+            *p_arr[n] = malloc((len) * sizeof(char));
+            strcpy((*p_arr)[n], (char *)key);
+            
+            xmlFree(key);
+            ++n;
+        }
+        cur = cur->next;
+    }
 }
 
 int get_login()
@@ -379,18 +463,6 @@ int get_targets()
     }
     
     parse_string(&targets);
-    
-    return TRUE;
-}
-
-int get_tasks()
-{
-    if (run("omp", "-G") != 0) {
-        parse_string(NULL);
-        return FALSE;
-    }
-
-    parse_string(&tasks);
     
     return TRUE;
 }
@@ -466,9 +538,9 @@ void quit()
     int n_config = (sizeof(config) / sizeof(config[0]));
     for (int i = 0; i < n_config; i++)
         free(config[i]);
-    free(scans);
+    free(ports);
     free(targets);
-    free(tasks);
+    free(scans);
     
     if (!is_logged) {
         unpost_form(form_login);
