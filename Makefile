@@ -1,10 +1,10 @@
-CC = gcc
-CFLAGS = $(shell pkg-config libxml-2.0 --cflags) -Wall
-LIBS = $(shell pkg-config libxml-2.0 --libs) -lform -lncurses
+CC = g++
+CFLAGS = $(shell pkg-config libxml++-2.6 --cflags) -std=c++11 -Wno-deprecated-declarations -Wall
+LIBS = $(shell pkg-config libxml++-2.6 --libs) -lform -lncurses
 SOURCEDIR = src
 BUILDDIR = .build
-SOURCES = $(wildcard src/*.c)
-OBJECTS = $(patsubst $(SOURCEDIR)/%.c,$(BUILDDIR)/%.o,$(SOURCES))
+SOURCES = $(wildcard src/*.cpp)
+OBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 DEPS := $(OBJECTS:.o=.d)
 TARGET = nomp
 
@@ -20,7 +20,7 @@ $(BUILDDIR)/$(TARGET): $(OBJECTS)
 
 -include $(DEPS)
 
-$(OBJECTS): $(BUILDDIR)/%.o : $(SOURCEDIR)/%.c
+$(OBJECTS): $(BUILDDIR)/%.o : $(SOURCEDIR)/%.cpp
 	$(CC) $(CFLAGS) -MMD -c $< -o $@
 
 clean:
