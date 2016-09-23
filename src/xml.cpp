@@ -1,11 +1,9 @@
 #include <iostream>
 
 #include <libxml++/libxml++.h>
-#include <libxml++/parsers/textreader.h>
-
 #include "xml.h"
 
-using namespace std;
+using namespace xmlpp;
 
 Xml::Xml()
 {
@@ -15,12 +13,31 @@ Xml::~Xml()
 {
 }
 
-int Xml::parse()
+vector<string> Xml::parse(string *str_xml, vector<string> *paths)
 {
+    DomParser parser;
+    vector<string> ret;
+
+    parser.parse_memory(*str_xml);
+    Node *root = parser.get_document()->get_root_node();
+
+    NodeSet node = root->find((*paths)[0]);
+
+    for (uint i = 0; i < node.size(); i++) {
+        Element *node_element = (Element *)node.at(i);
+        ret.push_back(node_element->get_child_text()->get_content());
+    }
+
+    return ret;
+}
+
+/*
+#include <libxml++/parsers/textreader.h>
+
     locale::global(locale(""));
 
     try {
-        xmlpp::TextReader reader("example.xml");
+        xmlpp::TextReader reader((const unsigned char *)ret.c_str(), ret.size());
 
         while (reader.read()) {
             cout << "--- node ---" << endl;
@@ -45,8 +62,8 @@ int Xml::parse()
         }
     } catch (const exception& e) {
         cerr << "Exception caught: " << e.what() << endl;
-        return EXIT_FAILURE;
+        return -1;
     }
 
-    return EXIT_SUCCESS;
-}
+    return 0;
+*/

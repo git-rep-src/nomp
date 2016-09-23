@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "nomp.h"
 
 Nomp::Nomp()
@@ -30,8 +32,17 @@ void Nomp::driver()
                 form_driver(*ui.p_form, REQ_PREV_CHAR);
                 break;
             case KEY_RIGHT:
-                ret = exec.request("ls");
-                cout << ret;
+                ret_cmd = exec.request("omp -h 127.0.0.1 -u user -w ak474747**OPENVAS -X '<get_targets/>'");
+                paths.push_back(path_targets); 
+                ret_xml = xml.parse(&ret_cmd, &paths);
+                cout << ret_xml[0] << endl;
+                
+                /* LOGIN
+                ret = exec.request("omp -h 127.0.0.1 -u user -w ak474747**OPENVAS -X '<get_version/>'");
+                if (ret == "OMP ping was successful.\n")
+                     LOGGED
+                */
+
                 //form_driver(*ui.p_form, REQ_NEXT_CHAR);
                 break;
             case KEY_UP:

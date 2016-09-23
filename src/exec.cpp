@@ -10,7 +10,7 @@ Exec::~Exec()
 {
 }
 
-string Exec::request(const char* cmd)
+string Exec::request(const char *cmd)
 {
     char buf[BUFSIZ];
     string ret = "";
