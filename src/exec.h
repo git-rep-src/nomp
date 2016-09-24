@@ -8,5 +8,5 @@ public:
     Exec();
     ~Exec();
 
-    string request(const char *cmd);
+    string request(const string cmd);
 };

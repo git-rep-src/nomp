@@ -1,4 +1,15 @@
+#include<vector>
+#include<string>
+#include<iostream>//
+
 #include <form.h>
+
+using namespace std;
+
+const int KEY_ESCAPE = 27;
+const int KEY_RETURN = 10;
+const int KEY_DELCHAR = 263; 
+const int KEY_QUIT = 113;
 
 class Ui
 {
@@ -6,36 +17,32 @@ public:
     Ui();
     ~Ui();
 
+    int n_fields;
+    
     FIELD *fields_login[7];
-    FIELD *fields[7];
-    FIELD **p_fields = NULL;
+    FIELD *fields_main[7];
 
     FORM *form_login;
-    FORM *form;
-    FORM **p_form = NULL;
+    FORM *form_main;
 
     WINDOW *window;
+    
+    FIELD **p_fields = NULL;
+    FORM **p_form = NULL;
+    WINDOW **p_windows_menu = NULL;
+    
+    void main();
+    WINDOW **create_menu(vector<string> *values, int rows);
+    void delete_menu(WINDOW **p_windows_menu);
+    int scroll_menu(WINDOW **p_windows_menu);
+    void error(const string err);
+    void cleanup();
 
-    int n = 0;
-    int n_fields;
-    int is_logged = FALSE;
+    vector<string> get_fields_value(vector<int> *f);
 
 private:
+    int n;
+
     void login();
-    void main();
-//    WINDOW **create_menu(char ***p_arr, int rows);
-//    void delete_menu(WINDOW **p_windows_menu);
-//    int scroll_menu(WINDOW **p_windows_menu);
-/*
-    int create_xml(int n);
-    void xml_parse_node();
-    void xml_parse_string(xmlDocPtr doc, xmlNodePtr cur, char ***p_arr);
-    int get_login();
-    int get_scans();
-    int get_targets();
-    int run(char *cmd, char *arg);
-    void parse_string(char ***p_arr);
-    char *clean_string(char *str);
-    void quit();
-*/
+    char *trim_whitespaces(char *str);
 };

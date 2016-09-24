@@ -24,8 +24,8 @@ vector<string> Xml::parse(string *str_xml, vector<string> *paths)
     NodeSet node = root->find((*paths)[0]);
 
     for (uint i = 0; i < node.size(); i++) {
-        Element *node_element = (Element *)node.at(i);
-        ret.push_back(node_element->get_child_text()->get_content());
+        Element *element = (Element *)node.at(i);
+        ret.push_back(element->get_child_text()->get_content());
     }
 
     return ret;

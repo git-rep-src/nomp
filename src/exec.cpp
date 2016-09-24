@@ -10,24 +10,25 @@ Exec::~Exec()
 {
 }
 
-string Exec::request(const char *cmd)
+string Exec::request(const string cmd)
 {
     char buf[BUFSIZ];
     string ret = "";
 
-    FILE *pipe = popen(cmd, "r");
+    FILE *pipe = popen(cmd.c_str(), "r");
     if (!pipe)
-        throw runtime_error("ERROR: Command execution failed.");
+        throw ("ERROR"); //TODO: enviar el msg de error.
     try {
-        while (!feof(pipe)) {
+        while (!feof(pipe))
             if (fgets(buf, BUFSIZ, pipe) != NULL)
                 ret += buf;
-        }
-    } catch (...) {
+    } catch (const string e) {
         pclose(pipe);
-        throw;
+        return e;
     }
-    pclose(pipe);
+    
+    if (pclose(pipe) != 0)
+        ret = "ERROR";
 
     return ret;
 }

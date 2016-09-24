@@ -1,8 +1,11 @@
+#include <string.h>
+
 #include "ui.h"
 
 using namespace std;
 
-Ui::Ui()
+Ui::Ui() :
+    n(0)
 {
     initscr();
     noecho();
@@ -27,6 +30,8 @@ Ui::Ui()
 
 Ui::~Ui()
 {
+    cleanup();
+    endwin();
 }
 
 void Ui::login()
@@ -88,8 +93,6 @@ void Ui::login()
 
     set_field_back(fields_login[0], COLOR_PAIR(3));
     form_driver(*p_form, REQ_END_LINE);
-    
-    //driver();
 }
 
 void Ui::main()
@@ -97,39 +100,37 @@ void Ui::main()
     int rows;
     int cols;
      
-    p_fields = &fields[0];
-    p_form = &form;
-    n_fields = ((sizeof(fields) / sizeof(fields[0])) - 2);
+    p_fields = &fields_main[0];
+    p_form = &form_main;
+    n_fields = ((sizeof(fields_main) / sizeof(fields_main[0])) - 2);
     
     window = newwin((LINES - 24), 62, ((LINES - 25) / 2), ((COLS - 63) / 2));
     wbkgd(window, COLOR_PAIR(2));
     keypad(window, TRUE);
 
-    fields[0] = new_field(1, 30, 1, 14, 0, 0);
-    fields[1] = new_field(1, 30, 3, 14, 0, 0);
-    fields[2] = new_field(1, 30, 5, 14, 0, 0);
-    fields[3] = new_field(1, 30, 10, 14, 0, 0);
-    fields[4] = new_field(1, 30, 12, 14, 0, 0);
-    fields[5] = new_field(1, 30, 14, 14, 0, 0);
-    fields[6] = NULL;
+    fields_main[0] = new_field(1, 30, 1, 14, 0, 0);
+    fields_main[1] = new_field(1, 30, 3, 14, 0, 0);
+    fields_main[2] = new_field(1, 30, 5, 14, 0, 0);
+    fields_main[3] = new_field(1, 30, 10, 14, 0, 0);
+    fields_main[4] = new_field(1, 30, 12, 14, 0, 0);
+    fields_main[5] = new_field(1, 30, 14, 14, 0, 0);
+    fields_main[6] = NULL;
     
     for (int i = 0; i <= n_fields; i++) {
-        set_field_just(fields[i], JUSTIFY_CENTER);
-        field_opts_off(fields[i], O_AUTOSKIP);
+        set_field_just(fields_main[i], JUSTIFY_CENTER);
+        field_opts_off(fields_main[i], O_AUTOSKIP);
     }
-    field_opts_off(fields[2], O_EDIT);
-    field_opts_off(fields[4], O_EDIT);
-    field_opts_off(fields[5], O_EDIT);
+    field_opts_off(fields_main[2], O_EDIT);
+    field_opts_off(fields_main[4], O_EDIT);
+    field_opts_off(fields_main[5], O_EDIT);
     
-    set_field_buffer(fields[2], 0, "All IANA assigned TCP");
+    form_main = new_form(fields_main);
+    scale_form(form_main, &rows, &cols);
     
-    form = new_form(fields);
-    scale_form(form, &rows, &cols);
-    
-    set_form_win(form, window);
-    set_form_sub(form, derwin(window, rows, cols, 2, 2));
+    set_form_win(form_main, window);
+    set_form_sub(form_main, derwin(window, rows, cols, 2, 2));
 
-    post_form(form);
+    post_form(form_main);
     
     wattron(window, A_BOLD | COLOR_PAIR(2));
     mvwprintw(window, 3, 9,  "  NAME");
@@ -143,13 +144,14 @@ void Ui::main()
     wrefresh(stdscr);
     wrefresh(window);
 
-    set_field_back(fields[0], COLOR_PAIR(3));
+    set_field_back(fields_main[0], COLOR_PAIR(3));
     form_driver(*p_form, REQ_END_LINE);
 }
 
-/*
-WINDOW **create_menu(char ***p_arr, int rows)
+WINDOW **Ui::create_menu(vector<string> *values, int rows)
 {
+    n = ((values->size()) / 2);
+    
     WINDOW **windows_menu;
     windows_menu = (WINDOW **) malloc ((n + 1) * sizeof(WINDOW *));
     
@@ -159,8 +161,7 @@ WINDOW **create_menu(char ***p_arr, int rows)
     
     for (int i = 0; i < n; i++) {
         windows_menu[i + 1] = subwin(windows_menu[0], 1, 30, (i + rows), 72);
-        //wprintw(windows_menu[i + 1], " %s", (*p_arr)[i] += 37);
-        wprintw(windows_menu[i + 1], " %s", (*p_arr)[i]);
+        wprintw(windows_menu[i + 1], " %s", (*values)[i].c_str());
     }
 
     wbkgd(windows_menu[1], COLOR_PAIR(3));
@@ -170,14 +171,14 @@ WINDOW **create_menu(char ***p_arr, int rows)
     return windows_menu;
 }
 
-void delete_menu(WINDOW **p_windows_menu)
+void Ui::delete_menu(WINDOW **p_windows_menu)
 {
     for (int i = 0; i <= n; i++)
         delwin(p_windows_menu[i]);
     free(p_windows_menu);
 }
 
-int scroll_menu(WINDOW **p_windows_menu)
+int Ui::scroll_menu(WINDOW **p_windows_menu)
 {
     int key;
     int c_item = 0;
@@ -207,4 +208,53 @@ int scroll_menu(WINDOW **p_windows_menu)
     
     return -1;
 }
-*/
+
+void Ui::error(const string err)
+{
+    touchwin(stdscr);
+    touchwin(window);
+    wrefresh(stdscr);
+    
+    wattron(window, A_BOLD | COLOR_PAIR(5));
+    mvwprintw(window, 13, 20, err.c_str());
+    wattroff(window, A_BOLD | COLOR_PAIR(5));
+}
+
+void Ui::cleanup()
+{
+    unpost_form(*p_form);
+    free_form(*p_form);
+    for (int i = 0; i <= n_fields; i++)
+        free_field(p_fields[i]);
+    delwin(window);
+}
+
+vector<string> Ui::get_fields_value(vector<int> *f)
+{
+    vector<string> ret;
+    
+    for (uint i = 0;  i < f->size(); i++)
+        ret.push_back(string(trim_whitespaces(field_buffer(p_fields[i], 0))));
+
+    return ret;
+}
+
+char *Ui::trim_whitespaces(char *str)
+{
+    char *end;
+
+    while (isspace(*str))
+        str++;
+
+    if (*str == 0) 
+        return str;
+
+    end = (str + (strnlen(str, 128) - 1));
+
+    while ((end > str) && isspace(*end))
+        end--;
+
+    *(end + 1) = '\0';
+
+    return str;
+}

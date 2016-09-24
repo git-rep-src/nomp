@@ -2,7 +2,8 @@
 
 #include "nomp.h"
 
-Nomp::Nomp()
+Nomp::Nomp() :
+    is_logged(false)
 {
     driver();
 }
@@ -13,16 +14,9 @@ Nomp::~Nomp()
 
 void Nomp::driver()
 { 
-    //const int KEY_RETURN = 10;
-    const int KEY_DELCHAR = 263;
-    //const int KEY_ESCAPE = 27;
-    const int KEY_QUIT = 113;
-
     int key;
-    //int c_item;
+    int c_item;
     int c_field = 0;
-    
-    //WINDOW **p_windows_menu;
 
     do {
         key = wgetch(ui.window);
@@ -32,18 +26,7 @@ void Nomp::driver()
                 form_driver(*ui.p_form, REQ_PREV_CHAR);
                 break;
             case KEY_RIGHT:
-                ret_cmd = exec.request("omp -h 127.0.0.1 -u user -w ak474747**OPENVAS -X '<get_targets/>'");
-                paths.push_back(path_targets); 
-                ret_xml = xml.parse(&ret_cmd, &paths);
-                cout << ret_xml[0] << endl;
-                
-                /* LOGIN
-                ret = exec.request("omp -h 127.0.0.1 -u user -w ak474747**OPENVAS -X '<get_version/>'");
-                if (ret == "OMP ping was successful.\n")
-                     LOGGED
-                */
-
-                //form_driver(*ui.p_form, REQ_NEXT_CHAR);
+                form_driver(*ui.p_form, REQ_NEXT_CHAR);
                 break;
             case KEY_UP:
                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
@@ -69,16 +52,23 @@ void Nomp::driver()
                 // TODO: Que no salte al field anterior al borrar todo el texto.
                 form_driver(*ui.p_form, REQ_DEL_PREV);
                 break;
-            /*
             case KEY_RETURN:
                 if (!is_logged) {
                     switch(c_field)
 		            {	
                         case 4:
-                            if (get_login()) {
+                            f.clear();
+                            for (int i = 0; i < 4; i++)
+                                f.push_back(i);
+                            user_configs = ui.get_fields_value(&f);
+                            //str1.compare(6,5,"apple") == 0)
+                            if ((ret_cmd = exec.request(build_command("--ping"))).compare(0, 5, "ERROR") == 0) {
+                                ui.error(ret_cmd);
+                            } else {
+                                is_logged = true;
                                 c_field = 0;
-                                is_logged = TRUE;
-                                ui();
+                                ui.cleanup();
+                                ui.main();
                             }
                             break;
                         case 5:
@@ -91,34 +81,54 @@ void Nomp::driver()
                     switch(c_field)
 		            {
                         case 3:
-                            //if(!create_xml(0))
-                                //printf("%s", "ERROR");
+                            //TODO: create xml request.
                             break;
                         case 2:
                         case 4:
                         case 5:
+                            paths_xml.clear();
                             if (c_field == 2) {
-                                p_windows_menu = create_menu(NULL, 19);
+                                if ((ret_cmd = exec.request(build_command("-X '<get_port_lists/>'"))).compare(0, 5, "ERROR") == 0) {
+                                    ui.error(ret_cmd);
+                                    break;
+                                } else {
+                                    paths_xml.push_back(path_port_lists); 
+                                    ret_xml = xml.parse(&ret_cmd, &paths_xml);
+                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 19);
+                                }
                             } else if (c_field == 4) {
-                                run("omp", "--xml='<get_targets/>'"); // FIX: AL ABRIR DOS VECES SE ROMPE.
-                                xml_parse_node();
-                                p_windows_menu = create_menu(&targets, 26);
+                                if ((ret_cmd = exec.request(build_command("-X '<get_targets/>'"))).compare(0, 5, "ERROR") == 0) {
+                                    ui.error(ret_cmd);
+                                    break;
+                                } else {
+                                    paths_xml.push_back(path_targets); 
+                                    ret_xml = xml.parse(&ret_cmd, &paths_xml);
+                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 26);
+                                }
                             } else if (c_field == 5) {
-                                get_scans();
-                                p_windows_menu = create_menu(&scans, 28);
+                                if ((ret_cmd = exec.request(build_command("-X '<get_configs/>'"))).compare(0, 5, "ERROR") == 0) {
+                                    ui.error(ret_cmd);
+                                    break;
+                                } else {
+                                    paths_xml.push_back(path_configs); 
+                                    ret_xml = xml.parse(&ret_cmd, &paths_xml);
+                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 28);
+                                }
                             }
-                            c_item = scroll_menu(p_windows_menu);
-                            delete_menu(p_windows_menu);
+                            c_item = ui.scroll_menu(ui.p_windows_menu);
+                            ui.delete_menu(ui.p_windows_menu);
                             if (c_item >= 0) {
+                                set_field_buffer(ui.p_fields[c_field], 0, ret_xml[c_item].c_str());
+                                int n_id = ((ret_xml.size() / 2) + c_item);
                                 if (c_field == 2)
-                                    set_field_buffer(fields[2], 0, ports[c_item]);
+                                    port_list_id = ret_xml[n_id];
                                 else if (c_field == 4)
-                                    set_field_buffer(fields[4], 0, targets[c_item]);
-                                else if (c_field == 5)
-                                    set_field_buffer(fields[5], 0, scans[c_item]);
+                                    target_id = ret_xml[n_id];
+                                else
+                                    config_id = ret_xml[n_id];
                             }
                             touchwin(stdscr);
-                            touchwin(window);
+                            touchwin(ui.window);
                             wrefresh(stdscr);
                             break;
                         default:
@@ -126,7 +136,6 @@ void Nomp::driver()
                     }
                 }
                 break;
-                */
             default:
                 form_driver(*ui.p_form, key);
                 break;
@@ -135,3 +144,17 @@ void Nomp::driver()
    
     //quit();
 }
+
+const string Nomp::build_command(const string arg) 
+{
+    const string ret = "omp -h " + user_configs[0] + " -p " + user_configs[1] +
+                       " -u " + user_configs[2] + " -w " + user_configs[3] + " " + arg;
+    
+    return ret;
+}
+
+
+
+
+
+
