@@ -1,6 +1,6 @@
 CC = g++
-CFLAGS = $(shell pkg-config libxml++-2.6 --cflags) -std=c++11 -Wno-deprecated-declarations -Wall
-LIBS = $(shell pkg-config libxml++-2.6 --libs) -lform -lncurses
+CFLAGS = $(shell pkg-config libxml++-3.0 --cflags) -std=c++11 -Wall
+LIBS = $(shell pkg-config libxml++-3.0 --libs) -lform -lncurses
 SOURCEDIR = src
 BUILDDIR = .build
 SOURCES = $(wildcard src/*.cpp)
