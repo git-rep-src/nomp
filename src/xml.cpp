@@ -14,7 +14,7 @@ Xml::~Xml()
 {
 }
 
-vector<string> Xml::create(vector<string> *nodes, vector<string> *values)
+vector<string> Xml::build(vector<string> *nodes, vector<string> *values)
 {
     vector<string> ret;
 
@@ -36,12 +36,12 @@ vector<string> Xml::create(vector<string> *nodes, vector<string> *values)
     return ret;
 }
 
-vector<string> Xml::parse(string *str_xml, vector<string> *paths)
+vector<string> Xml::parse(string *str, vector<string> *paths)
 {
     DomParser parser;
     vector<string> ret;
 
-    parser.parse_memory(*str_xml);
+    parser.parse_memory(*str);
     Node *root = parser.get_document()->get_root_node();
 
     xmlpp::Node::NodeSet node = root->find((*paths)[0]);

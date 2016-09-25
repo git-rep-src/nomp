@@ -3,7 +3,7 @@
 
 #include "ui.h"
 #include "xml.h"
-#include "exec.h"
+#include "command.h"
 
 using namespace std;
 
@@ -16,7 +16,7 @@ public:
 private:
     Ui ui;
     Xml xml;
-    Exec exec;
+    Command command;
 
     const string path_port_lists = "/get_port_lists_response/port_list/name"; 
     const string path_targets = "/get_targets_response/target/name"; 
@@ -26,9 +26,11 @@ private:
     string target_id;
     string config_id;
 
+    string cmd;
+    string ret_exec;
+    
     bool is_logged;
 
-    string ret_cmd;
     vector<int> f;
     vector<string> user_configs;
     vector<string> nodes_xml;
@@ -37,5 +39,4 @@ private:
     vector<string> ret_xml;
 
     void driver();
-    const string build_command(const string arg); 
 };

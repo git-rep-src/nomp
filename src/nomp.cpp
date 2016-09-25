@@ -61,8 +61,9 @@ void Nomp::driver()
                             for (int i = 0; i < 4; i++)
                                 f.push_back(i);
                             user_configs = ui.get_fields_value(&f);
-                            if ((ret_cmd = exec.request(build_command("--ping"))).compare(0, 5, "ERROR") == 0) {
-                                ui.error(ret_cmd);
+                            cmd = command.build(&user_configs, "<get_version/>");
+                            if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                                ui.error(ret_exec);
                             } else {
                                 is_logged = true;
                                 c_field = 0;
@@ -88,11 +89,12 @@ void Nomp::driver()
                             for (int i = 0; i < 2; i++)
                                 f.push_back(i);
                             values_xml = ui.get_fields_value(&f);
-                            ret_xml = xml.create(&nodes_xml, &values_xml);
+                            ret_xml = xml.build(&nodes_xml, &values_xml);
                             ret_xml.clear();// NOVA
                             ret_xml.push_back("<create_target><name>NOMP</name><hosts>192.168.10.20</hosts></create_target>");// NOVA
-                            if ((ret_cmd = exec.request(build_command("-X '" + ret_xml[0] + "'"))).compare(0, 5, "ERROR") == 0) {
-                                ui.error(ret_cmd);
+                            cmd = command.build(&user_configs, ret_xml[0]);
+                            if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                                ui.error(ret_exec);
                             } else {
                                 cout << "OK" << endl;
                             }
@@ -102,30 +104,33 @@ void Nomp::driver()
                         case 5:
                             paths_xml.clear();
                             if (c_field == 2) {
-                                if ((ret_cmd = exec.request(build_command("-X '<get_port_lists/>'"))).compare(0, 5, "ERROR") == 0) {
-                                    ui.error(ret_cmd);
+                                cmd = command.build(&user_configs, "<get_port_lists/>");
+                                if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                                    ui.error(ret_exec);
                                     break;
                                 } else {
                                     paths_xml.push_back(path_port_lists); 
-                                    ret_xml = xml.parse(&ret_cmd, &paths_xml);
+                                    ret_xml = xml.parse(&ret_exec, &paths_xml);
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 19);
                                 }
                             } else if (c_field == 4) {
-                                if ((ret_cmd = exec.request(build_command("-X '<get_targets/>'"))).compare(0, 5, "ERROR") == 0) {
-                                    ui.error(ret_cmd);
+                                cmd = command.build(&user_configs, "<get_targets/>");
+                                if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                                    ui.error(ret_exec);
                                     break;
                                 } else {
                                     paths_xml.push_back(path_targets); 
-                                    ret_xml = xml.parse(&ret_cmd, &paths_xml);
+                                    ret_xml = xml.parse(&ret_exec, &paths_xml);
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 26);
                                 }
                             } else if (c_field == 5) {
-                                if ((ret_cmd = exec.request(build_command("-X '<get_configs/>'"))).compare(0, 5, "ERROR") == 0) {
-                                    ui.error(ret_cmd);
+                                cmd = command.build(&user_configs, "<get_configs/>");
+                                if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                                    ui.error(ret_exec);
                                     break;
                                 } else {
                                     paths_xml.push_back(path_configs); 
-                                    ret_xml = xml.parse(&ret_cmd, &paths_xml);
+                                    ret_xml = xml.parse(&ret_exec, &paths_xml);
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 28);
                                 }
                             }
@@ -158,17 +163,3 @@ void Nomp::driver()
    
     //quit();
 }
-
-const string Nomp::build_command(const string arg) 
-{
-    const string ret = "omp -h " + user_configs[0] + " -p " + user_configs[1] +
-                       " -u " + user_configs[2] + " -w " + user_configs[3] + " " + arg;
-    
-    return ret;
-}
-
-
-
-
-
-

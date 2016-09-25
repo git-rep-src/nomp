@@ -1,16 +1,24 @@
 #include <stdexcept>
 
-#include "exec.h"
+#include "command.h"
 
-Exec::Exec()
+Command::Command()
 {
 }
 
-Exec::~Exec()
+Command::~Command()
 {
 }
 
-string Exec::request(const string cmd)
+const string Command::build(vector<string> *user_configs, const string arg) 
+{
+    const string ret = "omp -h " + (*user_configs)[0] + " -p " + (*user_configs)[1] +
+                       " -u " + (*user_configs)[2] + " -w " + (*user_configs)[3] + " -X '" + arg + "'";
+    
+    return ret;
+}
+
+string Command::execute(const string cmd)
 {
     char buf[BUFSIZ];
     string ret = "";
