@@ -31,6 +31,8 @@ private:
     string ret_cmd;
     vector<int> f;
     vector<string> user_configs;
+    vector<string> nodes_xml;
+    vector<string> values_xml;
     vector<string> paths_xml;
     vector<string> ret_xml;
 

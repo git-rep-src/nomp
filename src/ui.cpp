@@ -233,7 +233,7 @@ vector<string> Ui::get_fields_value(vector<int> *f)
 {
     vector<string> ret;
     
-    for (uint i = 0;  i < f->size(); i++)
+    for (uint i = 0; i < f->size(); i++)
         ret.push_back(string(trim_whitespaces(field_buffer(p_fields[i], 0))));
 
     return ret;

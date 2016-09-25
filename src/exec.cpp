@@ -15,20 +15,19 @@ string Exec::request(const string cmd)
     char buf[BUFSIZ];
     string ret = "";
 
-    FILE *pipe = popen(cmd.c_str(), "r");
-    if (!pipe)
-        throw ("ERROR"); //TODO: enviar el msg de error.
+    FILE *fp = popen(cmd.c_str(), "r");
+    if (!fp)
+        throw ("ERROR: Failed to run command");
     try {
-        while (!feof(pipe))
-            if (fgets(buf, BUFSIZ, pipe) != NULL)
+        while (!feof(fp))
+            if (fgets(buf, BUFSIZ, fp) != NULL)
                 ret += buf;
     } catch (const string e) {
-        pclose(pipe);
+        pclose(fp);
         return e;
     }
-    
-    if (pclose(pipe) != 0)
-        ret = "ERROR";
+    if (pclose(fp) != 0)
+        ret = "ERROR:";
 
     return ret;
 }

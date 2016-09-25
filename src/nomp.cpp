@@ -61,7 +61,6 @@ void Nomp::driver()
                             for (int i = 0; i < 4; i++)
                                 f.push_back(i);
                             user_configs = ui.get_fields_value(&f);
-                            //str1.compare(6,5,"apple") == 0)
                             if ((ret_cmd = exec.request(build_command("--ping"))).compare(0, 5, "ERROR") == 0) {
                                 ui.error(ret_cmd);
                             } else {
@@ -80,8 +79,23 @@ void Nomp::driver()
                 } else {
                     switch(c_field)
 		            {
-                        case 3:
-                            //TODO: create xml request.
+                        case 0:
+                            f.clear();
+                            nodes_xml.clear();
+                            nodes_xml.push_back("create_target");
+                            nodes_xml.push_back("name");
+                            nodes_xml.push_back("hosts");
+                            for (int i = 0; i < 2; i++)
+                                f.push_back(i);
+                            values_xml = ui.get_fields_value(&f);
+                            ret_xml = xml.create(&nodes_xml, &values_xml);
+                            ret_xml.clear();// NOVA
+                            ret_xml.push_back("<create_target><name>NOMP</name><hosts>192.168.10.20</hosts></create_target>");// NOVA
+                            if ((ret_cmd = exec.request(build_command("-X '" + ret_xml[0] + "'"))).compare(0, 5, "ERROR") == 0) {
+                                ui.error(ret_cmd);
+                            } else {
+                                cout << "OK" << endl;
+                            }
                             break;
                         case 2:
                         case 4:
