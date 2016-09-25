@@ -38,7 +38,7 @@ public:
     void error(const string err);
     void cleanup();
 
-    vector<string> get_fields_value(vector<int> *f);
+    vector<string> get_fields_value(vector<int> *f, int i);
 
 private:
     int n;

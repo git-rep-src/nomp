@@ -18,9 +18,9 @@ private:
     Xml xml;
     Command command;
 
-    const string path_port_lists = "/get_port_lists_response/port_list/name"; 
-    const string path_targets = "/get_targets_response/target/name"; 
-    const string path_configs = "/get_configs_response/config/name"; 
+    const string path_port_lists = "/get_port_lists_response/port_list"; 
+    const string path_configs = "/get_configs_response/config"; 
+    const string path_targets = "/get_targets_response/target"; 
 
     string port_list_id;
     string target_id;

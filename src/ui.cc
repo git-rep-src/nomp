@@ -137,8 +137,8 @@ void Ui::main()
     mvwprintw(window, 5, 9,  " HOSTS");
     mvwprintw(window, 7, 9,  " PORTS");
     mvwprintw(window, 12, 9, "  NAME");
-    mvwprintw(window, 14, 9, "TARGET");
-    mvwprintw(window, 16, 9, "  SCAN");
+    mvwprintw(window, 14, 9, "  SCAN");
+    mvwprintw(window, 16, 9, "TARGET");
     wattroff(window, A_BOLD | COLOR_PAIR(2));
     
     wrefresh(stdscr);
@@ -229,11 +229,12 @@ void Ui::cleanup()
     delwin(window);
 }
 
-vector<string> Ui::get_fields_value(vector<int> *f)
+vector<string> Ui::get_fields_value(vector<int> *f, int i)
 {
+    int n = f->back();
     vector<string> ret;
     
-    for (uint i = 0; i < f->size(); i++)
+    for (; i <= n; i++)
         ret.push_back(string(trim_whitespaces(field_buffer(p_fields[i], 0))));
 
     return ret;

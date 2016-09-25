@@ -10,10 +10,13 @@ Command::~Command()
 {
 }
 
-const string Command::create(vector<string> *user_configs, const string arg) 
+const string Command::create(vector<string> *user_configs, const string args) 
 {
-    const string ret = "omp -h " + (*user_configs)[0] + " -p " + (*user_configs)[1] +
-                       " -u " + (*user_configs)[2] + " -w " + (*user_configs)[3] + " -X '" + arg + "'";
+    const string ret = "omp -h " + (*user_configs)[0] +
+                       " -p " + (*user_configs)[1] +
+                       " -u " + (*user_configs)[2] + 
+                       " -w " + (*user_configs)[3] + 
+                       " -X '" + args + "'";
     
     return ret;
 }
@@ -35,7 +38,7 @@ string Command::execute(const string cmd)
         return e;
     }
     if (pclose(fp) != 0)
-        ret = "ERROR:";
+        ret = "ERROR";
 
     return ret;
 }

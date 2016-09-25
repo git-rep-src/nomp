@@ -60,9 +60,9 @@ void Nomp::driver()
                             f.clear();
                             for (int i = 0; i < 4; i++)
                                 f.push_back(i);
-                            user_configs = ui.get_fields_value(&f);
+                            user_configs = ui.get_fields_value(&f, 0);
                             cmd = command.create(&user_configs, "<get_version/>");
-                            if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                            if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
                                 ui.error(ret_exec);
                             } else {
                                 is_logged = true;
@@ -88,13 +88,33 @@ void Nomp::driver()
                             nodes_xml.push_back("hosts");
                             for (int i = 0; i < 2; i++)
                                 f.push_back(i);
-                            values_xml = ui.get_fields_value(&f);
+                            values_xml = ui.get_fields_value(&f, 0);
                             ret_xml = xml.create(&nodes_xml, &values_xml);
                             cmd = command.create(&user_configs, ret_xml[0]);
-                            if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                            if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
                                 ui.error(ret_exec);
                             } else {
                                 cout << "OK" << endl;
+                            }
+                            break;
+                        case 3:
+                            f.clear();
+                            nodes_xml.clear();
+                            nodes_xml.push_back("create_task");
+                            nodes_xml.push_back("name");
+                            nodes_xml.push_back("config");
+                            nodes_xml.push_back("target");
+                            //f.push_back(3);
+                            //values_xml = ui.get_fields_value(&f, 3); // FIX: no copia el nombre del field NAME.
+                            values_xml.push_back("NOMBRE");//
+                            values_xml.push_back(config_id + "_attr");
+                            values_xml.push_back(target_id + "_attr");
+                            ret_xml = xml.create(&nodes_xml, &values_xml);
+                            cmd = command.create(&user_configs, ret_xml[0]);
+                            if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
+                                ui.error(ret_exec);
+                            } else {
+                                break;//
                             }
                             break;
                         case 2:
@@ -103,31 +123,34 @@ void Nomp::driver()
                             paths_xml.clear();
                             if (c_field == 2) {
                                 cmd = command.create(&user_configs, "<get_port_lists/>");
-                                if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                                if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
                                     ui.error(ret_exec);
                                     break;
                                 } else {
+                                    paths_xml.push_back(path_port_lists + "/name"); 
                                     paths_xml.push_back(path_port_lists); 
                                     ret_xml = xml.parse(&ret_exec, &paths_xml);
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 19);
                                 }
                             } else if (c_field == 4) {
-                                cmd = command.create(&user_configs, "<get_targets/>");
-                                if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                                cmd = command.create(&user_configs, "<get_configs/>");
+                                if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
                                     ui.error(ret_exec);
                                     break;
                                 } else {
-                                    paths_xml.push_back(path_targets); 
+                                    paths_xml.push_back(path_configs + "/name"); 
+                                    paths_xml.push_back(path_configs); 
                                     ret_xml = xml.parse(&ret_exec, &paths_xml);
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 26);
                                 }
                             } else if (c_field == 5) {
-                                cmd = command.create(&user_configs, "<get_configs/>");
-                                if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
+                                cmd = command.create(&user_configs, "<get_targets/>");
+                                if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
                                     ui.error(ret_exec);
                                     break;
                                 } else {
-                                    paths_xml.push_back(path_configs); 
+                                    paths_xml.push_back(path_targets + "/name"); 
+                                    paths_xml.push_back(path_targets); 
                                     ret_xml = xml.parse(&ret_exec, &paths_xml);
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 28);
                                 }
@@ -140,9 +163,9 @@ void Nomp::driver()
                                 if (c_field == 2)
                                     port_list_id = ret_xml[n_id];
                                 else if (c_field == 4)
-                                    target_id = ret_xml[n_id];
-                                else
                                     config_id = ret_xml[n_id];
+                                else
+                                    target_id = ret_xml[n_id];
                             }
                             touchwin(stdscr);
                             touchwin(ui.window);

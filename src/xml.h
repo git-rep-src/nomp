@@ -1,3 +1,4 @@
+#include<string>
 #include <vector>
 
 using namespace std;
@@ -9,5 +10,5 @@ public:
     ~Xml();
 
     vector<string> create(vector<string> *nodes, vector<string> *values);
-    vector<string> parse(string *str, vector<string> *paths);
+    vector<string> parse(string *xml, vector<string> *paths, const string attr_name = "id");
 };
