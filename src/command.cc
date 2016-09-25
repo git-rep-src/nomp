@@ -10,7 +10,7 @@ Command::~Command()
 {
 }
 
-const string Command::build(vector<string> *user_configs, const string arg) 
+const string Command::create(vector<string> *user_configs, const string arg) 
 {
     const string ret = "omp -h " + (*user_configs)[0] + " -p " + (*user_configs)[1] +
                        " -u " + (*user_configs)[2] + " -w " + (*user_configs)[3] + " -X '" + arg + "'";

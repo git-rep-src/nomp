@@ -14,18 +14,19 @@ Xml::~Xml()
 {
 }
 
-vector<string> Xml::build(vector<string> *nodes, vector<string> *values)
+vector<string> Xml::create(vector<string> *nodes, vector<string> *values)
 {
+    int n = values->size();
     vector<string> ret;
 
     try {
         xmlpp::Document doc;
         xmlpp::Element *root = doc.create_root_node((*nodes)[0]);
-       
-        for (uint i = 0; i < values->size(); i++) {
-            root->add_child_element((*nodes)[i + 1]);
-            root->add_child_text((*values)[i]);
-            root->add_child_element((*nodes)[i + 1]);
+        xmlpp::Element *childs[n]; 
+        
+        for (int i = 0; i < n; i++) {
+            childs[i] = root->add_child_element((*nodes)[i + 1]);
+            childs[i]->add_child_text((*values)[i]);
         }
 
         ret.push_back(doc.write_to_string());

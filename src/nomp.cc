@@ -61,7 +61,7 @@ void Nomp::driver()
                             for (int i = 0; i < 4; i++)
                                 f.push_back(i);
                             user_configs = ui.get_fields_value(&f);
-                            cmd = command.build(&user_configs, "<get_version/>");
+                            cmd = command.create(&user_configs, "<get_version/>");
                             if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
                                 ui.error(ret_exec);
                             } else {
@@ -89,10 +89,8 @@ void Nomp::driver()
                             for (int i = 0; i < 2; i++)
                                 f.push_back(i);
                             values_xml = ui.get_fields_value(&f);
-                            ret_xml = xml.build(&nodes_xml, &values_xml);
-                            ret_xml.clear();// NOVA
-                            ret_xml.push_back("<create_target><name>NOMP</name><hosts>192.168.10.20</hosts></create_target>");// NOVA
-                            cmd = command.build(&user_configs, ret_xml[0]);
+                            ret_xml = xml.create(&nodes_xml, &values_xml);
+                            cmd = command.create(&user_configs, ret_xml[0]);
                             if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
                                 ui.error(ret_exec);
                             } else {
@@ -104,7 +102,7 @@ void Nomp::driver()
                         case 5:
                             paths_xml.clear();
                             if (c_field == 2) {
-                                cmd = command.build(&user_configs, "<get_port_lists/>");
+                                cmd = command.create(&user_configs, "<get_port_lists/>");
                                 if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
                                     ui.error(ret_exec);
                                     break;
@@ -114,7 +112,7 @@ void Nomp::driver()
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 19);
                                 }
                             } else if (c_field == 4) {
-                                cmd = command.build(&user_configs, "<get_targets/>");
+                                cmd = command.create(&user_configs, "<get_targets/>");
                                 if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
                                     ui.error(ret_exec);
                                     break;
@@ -124,7 +122,7 @@ void Nomp::driver()
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 26);
                                 }
                             } else if (c_field == 5) {
-                                cmd = command.build(&user_configs, "<get_configs/>");
+                                cmd = command.create(&user_configs, "<get_configs/>");
                                 if ((ret_exec = command.execute(cmd)).compare(0, 5, "ERROR") == 0) {
                                     ui.error(ret_exec);
                                     break;
