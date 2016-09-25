@@ -9,6 +9,6 @@ public:
     Command();
     ~Command();
 
-    const string build(vector<string> *user_configs, const string arg);
+    const string create(vector<string> *user_configs, const string arg);
     string execute(const string cmd);
 };
