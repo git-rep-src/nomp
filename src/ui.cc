@@ -15,8 +15,9 @@ Ui::Ui() :
 
     if (has_colors()) {
         start_color();
+        init_color(COLOR_BLACK, 100, 100, 100);
         init_color(COLOR_CYAN, 150, 150, 150);
-        init_color(COLOR_BLUE, 80, 80, 80);
+        init_color(COLOR_BLUE, 50, 50, 50);
         init_color(COLOR_GREEN, 0, 200, 0);
         init_pair(1, COLOR_WHITE, COLOR_BLACK);
         init_pair(2, COLOR_WHITE, COLOR_CYAN);
@@ -64,7 +65,10 @@ void Ui::login()
             field_opts_off(fields_login[i], O_EDIT);
         else
             set_field_just(fields_login[i], JUSTIFY_CENTER);
+        set_field_back(fields_login[i], COLOR_PAIR(3));
     }
+    
+    set_field_back(fields_login[0], COLOR_PAIR(1));
     
     set_field_buffer(fields_login[0], 0, "localhost");
     set_field_buffer(fields_login[1], 0, "9390");
@@ -91,7 +95,6 @@ void Ui::login()
     wrefresh(stdscr);
     wrefresh(window);
 
-    set_field_back(fields_login[0], COLOR_PAIR(3));
     form_driver(*p_form, REQ_END_LINE);
 }
 
@@ -111,18 +114,26 @@ void Ui::main()
     fields_main[0] = new_field(1, 30, 1, 14, 0, 0);
     fields_main[1] = new_field(1, 30, 3, 14, 0, 0);
     fields_main[2] = new_field(1, 30, 5, 14, 0, 0);
-    fields_main[3] = new_field(1, 30, 10, 14, 0, 0);
-    fields_main[4] = new_field(1, 30, 12, 14, 0, 0);
-    fields_main[5] = new_field(1, 30, 14, 14, 0, 0);
-    fields_main[6] = NULL;
+    fields_main[3] = new_field(1, 17, 7, 20, 0, 0);
+    fields_main[4] = new_field(1, 30, 10, 14, 0, 0);
+    fields_main[5] = new_field(1, 30, 12, 14, 0, 0);
+    fields_main[6] = new_field(1, 30, 14, 14, 0, 0);
+    fields_main[7] = new_field(1, 17, 16, 20, 0, 0);
+    fields_main[8] = NULL;
     
     for (int i = 0; i <= n_fields; i++) {
-        set_field_just(fields_main[i], JUSTIFY_CENTER);
         field_opts_off(fields_main[i], O_AUTOSKIP);
+        if ((i != 0) && (i != 1) && (i != 4))
+            field_opts_off(fields_main[i], O_EDIT);
+        if ((i != 3) && (i != 7))
+            set_field_just(fields_main[i], JUSTIFY_CENTER);
+        set_field_back(fields_main[i], COLOR_PAIR(3));
     }
-    field_opts_off(fields_main[2], O_EDIT);
-    field_opts_off(fields_main[4], O_EDIT);
-    field_opts_off(fields_main[5], O_EDIT);
+    
+    set_field_back(fields_main[0], COLOR_PAIR(1));
+    
+    set_field_buffer(fields_main[3], 0, "  CREATE TARGET ");
+    set_field_buffer(fields_main[7], 0, "   CREATE TASK ");
     
     form_main = new_form(fields_main);
     scale_form(form_main, &rows, &cols);
@@ -143,8 +154,7 @@ void Ui::main()
     
     wrefresh(stdscr);
     wrefresh(window);
-
-    set_field_back(fields_main[0], COLOR_PAIR(3));
+    
     form_driver(*p_form, REQ_END_LINE);
 }
 

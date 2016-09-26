@@ -20,7 +20,7 @@ public:
     int n_fields;
     
     FIELD *fields_login[7];
-    FIELD *fields_main[7];
+    FIELD *fields_main[9];
 
     FORM *form_login;
     FORM *form_main;

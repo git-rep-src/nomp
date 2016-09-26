@@ -29,24 +29,48 @@ void Nomp::driver()
                 form_driver(*ui.p_form, REQ_NEXT_CHAR);
                 break;
             case KEY_UP:
-                set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                 if (c_field == 0)
                     c_field = ui.n_fields;
                 else
                     --c_field;
                 form_driver(*ui.p_form, REQ_PREV_FIELD);
                 form_driver(*ui.p_form, REQ_END_LINE);
-                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                if (!is_logged) {
+                    if (c_field == 4)
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
+                    else if (c_field == 5)    
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(5));
+                    else    
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                } else {
+                    if ((c_field == 3) || (c_field == 7))
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
+                    else    
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                }
                 break;
             case KEY_DOWN:
-                set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                 if (c_field == ui.n_fields)
                     c_field = 0;
                 else
                     ++c_field;
                 form_driver(*ui.p_form, REQ_NEXT_FIELD);
                 form_driver(*ui.p_form, REQ_END_LINE);
-                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                if (!is_logged) {
+                    if (c_field == 4)
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
+                    else if (c_field == 5)    
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(5));
+                    else    
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                } else {
+                    if ((c_field == 3) || (c_field == 7))
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
+                    else    
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                }
                 break;
             case KEY_DELCHAR:
                 // TODO: Que no salte al field anterior al borrar todo el texto.
@@ -80,33 +104,34 @@ void Nomp::driver()
                 } else {
                     switch(c_field)
 		            {
-                        case 0:
+                        case 3:
                             f.clear();
                             nodes_xml.clear();
                             nodes_xml.push_back("create_target");
                             nodes_xml.push_back("name");
                             nodes_xml.push_back("hosts");
+                            nodes_xml.push_back("port_list");
                             for (int i = 0; i < 2; i++)
                                 f.push_back(i);
                             values_xml = ui.get_fields_value(&f, 0);
+                            values_xml.push_back(port_list_id + "_attr");
                             ret_xml = xml.create(&nodes_xml, &values_xml);
                             cmd = command.create(&user_configs, ret_xml[0]);
                             if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
                                 ui.error(ret_exec);
                             } else {
-                                cout << "OK" << endl;
+                                break;//
                             }
                             break;
-                        case 3:
+                        case 7:
                             f.clear();
                             nodes_xml.clear();
                             nodes_xml.push_back("create_task");
                             nodes_xml.push_back("name");
                             nodes_xml.push_back("config");
                             nodes_xml.push_back("target");
-                            //f.push_back(3);
-                            //values_xml = ui.get_fields_value(&f, 3); // FIX: no copia el nombre del field NAME.
-                            values_xml.push_back("NOMBRE");//
+                            f.push_back(4);
+                            values_xml = ui.get_fields_value(&f, 4);
                             values_xml.push_back(config_id + "_attr");
                             values_xml.push_back(target_id + "_attr");
                             ret_xml = xml.create(&nodes_xml, &values_xml);
@@ -118,8 +143,8 @@ void Nomp::driver()
                             }
                             break;
                         case 2:
-                        case 4:
                         case 5:
+                        case 6:
                             paths_xml.clear();
                             if (c_field == 2) {
                                 cmd = command.create(&user_configs, "<get_port_lists/>");
@@ -132,7 +157,7 @@ void Nomp::driver()
                                     ret_xml = xml.parse(&ret_exec, &paths_xml);
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 19);
                                 }
-                            } else if (c_field == 4) {
+                            } else if (c_field == 5) {
                                 cmd = command.create(&user_configs, "<get_configs/>");
                                 if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
                                     ui.error(ret_exec);
@@ -143,7 +168,7 @@ void Nomp::driver()
                                     ret_xml = xml.parse(&ret_exec, &paths_xml);
                                     ui.p_windows_menu = ui.create_menu(&ret_xml, 26);
                                 }
-                            } else if (c_field == 5) {
+                            } else if (c_field == 6) {
                                 cmd = command.create(&user_configs, "<get_targets/>");
                                 if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
                                     ui.error(ret_exec);
@@ -162,9 +187,9 @@ void Nomp::driver()
                                 int n_id = ((ret_xml.size() / 2) + c_item);
                                 if (c_field == 2)
                                     port_list_id = ret_xml[n_id];
-                                else if (c_field == 4)
+                                else if (c_field == 5)
                                     config_id = ret_xml[n_id];
-                                else
+                                else if (c_field == 6)
                                     target_id = ret_xml[n_id];
                             }
                             touchwin(stdscr);
