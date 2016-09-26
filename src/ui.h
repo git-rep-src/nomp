@@ -20,12 +20,10 @@ public:
     int n_fields;
     
     FIELD *fields_login[7];
-    FIELD *fields_main[9];
+    FIELD *fields_main[12];
 
     FORM *form_login;
     FORM *form_main;
-
-    WINDOW *window;
     
     FIELD **p_fields = NULL;
     FORM **p_form = NULL;

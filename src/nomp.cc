@@ -19,7 +19,7 @@ void Nomp::driver()
     int c_field = 0;
 
     do {
-        key = wgetch(ui.window);
+        key = getch();
         switch(key)
 		{
             case KEY_LEFT:
@@ -29,7 +29,14 @@ void Nomp::driver()
                 form_driver(*ui.p_form, REQ_NEXT_CHAR);
                 break;
             case KEY_UP:
-                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                if (!is_logged && (c_field == 3))
+                    set_field_back(ui.p_fields[c_field], COLOR_PAIR(6));
+                else if (!is_logged && ((c_field == 4) || (c_field == 5)))
+                    set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                else if (is_logged && ((c_field == 3) || (c_field == 7) || (c_field == 10)))
+                    set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                else    
+                    set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
                 if (c_field == 0)
                     c_field = ui.n_fields;
                 else
@@ -37,21 +44,28 @@ void Nomp::driver()
                 form_driver(*ui.p_form, REQ_PREV_FIELD);
                 form_driver(*ui.p_form, REQ_END_LINE);
                 if (!is_logged) {
-                    if (c_field == 4)
+                    if (c_field == 3)
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(7));
+                    else if ((c_field == 4) || (c_field == 5))
                         set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
-                    else if (c_field == 5)    
-                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(5));
                     else    
-                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
                 } else {
-                    if ((c_field == 3) || (c_field == 7))
+                    if ((c_field == 3) || (c_field == 7) || (c_field == 10))
                         set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
                     else    
-                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
                 }
                 break;
             case KEY_DOWN:
-                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                if (!is_logged && (c_field == 3))
+                    set_field_back(ui.p_fields[c_field], COLOR_PAIR(6));
+                else if (!is_logged && ((c_field == 4) || (c_field == 5)))
+                    set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                else if (is_logged && ((c_field == 3) || (c_field == 7) || (c_field == 10)))
+                    set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                else    
+                    set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
                 if (c_field == ui.n_fields)
                     c_field = 0;
                 else
@@ -59,17 +73,17 @@ void Nomp::driver()
                 form_driver(*ui.p_form, REQ_NEXT_FIELD);
                 form_driver(*ui.p_form, REQ_END_LINE);
                 if (!is_logged) {
-                    if (c_field == 4)
+                    if (c_field == 3)
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(7));
+                    else if ((c_field == 4) || (c_field == 5))
                         set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
-                    else if (c_field == 5)    
-                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(5));
                     else    
-                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
                 } else {
-                    if ((c_field == 3) || (c_field == 7))
+                    if ((c_field == 3) || (c_field == 7) || (c_field == 10))
                         set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
                     else    
-                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
                 }
                 break;
             case KEY_DELCHAR:
@@ -142,6 +156,25 @@ void Nomp::driver()
                                 break;//
                             }
                             break;
+                        case 10:
+                            f.clear();
+                            nodes_xml.clear();
+                            nodes_xml.push_back("create_task");
+                            nodes_xml.push_back("name");
+                            nodes_xml.push_back("config");
+                            nodes_xml.push_back("target");
+                            f.push_back(4);
+                            values_xml = ui.get_fields_value(&f, 4);
+                            values_xml.push_back(config_id + "_attr");
+                            values_xml.push_back(target_id + "_attr");
+                            ret_xml = xml.create(&nodes_xml, &values_xml);
+                            cmd = command.create(&user_configs, ret_xml[0]);
+                            if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
+                                ui.error(ret_exec);
+                            } else {
+                                break;//
+                            }
+                            break;
                         case 2:
                         case 5:
                         case 6:
@@ -155,7 +188,7 @@ void Nomp::driver()
                                     paths_xml.push_back(path_port_lists + "/name"); 
                                     paths_xml.push_back(path_port_lists); 
                                     ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 19);
+                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 16);
                                 }
                             } else if (c_field == 5) {
                                 cmd = command.create(&user_configs, "<get_configs/>");
@@ -166,7 +199,7 @@ void Nomp::driver()
                                     paths_xml.push_back(path_configs + "/name"); 
                                     paths_xml.push_back(path_configs); 
                                     ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 26);
+                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 24);
                                 }
                             } else if (c_field == 6) {
                                 cmd = command.create(&user_configs, "<get_targets/>");
@@ -177,7 +210,7 @@ void Nomp::driver()
                                     paths_xml.push_back(path_targets + "/name"); 
                                     paths_xml.push_back(path_targets); 
                                     ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 28);
+                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 26);
                                 }
                             }
                             c_item = ui.scroll_menu(ui.p_windows_menu);
@@ -193,8 +226,6 @@ void Nomp::driver()
                                     target_id = ret_xml[n_id];
                             }
                             touchwin(stdscr);
-                            touchwin(ui.window);
-                            wrefresh(stdscr);
                             break;
                         default:
                             break;
