@@ -17,20 +17,25 @@ Xml::~Xml()
 
 vector<string> Xml::create(vector<string> *nodes, vector<string> *values)
 {
-    int n = (nodes->size() - 1);
     vector<string> ret;
     
     try {
         xmlpp::Document doc;
         xmlpp::Element *root = doc.create_root_node((*nodes)[0]);
-        xmlpp::Element *childs[n]; 
         
-        for (int i = 0; i < n; i++) {
-            childs[i] = root->add_child_element((*nodes)[i + 1]);
-            if ((*values)[i].find("_attr") != string::npos)
-                childs[i]->set_attribute("id", (*values)[i].erase((*values)[i].size() - 5));
-            else
-                childs[i]->add_child_text((*values)[i]);
+        if (nodes->size() > 2) {
+            int n = (nodes->size() - 1);
+            xmlpp::Element *childs[n]; 
+        
+            for (int i = 0; i < n; i++) {
+                childs[i] = root->add_child_element((*nodes)[i + 1]);
+                if ((*values)[i].find("_attr") != string::npos)
+                    childs[i]->set_attribute("id", (*values)[i].erase((*values)[i].size() - 5));
+                else
+                    childs[i]->add_child_text((*values)[i]);
+            }
+        } else {
+            root->set_attribute((*nodes)[1], (*values)[0].erase((*values)[0].size() - 5));
         }
 
         ret.push_back(doc.write_to_string());
