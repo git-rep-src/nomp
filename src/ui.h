@@ -20,7 +20,7 @@ public:
     int n_fields;
     
     FIELD *fields_login[7];
-    FIELD *fields_main[12];
+    FIELD *fields_main[15];
 
     FORM *form_login;
     FORM *form_main;
@@ -33,6 +33,7 @@ public:
     WINDOW **create_menu(vector<string> *values, int rows);
     void delete_menu(WINDOW **p_windows_menu);
     int scroll_menu(WINDOW **p_windows_menu);
+    void progress(string p);
     void error(const string err);
     void cleanup();
 
