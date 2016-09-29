@@ -21,20 +21,22 @@ Ui::Ui() :
         
         init_color(COLOR_BLACK, 20, 20, 20);
         init_color(COLOR_BLUE, 70, 70, 70);
-        init_color(COLOR_CYAN, 0, 130, 130);
-        init_color(COLOR_GREEN, 0, 260, 260);
-        init_color(COLOR_MAGENTA, 150, 150, 150);
+        init_color(COLOR_CYAN, 150, 150, 150);
+        init_color(COLOR_MAGENTA, 110, 110, 110);
+        init_color(COLOR_GREEN, 0, 127, 0);
         
         init_pair(1, COLOR_WHITE, COLOR_BLUE);
         init_pair(2, COLOR_BLACK, COLOR_WHITE);
         init_pair(3, COLOR_BLACK, COLOR_CYAN);
-        init_pair(4, COLOR_WHITE, COLOR_GREEN);
-        init_pair(5, COLOR_BLACK, COLOR_BLUE);
-        init_pair(6, COLOR_WHITE, COLOR_RED);
+        init_pair(4, COLOR_BLACK, COLOR_BLUE);
+        init_pair(5, COLOR_WHITE, COLOR_CYAN);
+        init_pair(6, COLOR_WHITE, COLOR_MAGENTA);
         init_pair(7, COLOR_BLUE, COLOR_BLUE);
         init_pair(8, COLOR_WHITE, COLOR_WHITE);
-        init_pair(9, COLOR_WHITE, COLOR_MAGENTA); // FIX: Pasar a 7.
-        init_pair(10, COLOR_BLACK, COLOR_MAGENTA);// FIX: Pasar a 6.
+        init_pair(9, COLOR_GREEN, COLOR_GREEN);
+        init_pair(10, COLOR_WHITE, COLOR_GREEN);
+        init_pair(11, COLOR_BLUE, COLOR_BLUE);
+        init_pair(12, COLOR_WHITE, COLOR_RED);
     }
     
     login();
@@ -110,23 +112,23 @@ void Ui::main()
     p_form = &form_main;
     n_fields = ((sizeof(fields_main) / sizeof(fields_main[0])) - 2);
     
-    fields_main[0] = new_field(1, 42, 12, 23, 0, 0);
-    fields_main[1] = new_field(1, 42, 14, 23, 0, 0);
-    fields_main[2] = new_field(1, 42, 16, 23, 0, 0);
-    fields_main[3] = new_field(1, 20, 18, 34, 0, 0);
-    fields_main[4] = new_field(1, 42, 22, 23, 0, 0);
-    fields_main[5] = new_field(1, 42, 24, 23, 0, 0);
-    fields_main[6] = new_field(1, 42, 26, 23, 0, 0);
-    fields_main[7] = new_field(1, 20, 28, 34, 0, 0);
-    fields_main[8] = new_field(1, 42, 32, 23, 0, 0);
-    fields_main[9] = new_field(1, 42, 34, 23, 0, 0);
-    fields_main[10] = new_field(1, 20, 36, 23, 0, 0);
-    fields_main[11] = new_field(1, 20, 36, 45, 0, 0);
-    fields_main[12] = new_field(1, 42, 44, 23, 0, 0);
-    fields_main[13] = new_field(1, 20, 46, 34, 0, 0);
+    fields_main[0] = new_field(1, 42, 8, 23, 0, 0);
+    fields_main[1] = new_field(1, 42, 10, 23, 0, 0);
+    fields_main[2] = new_field(1, 42, 12, 23, 0, 0);
+    fields_main[3] = new_field(1, 20, 14, 34, 0, 0);
+    fields_main[4] = new_field(1, 42, 18, 23, 0, 0);
+    fields_main[5] = new_field(1, 42, 20, 23, 0, 0);
+    fields_main[6] = new_field(1, 42, 22, 23, 0, 0);
+    fields_main[7] = new_field(1, 20, 24, 34, 0, 0);
+    fields_main[8] = new_field(1, 42, 28, 23, 0, 0);
+    fields_main[9] = new_field(1, 42, 30, 23, 0, 0);
+    fields_main[10] = new_field(1, 20, 34, 23, 0, 0);
+    fields_main[11] = new_field(1, 20, 34, 45, 0, 0);
+    fields_main[12] = new_field(1, 42, 38, 23, 0, 0);
+    fields_main[13] = new_field(1, 20, 40, 34, 0, 0);
     fields_main[14] = NULL;
 
-    for (int i = 0; i <= n_fields; i++) {
+    for (int i =  0; i <= n_fields; i++) {
         if ((i != 0) && (i != 1) && (i != 4))
             field_opts_off(fields_main[i], O_EDIT);
         if ((i != 3) && (i != 7) &&
@@ -146,9 +148,9 @@ void Ui::main()
     set_field_back(fields_main[8], COLOR_PAIR(1));
     set_field_back(fields_main[9], COLOR_PAIR(1));
     set_field_back(fields_main[10], COLOR_PAIR(3));
-    set_field_back(fields_main[11], COLOR_PAIR(5));
+    set_field_back(fields_main[11], COLOR_PAIR(4));
     set_field_back(fields_main[12], COLOR_PAIR(1));
-    set_field_back(fields_main[13], COLOR_PAIR(5));
+    set_field_back(fields_main[13], COLOR_PAIR(4));
     
     set_field_buffer(fields_main[3], 0,  "   CREATE TARGET");
     set_field_buffer(fields_main[7], 0,  "    CREATE TASK");
@@ -160,16 +162,20 @@ void Ui::main()
     scale_form(form_main, &rows, &cols);
     post_form(form_main);
 
-    mvprintw(12, 14, "    NAME");
-    mvprintw(14, 14, "   HOSTS");
-    mvprintw(16, 14, "   PORTS");
-    mvprintw(22, 14, "    NAME");
-    mvprintw(24, 14, "    SCAN");
-    mvprintw(26, 14, "  TARGET");
-    mvprintw(32, 14, "    TASK");
-    mvprintw(34, 14, " REFRESH");
-    mvprintw(40, 14, "PROGRESS");
-    mvprintw(44, 14, "  FORMAT");
+    mvprintw(8, 14,  "    NAME");
+    mvprintw(10, 14, "   HOSTS");
+    mvprintw(12, 14, "   PORTS");
+    mvprintw(18, 14, "    NAME");
+    mvprintw(20, 14, "    SCAN");
+    mvprintw(22, 14, "  TARGET");
+    mvprintw(28, 14, "    TASK");
+    mvprintw(30, 14, " REFRESH");
+    mvprintw(32, 14, "PROGRESS");
+    mvprintw(38, 14, "  FORMAT");
+    
+    attron(COLOR_PAIR(4));
+    mvprintw(32, 23, "                                          ");
+    attroff(COLOR_PAIR(4));
     
     refresh();
 
@@ -184,15 +190,14 @@ WINDOW **Ui::create_menu(vector<string> *values, int rows)
     windows_menu = (WINDOW **) malloc ((n + 1) * sizeof(WINDOW *));
     
     windows_menu[0] = newwin(n, 42, rows, 23);
-
     wbkgd(windows_menu[0], COLOR_PAIR(1)); 
     
     for (int i = 0; i < n; i++) {
         windows_menu[i + 1] = subwin(windows_menu[0], 1, 42, (i + rows), 23);
         wprintw(windows_menu[i + 1], " %s", (*values)[i].c_str());
     }
-
-    wbkgd(windows_menu[1], COLOR_PAIR(9));
+    
+    wbkgd(windows_menu[1], COLOR_PAIR(6));
     
     wrefresh(windows_menu[0]);
 
@@ -223,7 +228,7 @@ int Ui::scroll_menu(WINDOW **p_windows_menu)
                     c_item = ((c_item + 1) % n);
                 else
                     c_item = (((c_item + n) - 1) % n);
-                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(9));
+                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(6));
                 wrefresh(p_windows_menu[c_item + 1]);
                 break;
             case KEY_RETURN:
@@ -237,8 +242,28 @@ int Ui::scroll_menu(WINDOW **p_windows_menu)
 }
 
 void Ui::progress(string p)
-{
-    mvhline(38, 23, ACS_VLINE, (stoi(p) / 3));
+{  
+    if ((p == "1") || (p == "-1")) {
+        for (int i = 0; i < 45; i++)
+            mvdelch(32, 23);
+    }
+
+    if (p == "-1") {
+        attron(COLOR_PAIR(10));
+        mvprintw(32, 23, "  DONE  ");
+        attroff(COLOR_PAIR(10));
+        attron(COLOR_PAIR(11));
+        mvhline(32, 33, ACS_VLINE, 32);
+        attroff(COLOR_PAIR(11));
+    } else {
+        attron(COLOR_PAIR(1));
+        mvprintw(32, 23, " %s/100 ", p.c_str());
+        attroff(COLOR_PAIR(1));
+        attron(COLOR_PAIR(9));
+        mvhline(32, 33, ACS_VLINE, (stoi(p) / 3));
+        attroff(COLOR_PAIR(9));
+    }
+    
     refresh();
 }
 
@@ -247,9 +272,9 @@ void Ui::error(const string err)
     touchwin(stdscr);
     refresh();
     
-    attron(A_BOLD | COLOR_PAIR(6));
+    attron(A_BOLD | COLOR_PAIR(12));
     mvprintw(13, 20, err.c_str());
-    attroff(A_BOLD | COLOR_PAIR(6));
+    attroff(A_BOLD | COLOR_PAIR(12));
 }
 
 void Ui::cleanup()
