@@ -233,56 +233,63 @@ void Nomp::driver()
                         case 6:
                         case 8:
                             paths_xml.clear();
-                            if (c_field == 2) {
-                                cmd = command.create(&user_configs, "<get_port_lists/>");
-                                if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                    ui.error(ret_exec);
+                            switch(c_field)
+                            {
+                                case 2: 
+                                    cmd = command.create(&user_configs, "<get_port_lists/>");
+                                    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
+                                        ui.error(ret_exec);
                                     break;
-                                } else {
-                                    paths_xml.push_back(path_port_lists + "/name"); 
-                                    paths_xml.push_back(path_port_lists); 
-                                    ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 12);
-                                }
-                            } else if (c_field == 5) {
-                                cmd = command.create(&user_configs, "<get_configs/>");
-                                if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                    ui.error(ret_exec);
+                                    } else {
+                                        paths_xml.push_back(path_port_lists + "/name"); 
+                                        paths_xml.push_back(path_port_lists); 
+                                        ret_xml = xml.parse(&ret_exec, &paths_xml);
+                                        ui.p_windows_menu = ui.create_menu(&ret_xml, 12);
+                                    }
+
+                                case 5:
+                                    cmd = command.create(&user_configs, "<get_configs/>");
+                                    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
+                                        ui.error(ret_exec);
                                     break;
-                                } else {
-                                    paths_xml.push_back(path_configs + "/name"); 
-                                    paths_xml.push_back(path_configs); 
-                                    ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 20);
-                                }
-                            } else if (c_field == 6) {
-                                cmd = command.create(&user_configs, "<get_targets/>");
-                                if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                    ui.error(ret_exec);
+                                    } else {
+                                        paths_xml.push_back(path_configs + "/name"); 
+                                        paths_xml.push_back(path_configs); 
+                                        ret_xml = xml.parse(&ret_exec, &paths_xml);
+                                        ui.p_windows_menu = ui.create_menu(&ret_xml, 20);
+                                    }
+                                case 6:
+                                    cmd = command.create(&user_configs, "<get_targets/>");
+                                    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
+                                        ui.error(ret_exec);
                                     break;
-                                } else {
-                                    paths_xml.push_back(path_targets + "//*[text()]");// 
-                                    //paths_xml.push_back(path_targets + "/name"); 
-                                    paths_xml.push_back(path_targets); 
-                                    ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                    cout << ret_xml[4] << endl;//
-                                    break;//
-                                    //ui.p_windows_menu = ui.create_menu(&ret_xml, 22);
-                                }
-                            } else if (c_field == 8) {
-                                cmd = command.create(&user_configs, "<get_tasks/>");
-                                if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                    ui.error(ret_exec);
+                                    } else {
+                                        //paths_xml.push_back(path_targets + "//*[text()]");// 
+                                        paths_xml.push_back(path_targets + "/name"); 
+                                        paths_xml.push_back(path_targets); 
+                                        ret_xml = xml.parse(&ret_exec, &paths_xml);
+                                        //cout << ret_xml[4] << endl;//
+                                        //break;//
+                                        ui.p_windows_menu = ui.create_menu(&ret_xml, 22);
+                                    }
+                                case 8:
+                                    cmd = command.create(&user_configs, "<get_tasks/>");
+                                    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
+                                        ui.error(ret_exec);
                                     break;
-                                } else {
-                                    paths_xml.push_back(path_tasks + "/name"); 
-                                    paths_xml.push_back(path_tasks); 
-                                    ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 28);
-                                }
+                                    } else {
+                                        paths_xml.push_back(path_tasks + "/name"); 
+                                        paths_xml.push_back(path_tasks); 
+                                        ret_xml = xml.parse(&ret_exec, &paths_xml);
+                                        ui.p_windows_menu = ui.create_menu(&ret_xml, 28);
+                                    }
+                                default:
+                                    break;
                             }
+                            
                             c_item = ui.scroll_menu(ui.p_windows_menu);
                             ui.delete_menu(ui.p_windows_menu);
+                            
                             if (c_item >= 0) {
                                 set_field_buffer(ui.p_fields[c_field], 0, ret_xml[c_item].c_str());
                                 int n_id = ((ret_xml.size() / 2) + c_item);
@@ -295,6 +302,7 @@ void Nomp::driver()
                                 else if (c_field == 8)
                                     tasks_id = ret_xml[n_id];
                             }
+                            
                             touchwin(stdscr);
                             break;
                         default:

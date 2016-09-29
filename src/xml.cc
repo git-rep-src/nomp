@@ -50,7 +50,8 @@ vector<string> Xml::parse(string *xml, vector<string> *paths, const string attr_
 {
     DomParser parser;
     vector<string> ret;
-
+    //string test;//
+    
     parser.parse_memory(*xml);
     Node *root = parser.get_document()->get_root_node();
 
@@ -65,6 +66,7 @@ vector<string> Xml::parse(string *xml, vector<string> *paths, const string attr_
                 ret.push_back(element->get_first_child_text()->get_content());
         }
     }
-
+    //ret.push_back(test);//
+    
     return ret;
 }
