@@ -1,17 +1,52 @@
-#include <form.h>
+#include <string>
+#include <vector>
 
-void init();
-void ui_login();
-void ui();
-WINDOW **create_menu(char ***p_arr, int rows);
-void delete_menu(WINDOW **p_windows_menu);
-int scroll_menu(WINDOW **p_windows_menu);
-void driver();
-int get_login();
-int get_scans();
-int get_targets();
-int get_tasks();
-int run(char *cmd, char *arg);
-void parse_string(char ***p_arr);
-char *clean_string(char *str);
-void quit();
+#include "ui.h"
+#include "xml.h"
+#include "command.h"
+
+using namespace std;
+
+class Nomp
+{
+public:
+    Nomp();
+    ~Nomp();
+
+private:
+    Ui ui;
+    Xml xml;
+    Command command;
+
+    bool is_logged;
+    bool is_task_running;
+    
+    const vector<string> times = {"30  sec", "60  sec", "120 sec", "300 sec",
+                                  "30", "60", "120", "300"};
+    
+    const string path_port_lists = "/get_port_lists_response/port_list"; 
+    const string path_configs = "/get_configs_response/config"; 
+    const string path_targets = "/get_targets_response/target"; 
+    const string path_tasks = "/get_tasks_response/task"; 
+    const string path_report_formats = "/get_report_formats_response/report_format"; 
+
+    string port_list_id;
+    string config_id;
+    string target_id;
+    string task_id;
+    string time_id;
+    string report_format_id;
+    string cmd;
+    string ret_exec;
+    
+    vector<int> f;
+    vector<string> user_configs;
+    vector<string> nodes_xml;
+    vector<string> values_xml;
+    vector<string> paths_xml;
+    vector<string> ret_xml;
+
+    void driver();
+    void refresh();
+    void refresh_sleep();
+};
