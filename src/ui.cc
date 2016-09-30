@@ -156,7 +156,7 @@ void Ui::main()
     set_field_buffer(fields_main[7], 0,  "    CREATE TASK");
     set_field_buffer(fields_main[10], 0, "       START");
     set_field_buffer(fields_main[11], 0, "       STOP");
-    set_field_buffer(fields_main[13], 0, "     GET REPORT");
+    set_field_buffer(fields_main[13], 0, "   EXPORT REPORT");
     
     form_main = new_form(fields_main);
     scale_form(form_main, &rows, &cols);
