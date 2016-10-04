@@ -10,5 +10,6 @@ public:
     ~Xml();
 
     vector<string> create(vector<string> *nodes, vector<string> *values);
-    vector<string> parse(string *xml, vector<string> *paths, const string attr_name = "id");
+    vector<string> parse(string *content, vector<string> *paths,
+                         const string attr_name = "id", bool get_data = false);
 };

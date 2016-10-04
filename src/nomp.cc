@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>//
 #include <chrono>//
 #include <thread>//
 
@@ -58,7 +59,13 @@ void Nomp::driver()
                         else
                             set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
                         break;
-                    case 13:
+                    case 14:
+                        if (is_task_running)
+                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                        else
+                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
+                        break;
+                    case 15:
                         if (is_task_running)
                             set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                         else
@@ -112,7 +119,13 @@ void Nomp::driver()
                         else
                             set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                         break;
-                    case 13:
+                    case 14:
+                        if (is_task_running)
+                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
+                        else
+                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                        break;
+                    case 15:
                         if (is_task_running)
                             set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
                         else
@@ -135,13 +148,13 @@ void Nomp::driver()
                     switch(c_field)
 		            {	
                         case 4:
-                            f.clear();
+                            i_fields.clear();
                             for (int i = 0; i < 4; i++)
-                                f.push_back(i);
-                            user_configs = ui.get_fields_value(&f, 0);
+                                i_fields.push_back(i);
+                            user_configs = ui.get_fields_value(&i_fields, 0);
                             cmd = command.create(&user_configs, "<get_version/>");
-                            if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                ui.error(ret_exec);
+                            if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
+                                ui.error(cret);
                             } else {
                                 is_logged = true;
                                 c_field = 0;
@@ -156,56 +169,53 @@ void Nomp::driver()
                             break;
                     }
                 } else {
+                    i_fields.clear();
+                    xnodes.clear();
+                    xvalues.clear();
                     switch(c_field)
 		            {
                         case 3:
-                            f.clear();
-                            nodes_xml.clear();
-                            nodes_xml.push_back("create_target");
-                            nodes_xml.push_back("name");
-                            nodes_xml.push_back("hosts");
-                            nodes_xml.push_back("port_list");
+                            xnodes.push_back("create_target");
+                            xnodes.push_back("name");
+                            xnodes.push_back("hosts");
+                            xnodes.push_back("port_list");
                             for (int i = 0; i < 2; i++)
-                                f.push_back(i);
-                            values_xml = ui.get_fields_value(&f, 0);
-                            values_xml.push_back(port_list_id + "_attr");
-                            ret_xml = xml.create(&nodes_xml, &values_xml);
-                            cmd = command.create(&user_configs, ret_xml[0]);
-                            if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                ui.error(ret_exec);
+                                i_fields.push_back(i);
+                            xvalues = ui.get_fields_value(&i_fields, 0);
+                            xvalues.push_back(port_list_id + "__attr__");
+                            xret = xml.create(&xnodes, &xvalues);
+                            cmd = command.create(&user_configs, xret[0]);
+                            if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
+                                ui.error(cret);
                             } else {
                                 break;//
                             }
                             break;
                         case 7:
-                            f.clear();
-                            nodes_xml.clear();
-                            nodes_xml.push_back("create_task");
-                            nodes_xml.push_back("name");
-                            nodes_xml.push_back("config");
-                            nodes_xml.push_back("target");
-                            f.push_back(4);
-                            values_xml = ui.get_fields_value(&f, 4);
-                            values_xml.push_back(config_id + "_attr");
-                            values_xml.push_back(target_id + "_attr");
-                            ret_xml = xml.create(&nodes_xml, &values_xml);
-                            cmd = command.create(&user_configs, ret_xml[0]);
-                            if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                ui.error(ret_exec);
+                            xnodes.push_back("create_task");
+                            xnodes.push_back("name");
+                            xnodes.push_back("config");
+                            xnodes.push_back("target");
+                            i_fields.push_back(4);
+                            xvalues = ui.get_fields_value(&i_fields, 4);
+                            xvalues.push_back(config_id + "__attr__");
+                            xvalues.push_back(target_id + "__attr__");
+                            xret = xml.create(&xnodes, &xvalues);
+                            cmd = command.create(&user_configs, xret[0]);
+                            if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
+                                ui.error(cret);
                             } else {
                                 break;//
                             }
                             break;
                         case 10:
-                            values_xml.clear();
-                            nodes_xml.clear();
-                            nodes_xml.push_back("start_task");
-                            nodes_xml.push_back("task_id");
-                            values_xml.push_back(task_id + "_attr");
-                            ret_xml = xml.create(&nodes_xml, &values_xml);
-                            cmd = command.create(&user_configs, ret_xml[0]);
-                            if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                ui.error(ret_exec);
+                            xnodes.push_back("start_task");
+                            xnodes.push_back("task_id");
+                            xvalues.push_back(task_id + "__attr__");
+                            xret = xml.create(&xnodes, &xvalues);
+                            cmd = command.create(&user_configs, xret[0]);
+                            if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
+                                ui.error(cret);
                             } else {
                                 is_task_running = true;
                                 refresh();
@@ -214,15 +224,27 @@ void Nomp::driver()
                             break;
                         case 11:
                             if (is_task_running) {
-                                values_xml.clear();
-                                nodes_xml.clear();
-                                nodes_xml.push_back("stop_task");
-                                nodes_xml.push_back("task_id");
-                                values_xml.push_back(task_id + "_attr");
-                                ret_xml = xml.create(&nodes_xml, &values_xml);
-                                cmd = command.create(&user_configs, ret_xml[0]);
-                                if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                    ui.error(ret_exec);
+                                xnodes.push_back("stop_task");
+                                xnodes.push_back("task_id");
+                                xvalues.push_back(task_id + "__attr__");
+                                xret = xml.create(&xnodes, &xvalues);
+                                cmd = command.create(&user_configs, xret[0]);
+                                if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
+                                    ui.error(cret);
+                                } else {
+                                    is_task_running = false;
+                                }
+                            }
+                            break;
+                        case 15:
+                            if (is_task_running) {
+                                xnodes.push_back("stop_task");
+                                xnodes.push_back("task_id");
+                                xvalues.push_back(task_id + "__attr__");
+                                xret = xml.create(&xnodes, &xvalues);
+                                cmd = command.create(&user_configs, xret[0]);
+                                if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
+                                    ui.error(cret);
                                 } else {
                                     is_task_running = false;
                                 }
@@ -234,94 +256,90 @@ void Nomp::driver()
                         case 8:
                         case 9:
                         case 12:
-                            paths_xml.clear();
+                        case 13:
+                        case 14:
+                            xpaths.clear();
                             switch(c_field)
                             {
-                                case 2: 
-                                    cmd = command.create(&user_configs, "<get_port_lists/>");
-                                    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                        ui.error(ret_exec);
-                                    } else {
-                                        paths_xml.push_back(path_port_lists + "/name"); 
-                                        paths_xml.push_back(path_port_lists); 
-                                        ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                        ui.p_windows_menu = ui.create_menu(&ret_xml, 12);
-                                    }
+                                case 2:
+                                    xpaths.push_back("/get_port_lists_response/port_list"); 
+                                    xpaths.push_back("/get_port_lists_response/port_list/name");
+                                    get("<get_port_lists/>", 12);
                                     break;
                                 case 5:
-                                    cmd = command.create(&user_configs, "<get_configs/>");
-                                    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                        ui.error(ret_exec);
-                                    } else {
-                                        paths_xml.push_back(path_configs + "/name"); 
-                                        paths_xml.push_back(path_configs); 
-                                        ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                        ui.p_windows_menu = ui.create_menu(&ret_xml, 20);
-                                    }
+                                    xpaths.push_back("/get_configs_response/config"); 
+                                    xpaths.push_back("/get_configs_response/config/name");
+                                    get("<get_configs/>", 20);
                                     break;
                                 case 6:
-                                    cmd = command.create(&user_configs, "<get_targets/>");
-                                    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                        ui.error(ret_exec);
-                                    } else {
-                                        //paths_xml.push_back(path_targets + "//*[text()]");// 
-                                        paths_xml.push_back(path_targets + "/name"); 
-                                        paths_xml.push_back(path_targets); 
-                                        ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                        //cout << ret_xml[4] << endl;//
-                                        //break;//
-                                        ui.p_windows_menu = ui.create_menu(&ret_xml, 22);
-                                    }
+                                    xpaths.push_back("/get_targets_response/target"); 
+                                    xpaths.push_back("/get_targets_response/target/name");
+                                    get("<get_targets/>", 22);
                                     break;
                                 case 8:
-                                    cmd = command.create(&user_configs, "<get_tasks/>");
-                                    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                        ui.error(ret_exec);
-                                    } else {
-                                        paths_xml.push_back(path_tasks + "/name"); 
-                                        paths_xml.push_back(path_tasks); 
-                                        ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                        ui.p_windows_menu = ui.create_menu(&ret_xml, 28);
-                                    }
+                                    xpaths.push_back("/get_tasks_response/task"); 
+                                    xpaths.push_back("/get_tasks_response/task/name");
+                                    get("<get_tasks/>", 28);
                                     break;
                                 case 9:
-                                    ret_xml = times;
-                                    ui.p_windows_menu = ui.create_menu(&ret_xml, 30);
+                                    xret = times;
+                                    ui.p_windows_menu = ui.create_menu(&xret, 30);
                                     break;
                                 case 12:
+                                    xpaths.push_back("/get_tasks_response/task/second_last_report/report"); // TODO: CAMBIAR 
+                                    xpaths.push_back("/get_tasks_response/task/name");
+                                    get("<get_tasks/>", 38);
+                                    break;
+                                case 13:
+                                    xpaths.push_back("/get_report_formats_response/report_format"); 
+                                    xpaths.push_back("/get_report_formats_response/report_format/name");
+                                    get("<get_report_formats/>", 34);
                                     cmd = command.create(&user_configs, "<get_report_formats/>");
-                                    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-                                        ui.error(ret_exec);
-                                    }
-                                    else {
-                                        paths_xml.push_back(path_report_formats + "/name"); 
-                                        paths_xml.push_back(path_report_formats); 
-                                        ret_xml = xml.parse(&ret_exec, &paths_xml);
-                                        ui.p_windows_menu = ui.create_menu(&ret_xml, 34);
-                                    }
+                                    break;
+                                case 14:
+                                    xnodes.push_back("get_reports");
+                                    xnodes.push_back("report_id"); 
+                                    xnodes.push_back("filter");
+                                    xvalues.push_back(report_id + "__attr__");
+                                    xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
+                                                       notes=0 overrides=0 rows=10000 delta_states=gn \
+                                                       result_hosts_only=1 ignore_pagination=1__attr__");
+                                    xret = xml.create(&xnodes, &xvalues);//
+
+                                    xpaths.push_back("/get_reports_response/report/report/results/result"); 
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/name");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/port");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/severity");
+                                    get(xret[0], 0, true, "id", true);
                                     break;
                                 default:
                                     break;
                             }
-                            
-                            c_item = ui.scroll_menu(ui.p_windows_menu);
+                           
+                            if (c_field == 14)
+                                c_item = ui.scroll_menu(ui.p_windows_menu, &xret, true);
+                            else
+                                c_item = ui.scroll_menu(ui.p_windows_menu, &xret);
+
                             ui.delete_menu(ui.p_windows_menu);
                             
                             if (c_item >= 0) {
-                                set_field_buffer(ui.p_fields[c_field], 0, ret_xml[c_item].c_str());
-                                int n_id = ((ret_xml.size() / 2) + c_item);
                                 if (c_field == 2)
-                                    port_list_id = ret_xml[n_id];
+                                    port_list_id = xret[c_item];
                                 else if (c_field == 5)
-                                    config_id = ret_xml[n_id];
+                                    config_id = xret[c_item];
                                 else if (c_field == 6)
-                                    target_id = ret_xml[n_id];
+                                    target_id = xret[c_item];
                                 else if (c_field == 8)
-                                    task_id = ret_xml[n_id];
+                                    task_id = xret[c_item];
                                 else if (c_field == 9)
-                                    time_id = ret_xml[n_id];
+                                    refresh_id = xret[c_item];
                                 else if (c_field == 12)
-                                    report_format_id = ret_xml[n_id];
+                                    report_id = xret[c_item];
+                                else if (c_field == 13)
+                                    report_format_id = xret[c_item];
+
+                                set_field_buffer(ui.p_fields[c_field], 0, xret[(xret.size() / 3) + c_item].c_str());
                             }
 
                             touchwin(stdscr);
@@ -340,28 +358,35 @@ void Nomp::driver()
     //quit();
 }
 
+void Nomp::get(string cmd_opt, int rows, bool get_data, string attr_name, bool is_report)
+{
+    cmd = command.create(&user_configs, cmd_opt);
+    if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
+        ui.error(cret);
+    } else {
+        xret = xml.parse(&cret, &xpaths, attr_name, get_data);
+        if (rows != -1)
+            ui.p_windows_menu = ui.create_menu(&xret, rows, is_report);
+    }
+}
+
 void Nomp::refresh()
 {
-    values_xml.clear();
-    nodes_xml.clear();
-    paths_xml.clear();
+    xnodes.clear();
+    xvalues.clear();
+    xpaths.clear();
     
-    nodes_xml.push_back("get_tasks");
-    nodes_xml.push_back("task_id");
-    values_xml.push_back(task_id + "_attr");
+    xnodes.push_back("get_tasks");
+    xnodes.push_back("task_id");
+    xvalues.push_back(task_id + "__attr__");
     
-    ret_xml = xml.create(&nodes_xml, &values_xml);
-    cmd = command.create(&user_configs, ret_xml[0]);
+    xret = xml.create(&xnodes, &xvalues);
 
-    if ((ret_exec = command.execute(cmd)).find("ERROR") != string::npos) {
-        ui.error(ret_exec);
-    } else {
-        paths_xml.push_back(path_tasks + "/progress"); 
-        paths_xml.push_back(path_tasks); 
-        ret_xml = xml.parse(&ret_exec, &paths_xml);
-        ui.progress(ret_xml[0]);
-    }
-
+    xpaths.push_back("/get_tasks_response/task/progress"); 
+    get(xret[0], -1, false);
+    
+    ui.progress(xret[0].erase(xret[0].size() - 1));
+    
     if (is_task_running) {
         std::thread t(&Nomp::refresh_sleep, this);
         t.detach();
@@ -370,6 +395,6 @@ void Nomp::refresh()
 
 void Nomp::refresh_sleep()
 {
-    std::this_thread::sleep_for(std::chrono::seconds(stoi(time_id)));
+    std::this_thread::sleep_for(std::chrono::seconds(stoi(refresh_id)));
     refresh();
 }

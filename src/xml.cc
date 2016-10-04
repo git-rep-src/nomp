@@ -1,11 +1,8 @@
 #include <stdexcept>
+
 #include <libxml++/libxml++.h>
-#include <libxml++/attribute.h>
-#include <iostream>//
 
 #include "xml.h"
-
-using namespace xmlpp;
 
 Xml::Xml()
 {
@@ -17,56 +14,85 @@ Xml::~Xml()
 
 vector<string> Xml::create(vector<string> *nodes, vector<string> *values)
 {
+    int n = (nodes->size() - 1);
     vector<string> ret;
     
     try {
         xmlpp::Document doc;
         xmlpp::Element *root = doc.create_root_node((*nodes)[0]);
         
-        if (nodes->size() > 2) {
-            int n = (nodes->size() - 1);
+        if ((nodes->size() > 2) && ((*nodes)[0] != "get_reports")) {
             xmlpp::Element *childs[n]; 
-        
             for (int i = 0; i < n; i++) {
                 childs[i] = root->add_child_element((*nodes)[i + 1]);
-                if ((*values)[i].find("_attr") != string::npos)
-                    childs[i]->set_attribute("id", (*values)[i].erase((*values)[i].size() - 5));
+                if ((*values)[i].find("__attr__") != string::npos)
+                    childs[i]->set_attribute("id", (*values)[i].erase((*values)[i].size() - 8));
                 else
                     childs[i]->add_child_text((*values)[i]);
             }
         } else {
-            root->set_attribute((*nodes)[1], (*values)[0].erase((*values)[0].size() - 5));
+            for (int i = 0; i < n; i++)
+                root->set_attribute((*nodes)[i + 1], (*values)[i].erase((*values)[i].size() - 8));
         }
 
         ret.push_back(doc.write_to_string());
-    } catch(const std::exception& ex) {
-        ret.push_back("ERROR");
+    } catch (const std::exception& ex) {
+        ret.clear();
+        ret.push_back("__ERROR__");
     }
 
     return ret;
 }
 
-vector<string> Xml::parse(string *xml, vector<string> *paths, const string attr_name)
+vector<string> Xml::parse(string *content, vector<string> *paths, const string attr_name, bool get_data)
 {
-    DomParser parser;
+    uint nn;
+    int index = 1;
+    bool is_data = false;
     vector<string> ret;
-    //string test;//
+    string buf;
+   
+    try {
+        xmlpp::DomParser parser;
+        parser.parse_memory(*content);
+        
+        xmlpp::Node *root = parser.get_document()->get_root_node();
+        xmlpp::Node::NodeSet node = root->find((*paths)[0]);
     
-    parser.parse_memory(*xml);
-    Node *root = parser.get_document()->get_root_node();
-
-    for (uint n = 0; n < paths->size(); n++) {
-        xmlpp::Node::NodeSet node = root->find((*paths)[n]);
-        for (uint i = 0; i < node.size(); i++) {
-            Element *element = (Element *)node.at(i);
-            const Attribute *attribute = element->get_attribute(attr_name);
-            if (attribute)
-                ret.push_back(attribute->get_value());
-            else
-                ret.push_back(element->get_first_child_text()->get_content());
+        if (get_data)
+            nn = ((paths->size() + node.size()));
+        else
+            nn = paths->size();
+    
+        for (uint n = 0; n < nn; n++) {
+            if (n >= paths->size()) {
+                node = root->find((*paths)[0] + "[" + to_string(index) + "]//*[text()]");
+                is_data = true;
+                ++index;
+            } else {
+                node = root->find((*paths)[n]);
+            }
+            for (uint i = 1; i <= node.size(); i++) {
+                xmlpp::Element *element = (xmlpp::Element *)node.at(i - 1);
+                const xmlpp::Attribute *attribute = element->get_attribute(attr_name);
+                if (attribute && !is_data) {
+                    ret.push_back(attribute->get_value());
+                } else {
+                    if (is_data)
+                        buf.append(node.at(i - 1)->get_name() + ": " + element->get_first_child_text()->get_content() + "\n\n");
+                    else
+                        ret.push_back(element->get_first_child_text()->get_content() + "\n");
+                }
+            }
+            if (is_data) {
+                ret.push_back(buf);
+                buf.clear();
+            }
         }
+    } catch (const std::exception& ex) {
+        ret.clear();
+        ret.push_back("__ERROR__");
     }
-    //ret.push_back(test);//
     
     return ret;
 }
