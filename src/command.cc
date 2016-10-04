@@ -28,7 +28,7 @@ string Command::execute(const string cmd)
 
     FILE *fp = popen(cmd.c_str(), "r");
     if (!fp)
-        throw ("ERROR: Failed to run command");
+        throw ("__ERROR__");
     try {
         while (!feof(fp))
             if (fgets(buf, BUFSIZ, fp) != NULL)
@@ -38,7 +38,7 @@ string Command::execute(const string cmd)
         return e;
     }
     if (pclose(fp) != 0)
-        ret = "ERROR";
+        ret = "__ERROR__";
 
     return ret;
 }
