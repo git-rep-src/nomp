@@ -18,30 +18,33 @@ public:
     ~Ui();
 
     int n_fields;
-    
-    FIELD *fields_login[7];
-    FIELD *fields_main[15];
 
-    FORM *form_login;
-    FORM *form_main;
-    
     FIELD **p_fields = NULL;
     FORM **p_form = NULL;
     WINDOW **p_windows_menu = NULL;
     
     void main();
-    WINDOW **create_menu(vector<string> *values, int rows);
+    WINDOW **create_menu(vector<string> *values, int rows, bool is_report = false);
+    int scroll_menu(WINDOW **p_windows_menu, vector<string> *values, bool is_report = false);
     void delete_menu(WINDOW **p_windows_menu);
-    int scroll_menu(WINDOW **p_windows_menu);
     void progress(string p);
     void error(const string err);
     void cleanup();
-
-    vector<string> get_fields_value(vector<int> *f, int i);
+    vector<string> get_fields_value(vector<int> *i_fields, int i);
 
 private:
-    int n;
+    int n_values;
 
+    FIELD *fields_login[7];
+    FIELD *fields_main[17];
+
+    FORM *form_login;
+    FORM *form_main;
+
+    WINDOW *window_menu_data = NULL;
+    
     void login();
+    void menu_data(vector<string> **values, int c_item);
+    void report_data(vector<string> **values, int c_item);
     char *trim_whitespaces(char *str);
 };
