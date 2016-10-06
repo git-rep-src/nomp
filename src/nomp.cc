@@ -36,43 +36,92 @@ void Nomp::driver()
             case KEY_DOWN:
                 switch(c_field)
                 {
+                    case 0:
+                    case 1:
+                    case 2:
                     case 3:
-                        if (!is_logged)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(7));
-                        else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
-                        break;
                     case 4:
                     case 5:
-                        if (!is_logged)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
-                        else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                        if (!is_logged) {
+                            if (c_field == 3) {
+                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                            } else if (c_field == 4) {
+                                set_field_buffer(ui.p_fields[c_field], 0, "       LOGIN");
+                                curs_set(1);
+                            } else if (c_field == 5) {
+                                set_field_buffer(ui.p_fields[c_field], 0, "        EXIT");
+                                curs_set(1);
+                            } else {
+                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                            }
+                        } else {
+                            if (c_field == 2) {
+                                mvprintw(11, 15, " ");
+                                curs_set(1);
+                            } else if (c_field == 3) {
+                                set_field_buffer(ui.p_fields[c_field], 0, "   CREATE TARGET");
+                                curs_set(1);
+                            } else if (c_field == 5) {
+                                mvprintw(19, 16, " ");
+                                curs_set(1);
+                            } else {
+                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                            }
+                        }
+                        break;
+                    case 6:
+                        mvprintw(21, 14, " ");
+                        curs_set(1);
+                        break;
+                    case 8:
+                        mvprintw(27, 16, " ");
+                        curs_set(1);
+                        break;
+                    case 9:
+                        mvprintw(29, 13, " ");
+                        curs_set(1);
+                        break;
+                    case 12:
+                        mvprintw(37, 16, " ");
+                        curs_set(1);
+                        break;
+                    case 13:
+                        mvprintw(39, 14, " ");
+                        curs_set(1);
                         break;
                     case 7:
+                        set_field_buffer(ui.p_fields[c_field], 0, "    CREATE TASK");
+                        curs_set(1);
+                        break;
                     case 10:
-                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                        if (is_task_running)
+                            set_field_buffer(ui.p_fields[c_field], 0, "       START");
+                        else
+                            set_field_buffer(ui.p_fields[c_field], 0, "       START");
+                        curs_set(1);
                         break;
                     case 11:
                         if (is_task_running)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                            set_field_buffer(ui.p_fields[c_field], 0, "       STOP");
                         else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
+                            set_field_buffer(ui.p_fields[c_field], 0, "       STOP");
+                        curs_set(1);
                         break;
                     case 14:
                         if (is_task_running)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                            set_field_buffer(ui.p_fields[c_field], 0, "    SHOW REPORT");
                         else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
+                            set_field_buffer(ui.p_fields[c_field], 0, "    SHOW REPORT");
+                        curs_set(1);
                         break;
                     case 15:
                         if (is_task_running)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                            set_field_buffer(ui.p_fields[c_field], 0, "   EXPORT REPORT");
                         else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(4));
+                            set_field_buffer(ui.p_fields[c_field], 0, "   EXPORT REPORT");
+                        curs_set(1);
                         break;
                     default:
-                        set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
                         break;
                 }
                 
@@ -97,45 +146,89 @@ void Nomp::driver()
                     case 0:
                     case 1:
                     case 2:
-                    case 4:
-                        if (is_logged && (c_field == 2))
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(5));
-                        else if (!is_logged && (c_field == 4))
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
-                        else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
-                        break;
                     case 3:
+                    case 4:
+                    case 5:
+                        if (!is_logged) {
+                            if (c_field == 3) {
+                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                            } else if (c_field == 4) {
+                                set_field_buffer(ui.p_fields[c_field], 0, "      [LOGIN]");
+                                curs_set(0);
+                            } else if (c_field == 5) {
+                                set_field_buffer(ui.p_fields[c_field], 0, "       [EXIT]");
+                                curs_set(0);
+                            } else {
+                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
+                            }
+                        } else {
+                            if (c_field == 2) {
+                                mvprintw(11, 15, "+");
+                                curs_set(0);
+                            } else if (c_field == 3) {
+                                set_field_buffer(ui.p_fields[c_field], 0, "  [CREATE TARGET]");
+                                curs_set(0);
+                            } else if (c_field == 5) {
+                                mvprintw(19, 16, "+");
+                                curs_set(0);
+                            } else {
+                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
+                            }
+                        }
+                        break;
+                    case 6:
+                        mvprintw(21, 14, "+");
+                        curs_set(0);
+                        break;
+                    case 8:
+                        mvprintw(27, 16, "+");
+                        curs_set(0);
+                        break;
+                    case 9:
+                        mvprintw(29, 13, "+");
+                        curs_set(0);
+                        break;
+                    case 12:
+                        mvprintw(37, 16, "+");
+                        curs_set(0);
+                        break;
+                    case 13:
+                        mvprintw(39, 14, "+");
+                        curs_set(0);
+                        break;
                     case 7:
+                        set_field_buffer(ui.p_fields[c_field], 0, "   [CREATE TASK]");
+                        curs_set(0);
+                        break;
                     case 10:
-                        if (!is_logged)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(8));
+                        if (is_task_running)
+                            set_field_buffer(ui.p_fields[c_field], 0, "      [START]");
                         else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
+                            set_field_buffer(ui.p_fields[c_field], 0, "      [START]");
+                        curs_set(0);
                         break;
                     case 11:
                         if (is_task_running)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
+                            set_field_buffer(ui.p_fields[c_field], 0, "      [STOP]");
                         else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                            set_field_buffer(ui.p_fields[c_field], 0, "      [STOP]");
+                        curs_set(0);
                         break;
                     case 14:
                         if (is_task_running)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
+                            set_field_buffer(ui.p_fields[c_field], 0, "   [SHOW REPORT]");
                         else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                            set_field_buffer(ui.p_fields[c_field], 0, "   [SHOW REPORT]");
+                        curs_set(0);
                         break;
                     case 15:
                         if (is_task_running)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
+                            set_field_buffer(ui.p_fields[c_field], 0, "  [EXPORT REPORT]");
                         else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                            set_field_buffer(ui.p_fields[c_field], 0, "  [EXPORT REPORT]");
+                        curs_set(0);
                         break;
                     default:
-                        if (!is_logged)
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
-                        else
-                            set_field_back(ui.p_fields[c_field], COLOR_PAIR(5));
                         break;
                 }
                 break;
@@ -264,36 +357,36 @@ void Nomp::driver()
                                 case 2:
                                     xpaths.push_back("/get_port_lists_response/port_list"); 
                                     xpaths.push_back("/get_port_lists_response/port_list/name");
-                                    get("<get_port_lists/>", 12);
+                                    get("<get_port_lists/>", 10);
                                     break;
                                 case 5:
                                     xpaths.push_back("/get_configs_response/config"); 
                                     xpaths.push_back("/get_configs_response/config/name");
-                                    get("<get_configs/>", 20);
+                                    get("<get_configs/>", 18);
                                     break;
                                 case 6:
                                     xpaths.push_back("/get_targets_response/target"); 
                                     xpaths.push_back("/get_targets_response/target/name");
-                                    get("<get_targets/>", 22);
+                                    get("<get_targets/>", 20);
                                     break;
                                 case 8:
                                     xpaths.push_back("/get_tasks_response/task"); 
                                     xpaths.push_back("/get_tasks_response/task/name");
-                                    get("<get_tasks/>", 28);
+                                    get("<get_tasks/>", 26);
                                     break;
                                 case 9:
                                     xret = times;
-                                    ui.p_windows_menu = ui.create_menu(&xret, 30);
+                                    ui.p_windows_menu = ui.create_menu(&xret, 29);
                                     break;
                                 case 12:
                                     xpaths.push_back("/get_tasks_response/task/second_last_report/report"); // TODO: CAMBIAR 
                                     xpaths.push_back("/get_tasks_response/task/name");
-                                    get("<get_tasks/>", 38);
+                                    get("<get_tasks/>", 36);
                                     break;
                                 case 13:
                                     xpaths.push_back("/get_report_formats_response/report_format"); 
                                     xpaths.push_back("/get_report_formats_response/report_format/name");
-                                    get("<get_report_formats/>", 34);
+                                    get("<get_report_formats/>", 32);
                                     cmd = command.create(&user_configs, "<get_report_formats/>");
                                     break;
                                 case 14:

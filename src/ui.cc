@@ -9,7 +9,7 @@ Ui::Ui() :
 {
     initscr();
     noecho();
-    curs_set(0);
+
     keypad(stdscr, TRUE);
     cbreak();
     
@@ -18,29 +18,14 @@ Ui::Ui() :
     
     if (has_colors()) {
         start_color();
-        
-        init_color(COLOR_BLACK, 20, 20, 20);
-        init_color(COLOR_BLUE, 70, 70, 70);
-        init_color(COLOR_CYAN, 150, 150, 150);
-        init_color(COLOR_MAGENTA, 110, 110, 110);
-        init_color(COLOR_GREEN, 0, 127, 0);
-        
-        init_pair(1, COLOR_WHITE, COLOR_BLUE);
-        init_pair(2, COLOR_BLACK, COLOR_WHITE);
-        init_pair(3, COLOR_BLACK, COLOR_CYAN);
-        init_pair(4, COLOR_BLACK, COLOR_BLUE);
-        init_pair(5, COLOR_WHITE, COLOR_CYAN);
-        init_pair(6, COLOR_WHITE, COLOR_MAGENTA);
-        init_pair(7, COLOR_BLUE, COLOR_BLUE);
-        init_pair(8, COLOR_WHITE, COLOR_WHITE);
-        init_pair(9, COLOR_GREEN, COLOR_GREEN);
-        init_pair(10, COLOR_WHITE, COLOR_GREEN);
-        init_pair(11, COLOR_BLUE, COLOR_BLUE);
-        init_pair(12, COLOR_WHITE, COLOR_RED);
-        init_pair(13, COLOR_RED, COLOR_MAGENTA);
-        init_pair(14, COLOR_YELLOW, COLOR_MAGENTA);
-        init_pair(15, COLOR_WHITE, COLOR_MAGENTA);
-        init_pair(16, COLOR_WHITE, COLOR_BLACK); // menu_data
+
+        init_pair(1, COLOR_BLACK, COLOR_WHITE);
+        init_pair(2, COLOR_WHITE, COLOR_BLACK);
+        init_pair(3, COLOR_WHITE, COLOR_WHITE);
+        init_pair(4, COLOR_RED, COLOR_BLACK);
+        init_pair(5, COLOR_YELLOW, COLOR_BLACK);
+        init_pair(6, COLOR_BLUE, COLOR_BLACK);
+        init_pair(7, COLOR_WHITE, COLOR_RED);
     }
     
     login();
@@ -81,9 +66,9 @@ void Ui::login()
     set_field_back(fields_login[0], COLOR_PAIR(1));
     set_field_back(fields_login[1], COLOR_PAIR(1));
     set_field_back(fields_login[2], COLOR_PAIR(2));
-    set_field_back(fields_login[3], COLOR_PAIR(7));
-    set_field_back(fields_login[4], COLOR_PAIR(3));
-    set_field_back(fields_login[5], COLOR_PAIR(3));
+    set_field_back(fields_login[3], COLOR_PAIR(3));
+    set_field_back(fields_login[4], COLOR_PAIR(1));
+    set_field_back(fields_login[5], COLOR_PAIR(1));
     
     set_field_buffer(fields_login[0], 0, "localhost");
     set_field_buffer(fields_login[1], 0, "9390");
@@ -116,22 +101,22 @@ void Ui::main()
     p_form = &form_main;
     n_fields = ((sizeof(fields_main) / sizeof(fields_main[0])) - 2);
     
-    fields_main[0] = new_field(1, 42, 8, 23, 0, 0);
-    fields_main[1] = new_field(1, 42, 10, 23, 0, 0);
-    fields_main[2] = new_field(1, 42, 12, 23, 0, 0);
-    fields_main[3] = new_field(1, 20, 14, 34, 0, 0);
-    fields_main[4] = new_field(1, 42, 18, 23, 0, 0);
-    fields_main[5] = new_field(1, 42, 20, 23, 0, 0);
-    fields_main[6] = new_field(1, 42, 22, 23, 0, 0);
-    fields_main[7] = new_field(1, 20, 24, 34, 0, 0);
-    fields_main[8] = new_field(1, 42, 28, 23, 0, 0);
-    fields_main[9] = new_field(1, 42, 30, 23, 0, 0);
-    fields_main[10] = new_field(1, 20, 34, 23, 0, 0);
-    fields_main[11] = new_field(1, 20, 34, 45, 0, 0);
-    fields_main[12] = new_field(1, 42, 38, 23, 0, 0);
-    fields_main[13] = new_field(1, 42, 40, 23, 0, 0);
-    fields_main[14] = new_field(1, 20, 42, 23, 0, 0);
-    fields_main[15] = new_field(1, 20, 42, 45, 0, 0);
+    fields_main[0] = new_field(1, 42, 7, 23, 0, 0);
+    fields_main[1] = new_field(1, 42, 9, 23, 0, 0);
+    fields_main[2] = new_field(1, 42, 11, 23, 0, 0);
+    fields_main[3] = new_field(1, 20, 13, 34, 0, 0);
+    fields_main[4] = new_field(1, 42, 17, 23, 0, 0);
+    fields_main[5] = new_field(1, 42, 19, 23, 0, 0);
+    fields_main[6] = new_field(1, 42, 21, 23, 0, 0);
+    fields_main[7] = new_field(1, 20, 23, 34, 0, 0);
+    fields_main[8] = new_field(1, 42, 27, 23, 0, 0);
+    fields_main[9] = new_field(1, 42, 29, 23, 0, 0);
+    fields_main[10] = new_field(1, 20, 33, 23, 0, 0);
+    fields_main[11] = new_field(1, 20, 33, 45, 0, 0);
+    fields_main[12] = new_field(1, 42, 37, 23, 0, 0);
+    fields_main[13] = new_field(1, 42, 39, 23, 0, 0);
+    fields_main[14] = new_field(1, 20, 41, 23, 0, 0);
+    fields_main[15] = new_field(1, 20, 41, 45, 0, 0);
     fields_main[16] = NULL;
 
     for (int i =  0; i <= n_fields; i++) {
@@ -146,19 +131,19 @@ void Ui::main()
     set_field_back(fields_main[0], COLOR_PAIR(2));
     set_field_back(fields_main[1], COLOR_PAIR(1));
     set_field_back(fields_main[2], COLOR_PAIR(1));
-    set_field_back(fields_main[3], COLOR_PAIR(3));
+    set_field_back(fields_main[3], COLOR_PAIR(1));
     set_field_back(fields_main[4], COLOR_PAIR(1));
     set_field_back(fields_main[5], COLOR_PAIR(1));
     set_field_back(fields_main[6], COLOR_PAIR(1));
-    set_field_back(fields_main[7], COLOR_PAIR(3));
+    set_field_back(fields_main[7], COLOR_PAIR(1));
     set_field_back(fields_main[8], COLOR_PAIR(1));
     set_field_back(fields_main[9], COLOR_PAIR(1));
-    set_field_back(fields_main[10], COLOR_PAIR(3));
-    set_field_back(fields_main[11], COLOR_PAIR(4));
+    set_field_back(fields_main[10], COLOR_PAIR(1));
+    set_field_back(fields_main[11], COLOR_PAIR(1));
     set_field_back(fields_main[12], COLOR_PAIR(1));
     set_field_back(fields_main[13], COLOR_PAIR(1));
-    set_field_back(fields_main[14], COLOR_PAIR(4));
-    set_field_back(fields_main[15], COLOR_PAIR(4));
+    set_field_back(fields_main[14], COLOR_PAIR(1));
+    set_field_back(fields_main[15], COLOR_PAIR(1));
     
     set_field_buffer(fields_main[3], 0,  "   CREATE TARGET");
     set_field_buffer(fields_main[7], 0,  "    CREATE TASK");
@@ -171,25 +156,26 @@ void Ui::main()
     scale_form(form_main, &rows, &cols);
     post_form(form_main);
 
-    mvprintw(8, 14,  "    NAME");
-    mvprintw(10, 14, "   HOSTS");
-    mvprintw(12, 14, "   PORTS");
-    mvprintw(18, 14, "    NAME");
-    mvprintw(20, 14, "    SCAN");
-    mvprintw(22, 14, "  TARGET");
-    mvprintw(28, 14, "    TASK");
-    mvprintw(30, 14, " REFRESH");
-    mvprintw(32, 14, "PROGRESS");
-    mvprintw(38, 14, "    TASK");
-    mvprintw(40, 14, "  FORMAT");
+    mvprintw(7, 14,  "    NAME");
+    mvprintw(9, 14, "   HOSTS");
+    mvprintw(11, 14, "   PORTS");
+    mvprintw(17, 14, "    NAME");
+    mvprintw(19, 14, "    SCAN");
+    mvprintw(21, 14, "  TARGET");
+    mvprintw(27, 14, "    TASK");
+    mvprintw(29, 14, " REFRESH");
+    mvprintw(31, 14, "PROGRESS");
+    mvprintw(37, 14, "    TASK");
+    mvprintw(39, 14, "  FORMAT");
     
-    attron(COLOR_PAIR(4));
-    mvprintw(32, 23, "                                          ");
-    attroff(COLOR_PAIR(4));
+    window_menu_data_bar = newwin(1, 84, 7, 86);
+    wbkgd(window_menu_data_bar, COLOR_PAIR(1));
+    
+    window_menu_data = newwin(33, 84, 9, 86);
+    wbkgd(window_menu_data, COLOR_PAIR(2));
+    
+    curs_set(1);
 
-    window_menu_data = newwin(35, 43, 8, 112);
-    wbkgd(window_menu_data, COLOR_PAIR(16));
-    
     refresh();
 
     form_driver(form_main, REQ_END_LINE);
@@ -203,39 +189,42 @@ WINDOW **Ui::create_menu(vector<string> *values, int rows, bool is_report)
         n_values = ((values->size()) / 3);
 
     WINDOW **windows_menu;
-    windows_menu = (WINDOW **) malloc ((n_values + 1) * sizeof(WINDOW *));
+    windows_menu = (WINDOW **) malloc ((n_values + 2) * sizeof(WINDOW *));
     
     if (is_report)
-        windows_menu[0] = newwin(n_values, COLS, 0, 0);
+        windows_menu[0] = newwin((n_values + 2), COLS, 0, 0);
     else
-        windows_menu[0] = newwin(n_values, 42, rows, 23);
-    
-    wbkgd(windows_menu[0], COLOR_PAIR(1)); 
+        windows_menu[0] = newwin((n_values + 2), 42, rows, 23);
     
     for (int i = 0; i < n_values; i++) {
         if (is_report) {
-            windows_menu[i + 1] = subwin(windows_menu[0], 1, COLS, i, 0);
-            mvwprintw(windows_menu[i + 1], 0, 1, " %s ", (*values)[n_values + i].c_str());
-            wattron(windows_menu[i + 1], A_BOLD | COLOR_PAIR(15));
-            mvwprintw(windows_menu[i + 1], 0, 148, " %s ", (*values)[(n_values * 2) + i].c_str());
-            wattroff(windows_menu[i + 1], A_BOLD | COLOR_PAIR(15));
-            if (i < 18) { 
-                wattron(windows_menu[i + 1], A_BOLD | COLOR_PAIR(13));
-                mvwprintw(windows_menu[i + 1], 0, 168, " %s ", (*values)[(n_values * 3) + i].c_str());
-                wattroff(windows_menu[i + 1], A_BOLD | COLOR_PAIR(13));
+            windows_menu[i + 1] = subwin(windows_menu[0], 1, COLS, (i + 1), 0);
+            mvwprintw(windows_menu[i + 1], 0, 2, "%s", (*values)[n_values + i].c_str());
+            mvwprintw(windows_menu[i + 1], 0, 149, "%s", (*values)[(n_values * 2) + i].c_str());
+            if ((stoi((*values)[(n_values * 3) + i])) >= 7) { 
+                wattron(windows_menu[i + 1], COLOR_PAIR(4));
+                mvwprintw(windows_menu[i + 1], 0, 169, "%s", (*values)[(n_values * 3) + i].c_str());
+                wattroff(windows_menu[i + 1], COLOR_PAIR(4));
+            } else if (((stoi((*values)[(n_values * 3) + i])) >= 4) &&
+                    ((stoi((*values)[(n_values * 3) + i])) < 7)) { 
+                wattron(windows_menu[i + 1], COLOR_PAIR(5));
+                mvwprintw(windows_menu[i + 1], 0, 169, "%s", (*values)[(n_values * 3) + i].c_str());
+                wattroff(windows_menu[i + 1], COLOR_PAIR(5));
             } else {
-                wattron(windows_menu[i + 1], A_BOLD | COLOR_PAIR(14));
-                mvwprintw(windows_menu[i + 1], 0, 168, " %s ", (*values)[(n_values * 3) + i].c_str());
-                wattroff(windows_menu[i + 1], A_BOLD | COLOR_PAIR(14));
+                wattron(windows_menu[i + 1], COLOR_PAIR(6));
+                mvwprintw(windows_menu[i + 1], 0, 169, "%s", (*values)[(n_values * 3) + i].c_str());
+                wattroff(windows_menu[i + 1], COLOR_PAIR(6));
             }
         } else {
-            windows_menu[i + 1] = subwin(windows_menu[0], 1, 42, (i + rows), 23);
-            wprintw(windows_menu[i + 1], " %s", (*values)[n_values + i].c_str()); 
+            windows_menu[i + 1] = subwin(windows_menu[0], 1, 42, ((i + 1) + rows), 23);
+            mvwprintw(windows_menu[i + 1], 0, 1, "%s", (*values)[n_values + i].c_str()); 
         }
     }
     
-    wbkgd(windows_menu[1], COLOR_PAIR(6));
-   
+    wbkgd(windows_menu[0], COLOR_PAIR(2));
+    if (!is_report)
+        box(windows_menu[0], 0, 0);
+    wbkgd(windows_menu[1], A_REVERSE);
     wrefresh(windows_menu[0]);
     
     return windows_menu;
@@ -255,13 +244,13 @@ int Ui::scroll_menu(WINDOW **p_windows_menu, vector<string> *values, bool is_rep
         {
             case KEY_UP:
             case KEY_DOWN:
-                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(1));
+                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(2));
                 wrefresh(p_windows_menu[c_item + 1]);
                 if (key == KEY_DOWN)
                     c_item = ((c_item + 1) % n_values);
                 else
                     c_item = (((c_item + n_values) - 1) % n_values);
-                wbkgd(p_windows_menu[c_item + 1], COLOR_PAIR(6));
+                wbkgd(p_windows_menu[c_item + 1], A_REVERSE);
                 wrefresh(p_windows_menu[c_item + 1]);
                 if (!is_report)
                     menu_data(&values, c_item);
@@ -285,17 +274,18 @@ int Ui::scroll_menu(WINDOW **p_windows_menu, vector<string> *values, bool is_rep
 
 void Ui::delete_menu(WINDOW **p_windows_menu)
 {
-    for (int i = 0; i <= n_values; i++)
+    for (int i = 0; i <= (n_values + 2); i++)
         delwin(p_windows_menu[i]);
     free(p_windows_menu);
 }
 
 void Ui::menu_data(vector<string> **values, int c_item)
 {
+    werase(window_menu_data_bar);
+    mvwprintw(window_menu_data_bar, 0, 37, "DETAILS");
+    wrefresh(window_menu_data_bar);
     werase(window_menu_data);
-    
-    mvwprintw(window_menu_data, 0, 0, "%s", (**values)[(n_values * 2) + c_item].c_str());
-
+    mvwprintw(window_menu_data, 0, 0, "%s", ((**values)[(n_values * 2) + c_item]).c_str());
     wrefresh(window_menu_data);
 }
 
@@ -303,15 +293,13 @@ void Ui::report_data(vector<string> **values, int c_item)
 {
     int key;
 
-    WINDOW *windows_report_details = newwin(LINES, COLS, 0, 0);
-    wbkgd(windows_report_details, COLOR_PAIR(1));
-
-    mvwprintw(windows_report_details, 1, 0, "%s", (**values)[(n_values * 4) + c_item].c_str());
-
-    wrefresh(windows_report_details);
+    WINDOW *windows_report_data = newwin(LINES, COLS, 0, 0);
+    wbkgd(windows_report_data, COLOR_PAIR(2));
+    mvwprintw(windows_report_data, 0, 0, "%s", (**values)[(n_values * 4) + c_item].c_str());
+    wrefresh(windows_report_data);
     
     do {
-        key = wgetch(windows_report_details);
+        key = wgetch(windows_report_data);
         switch(key)
         {
             default:
@@ -319,7 +307,7 @@ void Ui::report_data(vector<string> **values, int c_item)
         }
     } while (key != KEY_ESCAPE);
     
-    delwin(windows_report_details);
+    delwin(windows_report_data);
 }
 
 
@@ -331,19 +319,11 @@ void Ui::progress(string p)
     }
 
     if (p == "-1") {
-        attron(COLOR_PAIR(10));
         mvprintw(32, 23, "  DONE  ");
-        attroff(COLOR_PAIR(10));
-        attron(COLOR_PAIR(11));
         mvhline(32, 33, ACS_VLINE, 32);
-        attroff(COLOR_PAIR(11));
     } else {
-        attron(COLOR_PAIR(1));
         mvprintw(32, 23, " %s/100 ", p.c_str());
-        attroff(COLOR_PAIR(1));
-        attron(COLOR_PAIR(9));
         mvhline(32, 33, ACS_VLINE, (stoi(p) / 3));
-        attroff(COLOR_PAIR(9));
     }
     
     refresh();
@@ -354,9 +334,9 @@ void Ui::error(const string err)
     touchwin(stdscr);
     refresh();
     
-    attron(A_BOLD | COLOR_PAIR(12));
+    attron(COLOR_PAIR(7));
     mvprintw(13, 20, err.c_str());
-    attroff(A_BOLD | COLOR_PAIR(12));
+    attroff(COLOR_PAIR(7));
 }
 
 void Ui::cleanup()
@@ -365,6 +345,8 @@ void Ui::cleanup()
         free_field(p_fields[i]);
     unpost_form(*p_form);
     free_form(*p_form);
+    if (window_menu_data_bar != NULL)
+        delwin(window_menu_data_bar);
     if (window_menu_data != NULL)
         delwin(window_menu_data);
 }

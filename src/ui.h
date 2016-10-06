@@ -41,6 +41,7 @@ private:
     FORM *form_login;
     FORM *form_main;
 
+    WINDOW *window_menu_data_bar = NULL;
     WINDOW *window_menu_data = NULL;
     
     void login();

@@ -49,8 +49,8 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
     uint nn;
     int index = 1;
     bool is_data = false;
-    vector<string> ret;
     string buf;
+    vector<string> ret;
    
     try {
         xmlpp::DomParser parser;
@@ -79,7 +79,7 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
                     ret.push_back(attribute->get_value());
                 } else {
                     if (is_data)
-                        buf.append(node.at(i - 1)->get_name() + ": " + element->get_first_child_text()->get_content() + "\n\n");
+                        buf.append(node.at(i - 1)->get_name() + ": " + element->get_first_child_text()->get_content() + "\n");
                     else
                         ret.push_back(element->get_first_child_text()->get_content() + "\n");
                 }
