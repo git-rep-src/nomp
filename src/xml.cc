@@ -49,7 +49,9 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
     uint nn;
     int index = 1;
     bool is_data = false;
-    string buf;
+    string buf_data;
+    string buf_name;
+    string buf_name_upper;
     vector<string> ret;
    
     try {
@@ -78,15 +80,21 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
                 if (attribute && !is_data) {
                     ret.push_back(attribute->get_value());
                 } else {
-                    if (is_data)
-                        buf.append(node.at(i - 1)->get_name() + ": " + element->get_first_child_text()->get_content() + "\n");
-                    else
+                    if (is_data) {
+                        buf_name = node.at(i - 1)->get_name();
+                        for (uint i = 0; i < buf_name.size(); i++)
+                            buf_name_upper += toupper(buf_name[i]); 
+                        buf_data.append(". " + buf_name_upper + ":  " + element->get_first_child_text()->get_content() + "\n");
+                        buf_name.clear();
+                        buf_name_upper.clear();
+                    } else {
                         ret.push_back(element->get_first_child_text()->get_content() + "\n");
+                    }
                 }
             }
             if (is_data) {
-                ret.push_back(buf);
-                buf.clear();
+                ret.push_back(buf_data);
+                buf_data.clear();
             }
         }
     } catch (const std::exception& ex) {

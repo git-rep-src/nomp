@@ -409,12 +409,14 @@ void Nomp::driver()
                                     break;
                             }
                            
-                            if (c_field == 14)
+                            if (c_field == 14) {
                                 c_item = ui.scroll_menu(ui.p_windows_menu, &xret, true);
-                            else
+                                ui.delete_menu(ui.p_windows_menu, 3);
+                            } else {
                                 c_item = ui.scroll_menu(ui.p_windows_menu, &xret);
+                                ui.delete_menu(ui.p_windows_menu, 2);
+                            }
 
-                            ui.delete_menu(ui.p_windows_menu);
                             
                             if (c_item >= 0) {
                                 if (c_field == 2)

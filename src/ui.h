@@ -26,7 +26,7 @@ public:
     void main();
     WINDOW **create_menu(vector<string> *values, int rows, bool is_report = false);
     int scroll_menu(WINDOW **p_windows_menu, vector<string> *values, bool is_report = false);
-    void delete_menu(WINDOW **p_windows_menu);
+    void delete_menu(WINDOW **p_windows_menu, int windows_extras = 0);
     void progress(string p);
     void error(const string err);
     void cleanup();
@@ -41,11 +41,10 @@ private:
     FORM *form_login;
     FORM *form_main;
 
-    WINDOW *window_menu_data_bar = NULL;
-    WINDOW *window_menu_data = NULL;
+    WINDOW *window_data = NULL;
     
     void login();
-    void menu_data(vector<string> **values, int c_item);
-    void report_data(vector<string> **values, int c_item);
+    void data(vector<string> **values, int c_item);
+    void data_report(vector<string> **values, int c_item);
     char *trim_whitespaces(char *str);
 };
