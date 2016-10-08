@@ -459,7 +459,7 @@ void Nomp::get(string cmd_opt, int rows, bool get_data, string attr_name, bool i
     if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
         ui.error(cret);
     } else {
-        xret = xml.parse(&cret, &xpaths, attr_name, get_data);
+        xret = xml.parse(&cret, &xpaths, attr_name, get_data, is_report);
         if (rows != -1)
             ui.p_windows_menu = ui.create_menu(&xret, rows, is_report);
     }

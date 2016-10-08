@@ -157,7 +157,7 @@ void Ui::main()
     post_form(form_main);
 
     mvprintw(7, 14,  "    NAME");
-    mvprintw(9, 14, "   HOSTS");
+    mvprintw(9, 14,  "   HOSTS");
     mvprintw(11, 14, "   PORTS");
     mvprintw(17, 14, "    NAME");
     mvprintw(19, 14, "    SCAN");
@@ -168,7 +168,7 @@ void Ui::main()
     mvprintw(37, 14, "    TASK");
     mvprintw(39, 14, "  FORMAT");
     
-    window_data = newwin(48, 84, 0, 88);
+    window_data = newwin(35, 63, 7, 109);
     wbkgd(window_data, COLOR_PAIR(2));
     
     curs_set(1);
@@ -290,8 +290,7 @@ void Ui::delete_menu(WINDOW **p_windows_menu, int windows_extras)
 void Ui::data(vector<string> **values, int c_item)
 {
     werase(window_data);
-    mvwhline(window_data, 1, 0, ACS_HLINE, 84);
-    mvwprintw(window_data, 3, 0, "%s", ((**values)[(n_values * 2) + c_item]).c_str());
+    wprintw(window_data, "%s", ((**values)[(n_values * 2) + c_item]).c_str());
     wrefresh(window_data);
 }
 
@@ -301,8 +300,7 @@ void Ui::data_report(vector<string> **values, int c_item)
     
     WINDOW *window_data_report = newwin(LINES, COLS, 0, 0);
     wbkgd(window_data_report, COLOR_PAIR(2));
-    mvwhline(window_data_report, 1, 2, ACS_HLINE, (COLS - 4));
-    mvwprintw(window_data_report, 3, 0, "%s", (**values)[(n_values * 4) + c_item].c_str());
+    mvwprintw(window_data_report, 1, 0, "%s", (**values)[(n_values * 4) + c_item].c_str());
     wrefresh(window_data_report);
     
     do {
