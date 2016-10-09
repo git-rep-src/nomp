@@ -13,7 +13,7 @@ public:
     vector<string> parse(string *content, vector<string> *paths,
                          const string attr_name = "id", bool get_data = false,
                          bool is_report = false);
-    void to_upper(string &source, bool is_report = false);
-    void replace(string &source, vector<string> &find, vector<string> &replace);
-    void wrap(string &source);
+    void to_upper(string &str, bool is_report = false);
+    void replace(string &str, vector<string> &finds, vector<string> &replaces);
+    void wrap(string &str);
 };

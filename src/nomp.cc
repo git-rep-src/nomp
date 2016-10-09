@@ -376,7 +376,7 @@ void Nomp::driver()
                                     break;
                                 case 9:
                                     xret = times;
-                                    ui.p_windows_menu = ui.create_menu(&xret, 29);
+                                    ui.menu_create(&xret, 28);
                                     break;
                                 case 12:
                                     xpaths.push_back("/get_tasks_response/task/second_last_report/report"); // TODO: CAMBIAR 
@@ -410,13 +410,12 @@ void Nomp::driver()
                             }
                            
                             if (c_field == 14) {
-                                c_item = ui.scroll_menu(ui.p_windows_menu, &xret, true);
-                                ui.delete_menu(ui.p_windows_menu, 3);
+                                c_item = ui.menu_scroll(&xret, true);
+                                ui.menu_delete(3);
                             } else {
-                                c_item = ui.scroll_menu(ui.p_windows_menu, &xret);
-                                ui.delete_menu(ui.p_windows_menu, 2);
+                                c_item = ui.menu_scroll(&xret);
+                                ui.menu_delete(2);
                             }
-
                             
                             if (c_item >= 0) {
                                 if (c_field == 2)
@@ -461,7 +460,7 @@ void Nomp::get(string cmd_opt, int rows, bool get_data, string attr_name, bool i
     } else {
         xret = xml.parse(&cret, &xpaths, attr_name, get_data, is_report);
         if (rows != -1)
-            ui.p_windows_menu = ui.create_menu(&xret, rows, is_report);
+            ui.menu_create(&xret, rows, is_report);
     }
 }
 

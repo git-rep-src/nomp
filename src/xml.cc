@@ -1,7 +1,7 @@
 #include <stdexcept>
-#include <iomanip>//
+#include <sstream>
+#include <iomanip>
 #include <iostream>//
-#include <sstream>//
 
 #include <libxml++/libxml++.h>
 
@@ -57,8 +57,8 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
     stringstream ss_data;
     string name;
     string value;
-    vector<string> v_find;
-    vector<string> v_replace;
+    vector<string> finds;
+    vector<string> replaces;
     vector<string> ret;
 
     if (is_report)
@@ -94,44 +94,44 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
                         name = node.at(i - 1)->get_name();
                         value = element->get_first_child_text()->get_content();
                         if ((name == "xref") && (value != "NOXREF")) {
-                            v_find.push_back(", ");
-                            v_replace.push_back("\n");
-                            replace(value, v_find, v_replace);
+                            finds.push_back(", ");
+                            replaces.push_back("\n");
+                            replace(value, finds, replaces);
                             wrap(value);
                         } else if ((name == "tags") && (value != "")) {
-                            v_find.push_back("cvss_base_vector=");
-                            v_find.push_back("vuldetect=");
-                            v_find.push_back("insight=");
-                            v_find.push_back("qod_type=");
-                            v_find.push_back("impact=");
-                            v_find.push_back("affected=");
-                            v_find.push_back("summary=");
-                            v_find.push_back("solution_type=");
-                            v_find.push_back("solution=");
-                            v_find.push_back("|");
-                            v_replace.push_back("+ CVSS_BASE_VECTOR: ");
-                            v_replace.push_back("+ VULDETECT: ");
-                            v_replace.push_back("+ INSIGHT: ");
-                            v_replace.push_back("+ QOD_TYPE: ");
-                            v_replace.push_back("+ IMPACT: ");
-                            v_replace.push_back("+ AFFECTED: ");
-                            v_replace.push_back("+ SUMMARY: ");
-                            v_replace.push_back("+ SOLUTION_TYPE: ");
-                            v_replace.push_back("+ SOLUTION: ");
-                            v_replace.push_back("\n");
-                            replace(value, v_find, v_replace);
+                            finds.push_back("cvss_base_vector=");
+                            finds.push_back("vuldetect=");
+                            finds.push_back("insight=");
+                            finds.push_back("qod_type=");
+                            finds.push_back("impact=");
+                            finds.push_back("affected=");
+                            finds.push_back("summary=");
+                            finds.push_back("solution_type=");
+                            finds.push_back("solution=");
+                            finds.push_back("|");
+                            replaces.push_back("CVSS_BASE_VECTOR: ");
+                            replaces.push_back("VULDETECT: ");
+                            replaces.push_back("INSIGHT: ");
+                            replaces.push_back("QOD_TYPE: ");
+                            replaces.push_back("IMPACT: ");
+                            replaces.push_back("AFFECTED: ");
+                            replaces.push_back("SUMMARY: ");
+                            replaces.push_back("SOLUTION_TYPE: ");
+                            replaces.push_back("SOLUTION: ");
+                            replaces.push_back("\n\n");
+                            replace(value, finds, replaces);
                             wrap(value);
                         } else if ((name == "description") && (value != "")) { 
                             if (is_report) {
                                 wrap(value);
                             } else {
-                                v_find.push_back("\n");
-                                v_replace.push_back("");
-                                replace(value, v_find, v_replace);
+                                finds.push_back("\n");
+                                replaces.push_back("");
+                                replace(value, finds, replaces);
                            }
                         }
                         to_upper(name, is_report);
-                        ss_data << left << setw(max_width) << setfill(' ') << name << value << endl << endl;
+                        ss_data << left << setw(max_width) << setfill(' ') << name << value << endl;
                     } else {
                         ret.push_back(element->get_first_child_text()->get_content() + "\n");
                     }
@@ -151,41 +151,42 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
     return ret;
 }
 
-void Xml::to_upper(string &source, bool is_report)
+void Xml::to_upper(string &str, bool is_report)
 {
     string upper;
-    for (uint i = 0; i < source.size(); i++)
-        upper += toupper(source[i]);
-    source = upper;
+    for (uint i = 0; i < str.size(); i++)
+        upper += toupper(str[i]);
+    str = upper;
     if (is_report)
-        source.insert(0, "  ");
+        str.insert(0, "  ");
 }
 
-void Xml::replace(string &source, vector<string> &find, vector<string> &replace)
+void Xml::replace(string &str, vector<string> &finds, vector<string> &replaces)
 {
-    for (uint n = 0; n < find.size(); n++) {
-        for (string::size_type i = 0; (i = source.find(find[n], i)) != string::npos;) {
-            source.replace(i, find[n].length(), replace[n]);
-            i += replace[n].length();
+    for (uint n = 0; n < finds.size(); n++) {
+        for (string::size_type i = 0; (i = str.find(finds[n], i)) != string::npos;) {
+            str.replace(i, finds[n].length(), replaces[n]);
+            i += replaces[n].length();
         }
     }
-    find.clear();
-    replace.clear();
+    finds.clear();
+    replaces.clear();
 }
 
 
-void Xml::wrap(string &source)
+void Xml::wrap(string &str)
 {
-    istringstream f(source);
+    istringstream f(str);
     stringstream ss;    
     string line;
-    int n = 0; // FIX; HACERLO BIEN. 
+    bool is_first_line = true; 
     while (getline(f, line)) {
-        if (n > 0)
-            ss << left << setw(21) << setfill(' ') << " " << line << endl;
-        else
+        if (is_first_line) {
             ss << left << line << endl;
-        ++n;
+            is_first_line = false;
+        } else {
+            ss << left << setw(21) << setfill(' ') << " " << line << endl;
+        }
     }
-    source = ss.str();
+    str = ss.str().replace((ss.str().size() - 1), 1, "");
 }
