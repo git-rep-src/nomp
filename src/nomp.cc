@@ -41,84 +41,118 @@ void Nomp::driver()
                     case 2:
                     case 3:
                     case 4:
-                    case 5:
                         if (!is_logged) {
                             if (c_field == 3) {
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                             } else if (c_field == 4) {
-                                set_field_buffer(ui.p_fields[c_field], 0, "       LOGIN");
-                                curs_set(1);
-                            } else if (c_field == 5) {
-                                set_field_buffer(ui.p_fields[c_field], 0, "        EXIT");
+                                attron(COLOR_PAIR(1));
+                                mvprintw(28, 77, " ");
+                                mvprintw(28, 96, " ");
+                                attroff(COLOR_PAIR(1));
                                 curs_set(1);
                             } else {
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
                             }
                         } else {
                             if (c_field == 2) {
-                                mvprintw(11, 15, " ");
+                                mvdelch(11, 66);
                                 curs_set(1);
                             } else if (c_field == 3) {
-                                set_field_buffer(ui.p_fields[c_field], 0, "   CREATE TARGET");
-                                curs_set(1);
-                            } else if (c_field == 5) {
-                                mvprintw(19, 16, " ");
+                                attron(COLOR_PAIR(1));
+                                mvprintw(13, 34, " ");
+                                mvprintw(13, 53, " ");
+                                attroff(COLOR_PAIR(1));
                                 curs_set(1);
                             } else {
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
                             }
                         }
                         break;
+                    case 5:
+                        mvdelch(19, 66);
+                        curs_set(1);
+                        break;
                     case 6:
-                        mvprintw(21, 14, " ");
-                        curs_set(1);
-                        break;
-                    case 8:
-                        mvprintw(27, 16, " ");
-                        curs_set(1);
-                        break;
-                    case 9:
-                        mvprintw(29, 13, " ");
-                        curs_set(1);
-                        break;
-                    case 12:
-                        mvprintw(37, 16, " ");
-                        curs_set(1);
-                        break;
-                    case 13:
-                        mvprintw(39, 14, " ");
+                        mvdelch(21, 66);
                         curs_set(1);
                         break;
                     case 7:
-                        set_field_buffer(ui.p_fields[c_field], 0, "    CREATE TASK");
+                        attron(COLOR_PAIR(1));
+                        mvprintw(23, 34, " ");
+                        mvprintw(23, 53, " ");
+                        attroff(COLOR_PAIR(1));
+                        curs_set(1);
+                        break;
+                    case 8:
+                        mvdelch(27, 66);
+                        curs_set(1);
+                        break;
+                    case 9:
+                        mvdelch(29, 66);
                         curs_set(1);
                         break;
                     case 10:
-                        if (is_task_running)
-                            set_field_buffer(ui.p_fields[c_field], 0, "       START");
-                        else
-                            set_field_buffer(ui.p_fields[c_field], 0, "       START");
+                        if (is_task_running) {
+                            attron(COLOR_PAIR(1));
+                            mvprintw(33, 23, " ");
+                            mvprintw(33, 42, " ");
+                            attroff(COLOR_PAIR(1));
+                        } else {
+                            attron(COLOR_PAIR(1));
+                            mvprintw(33, 23, " ");
+                            mvprintw(33, 42, " ");
+                            attroff(COLOR_PAIR(1));
+                        }
                         curs_set(1);
                         break;
                     case 11:
-                        if (is_task_running)
-                            set_field_buffer(ui.p_fields[c_field], 0, "       STOP");
-                        else
-                            set_field_buffer(ui.p_fields[c_field], 0, "       STOP");
+                        if (is_task_running) {
+                            attron(COLOR_PAIR(1));
+                            mvprintw(33, 45, " ");
+                            mvprintw(33, 64, " ");
+                            attroff(COLOR_PAIR(1));
+                        } else {
+                            attron(COLOR_PAIR(1));
+                            mvprintw(33, 45, " ");
+                            mvprintw(33, 64, " ");
+                            attroff(COLOR_PAIR(1));
+                        }
+                        curs_set(1);
+                        break;
+                    case 12:
+                        mvdelch(37, 66);
+                        curs_set(1);
+                        break;
+                    case 13:
+                        mvdelch(39, 66);
                         curs_set(1);
                         break;
                     case 14:
-                        if (is_task_running)
-                            set_field_buffer(ui.p_fields[c_field], 0, "    SHOW REPORT");
-                        else
-                            set_field_buffer(ui.p_fields[c_field], 0, "    SHOW REPORT");
+                        if (is_task_running) {
+                            attron(COLOR_PAIR(1));
+                            mvprintw(41, 23, " ");
+                            mvprintw(41, 42, " ");
+                            attroff(COLOR_PAIR(1));
+                        } else {
+                            attron(COLOR_PAIR(1));
+                            mvprintw(41, 23, " ");
+                            mvprintw(41, 42, " ");
+                            attroff(COLOR_PAIR(1));
+                        }
                         curs_set(1);
                         break;
                     case 15:
-                        if (is_task_running)
-                            set_field_buffer(ui.p_fields[c_field], 0, "   EXPORT REPORT");
-                        else
-                            set_field_buffer(ui.p_fields[c_field], 0, "   EXPORT REPORT");
+                        if (is_task_running) {
+                            attron(COLOR_PAIR(1));
+                            mvprintw(41, 45, " ");
+                            mvprintw(41, 64, " ");
+                            attroff(COLOR_PAIR(1));
+                        } else {
+                            attron(COLOR_PAIR(1));
+                            mvprintw(41, 45, " ");
+                            mvprintw(41, 64, " ");
+                            attroff(COLOR_PAIR(1));
+                        }
                         curs_set(1);
                         break;
                     default:
@@ -148,84 +182,96 @@ void Nomp::driver()
                     case 2:
                     case 3:
                     case 4:
-                    case 5:
                         if (!is_logged) {
                             if (c_field == 3) {
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                             } else if (c_field == 4) {
-                                set_field_buffer(ui.p_fields[c_field], 0, "      [LOGIN]");
-                                curs_set(0);
-                            } else if (c_field == 5) {
-                                set_field_buffer(ui.p_fields[c_field], 0, "       [EXIT]");
+                                mvaddch(28, 77, ACS_CKBOARD);
+                                mvaddch(28, 96, ACS_CKBOARD);
                                 curs_set(0);
                             } else {
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
                             }
                         } else {
                             if (c_field == 2) {
-                                mvprintw(11, 15, "+");
+                                mvaddch(11, 66, ACS_DIAMOND);
                                 curs_set(0);
                             } else if (c_field == 3) {
-                                set_field_buffer(ui.p_fields[c_field], 0, "  [CREATE TARGET]");
-                                curs_set(0);
-                            } else if (c_field == 5) {
-                                mvprintw(19, 16, "+");
+                                mvaddch(13, 34, ACS_CKBOARD);
+                                mvaddch(13, 53, ACS_CKBOARD);
                                 curs_set(0);
                             } else {
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
                             }
                         }
                         break;
+                    case 5:
+                        mvaddch(19, 66, ACS_DIAMOND);
+                        curs_set(0);
+                        break;
                     case 6:
-                        mvprintw(21, 14, "+");
-                        curs_set(0);
-                        break;
-                    case 8:
-                        mvprintw(27, 16, "+");
-                        curs_set(0);
-                        break;
-                    case 9:
-                        mvprintw(29, 13, "+");
-                        curs_set(0);
-                        break;
-                    case 12:
-                        mvprintw(37, 16, "+");
-                        curs_set(0);
-                        break;
-                    case 13:
-                        mvprintw(39, 14, "+");
+                        mvaddch(21, 66, ACS_DIAMOND);
                         curs_set(0);
                         break;
                     case 7:
-                        set_field_buffer(ui.p_fields[c_field], 0, "   [CREATE TASK]");
+                        mvaddch(23, 34, ACS_CKBOARD);
+                        mvaddch(23, 53, ACS_CKBOARD);
+                        curs_set(0);
+                        break;
+                    case 8:
+                        mvaddch(27, 66, ACS_DIAMOND);
+                        curs_set(0);
+                        break;
+                    case 9:
+                        mvaddch(29, 66, ACS_DIAMOND);
                         curs_set(0);
                         break;
                     case 10:
-                        if (is_task_running)
-                            set_field_buffer(ui.p_fields[c_field], 0, "      [START]");
-                        else
-                            set_field_buffer(ui.p_fields[c_field], 0, "      [START]");
+                        if (is_task_running) {
+                            mvaddch(33, 23, ACS_CKBOARD);
+                            mvaddch(33, 42, ACS_CKBOARD);
+                        } else {
+                            mvaddch(33, 23, ACS_CKBOARD);
+                            mvaddch(33, 42, ACS_CKBOARD);
+                        }
                         curs_set(0);
                         break;
                     case 11:
-                        if (is_task_running)
-                            set_field_buffer(ui.p_fields[c_field], 0, "      [STOP]");
-                        else
-                            set_field_buffer(ui.p_fields[c_field], 0, "      [STOP]");
+                        if (is_task_running) {
+                            mvaddch(33, 45, ACS_CKBOARD);
+                            mvaddch(33, 64, ACS_CKBOARD);
+                        } else {
+                            mvaddch(33, 45, ACS_CKBOARD);
+                            mvaddch(33, 64, ACS_CKBOARD);
+                        }
+                        curs_set(0);
+                        break;
+                    case 12:
+                        mvaddch(37, 66, ACS_DIAMOND);
+                        curs_set(0);
+                        break;
+                    case 13:
+                        mvaddch(39, 66, ACS_DIAMOND);
                         curs_set(0);
                         break;
                     case 14:
-                        if (is_task_running)
-                            set_field_buffer(ui.p_fields[c_field], 0, "   [SHOW REPORT]");
-                        else
-                            set_field_buffer(ui.p_fields[c_field], 0, "   [SHOW REPORT]");
+                        if (is_task_running) {
+                            mvaddch(41, 23, ACS_CKBOARD);
+                            mvaddch(41, 42, ACS_CKBOARD);
+                        } else {
+                            mvaddch(41, 23, ACS_CKBOARD);
+                            mvaddch(41, 42, ACS_CKBOARD);
+                        }
                         curs_set(0);
                         break;
                     case 15:
-                        if (is_task_running)
-                            set_field_buffer(ui.p_fields[c_field], 0, "  [EXPORT REPORT]");
-                        else
-                            set_field_buffer(ui.p_fields[c_field], 0, "  [EXPORT REPORT]");
+                        if (is_task_running) {
+                            mvaddch(41, 45, ACS_CKBOARD);
+                            mvaddch(41, 64, ACS_CKBOARD);
+                        } else {
+                            mvaddch(41, 45, ACS_CKBOARD);
+                            mvaddch(41, 64, ACS_CKBOARD);
+                        }
                         curs_set(0);
                         break;
                     default:
@@ -238,29 +284,22 @@ void Nomp::driver()
                 break;
             case KEY_RETURN:
                 if (!is_logged) {
-                    switch(c_field)
-		            {	
-                        case 4:
-                            i_fields.clear();
-                            for (int i = 0; i < 4; i++)
-                                i_fields.push_back(i);
-                            user_configs = ui.get_fields_value(&i_fields, 0);
-                            cmd = command.create(&user_configs, "<get_version/>");
-                            if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
-                                ui.error(cret);
-                            } else {
-                                is_logged = true;
-                                c_field = 0;
-                                ui.cleanup();
-                                ui.main();
-                            }
-                            break;
-                        case 5:
-                            key = KEY_QUIT;
-                            break;
-                        default:
-                            break;
+                    if (c_field == 4) {
+                        i_fields.clear();
+                        for (int i = 0; i < 4; i++)
+                            i_fields.push_back(i);
+                        user_configs = ui.get_fields_value(&i_fields, 0);
+                        cmd = command.create(&user_configs, "<get_version/>");
+                        if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
+                            ui.error(cret);
+                        } else {
+                            is_logged = true;
+                            c_field = 0;
+                            ui.cleanup();
+                            ui.main();
+                        }
                     }
+                    break;
                 } else {
                     i_fields.clear();
                     xnodes.clear();
@@ -329,7 +368,6 @@ void Nomp::driver()
                                 }
                             }
                             break;
-                        case 15:
                             if (is_task_running) {
                                 xnodes.push_back("stop_task");
                                 xnodes.push_back("task_id");
@@ -376,7 +414,7 @@ void Nomp::driver()
                                     break;
                                 case 9:
                                     xret = times;
-                                    ui.menu_create(&xret, 28);
+                                    ui.menu(&xret, 28);
                                     break;
                                 case 12:
                                     xpaths.push_back("/get_tasks_response/task/second_last_report/report"); // TODO: CAMBIAR 
@@ -410,11 +448,11 @@ void Nomp::driver()
                             }
                            
                             if (c_field == 14) {
-                                c_item = ui.menu_scroll(&xret, true);
-                                ui.menu_delete(3);
+                                c_item = ui.report_scroll(&xret);
+                                ui.delete_arr_report();
                             } else {
                                 c_item = ui.menu_scroll(&xret);
-                                ui.menu_delete(2);
+                                ui.delete_windows_arr(2);
                             }
                             
                             if (c_item >= 0) {
@@ -459,8 +497,12 @@ void Nomp::get(string cmd_opt, int rows, bool get_data, string attr_name, bool i
         ui.error(cret);
     } else {
         xret = xml.parse(&cret, &xpaths, attr_name, get_data, is_report);
-        if (rows != -1)
-            ui.menu_create(&xret, rows, is_report);
+        if (rows != -1) {
+            if (is_report)
+                ui.report(&xret);
+            else
+                ui.menu(&xret, rows);
+        }
     }
 }
 

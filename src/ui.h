@@ -24,9 +24,12 @@ public:
     FORM **p_form = NULL;
     
     void main();
-    void menu_create(vector<string> *values, int rows, bool is_report = false);
-    int menu_scroll(vector<string> *values, bool is_report = false);
-    void menu_delete(int windows_extra = 0);
+    void menu(vector<string> *values, int rows);
+    int menu_scroll(vector<string> *values);
+    void report(vector<string> *values);
+    int report_scroll(vector<string> *values);
+    void delete_windows_arr(int windows_extra = 0);
+    void delete_arr_report();
     void progress(string p);
     void error(const string err);
     void cleanup();
@@ -34,20 +37,20 @@ public:
 
 private:
     int n_values;
-    int lines_pad_data;
+    int menu_data_lines = 36;
 
-    FIELD *fields_login[7];
+    FIELD *fields_login[6];
     FIELD *fields_main[17];
 
     FORM *form_login;
     FORM *form_main;
 
-    WINDOW **windows_menu = NULL;
-    WINDOW *pad_data = NULL;
+    WINDOW **windows_arr = NULL;
+    WINDOW *window_menu_data = NULL;
     
     void login();
-    void data(vector<string> **values, int c_item);
-    void data_scroll();
-    void data_report(vector<string> **values, int c_item);
+    void menu_data(vector<string> **values, int c_item);
+    void menu_data_scroll();
+    void report_data(vector<string> **values, int c_item);
     char *trim_whitespaces(char *str);
 };

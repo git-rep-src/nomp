@@ -51,12 +51,11 @@ void Ui::login()
     fields_login[1] = new_field(1, 42, 22, 66, 0, 0);
     fields_login[2] = new_field(1, 42, 24, 66, 0, 0);
     fields_login[3] = new_field(1, 42, 26, 66, 0, 0);
-    fields_login[4] = new_field(1, 20, 28, 66, 0, 0);
-    fields_login[5] = new_field(1, 20, 28, 88, 0, 0);
-    fields_login[6] = NULL;
+    fields_login[4] = new_field(1, 20, 28, 77, 0, 0);
+    fields_login[5] = NULL;
     
     for (int i = 0; i <= n_fields; i++) {
-        if ((i == 4) || (i == 5))
+        if (i == 4)
             field_opts_off(fields_login[i], O_EDIT);
         else
             set_field_just(fields_login[i], JUSTIFY_CENTER);
@@ -68,14 +67,12 @@ void Ui::login()
     set_field_back(fields_login[2], COLOR_PAIR(2));
     set_field_back(fields_login[3], COLOR_PAIR(3));
     set_field_back(fields_login[4], COLOR_PAIR(1));
-    set_field_back(fields_login[5], COLOR_PAIR(1));
     
     set_field_buffer(fields_login[0], 0, "localhost");
     set_field_buffer(fields_login[1], 0, "9390");
     set_field_buffer(fields_login[2], 0, "user");
     set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS");
     set_field_buffer(fields_login[4], 0, "       LOGIN");
-    set_field_buffer(fields_login[5], 0, "        EXIT");
     
     form_login = new_form(fields_login);
     scale_form(form_login, &rows, &cols);
@@ -169,214 +166,260 @@ void Ui::main()
     mvprintw(39, 14, "  FORMAT");
     
     curs_set(1);
-
+    
     refresh();
 
     form_driver(form_main, REQ_END_LINE);
 }
 
-void Ui::menu_create(vector<string> *values, int rows, bool is_report)
+void Ui::menu(vector<string> *values, int rows)
 {
-    if (is_report)
-        n_values = ((values->size()) / 5);
-    else
-        n_values = ((values->size()) / 3);
+    n_values = ((values->size()) / 3);
     
-    if (is_report) {
-        windows_menu = (WINDOW **) malloc ((n_values + 3) * sizeof(WINDOW *));
-        windows_menu[0] = newwin(n_values, COLS, 0, 0);
-    } else {
-        windows_menu = (WINDOW **) malloc ((n_values + 2) * sizeof(WINDOW *));
-        windows_menu[0] = newwin((n_values + 2), 42, rows, 23);
-    }
+    windows_arr = (WINDOW **) malloc ((n_values + 2) * sizeof(WINDOW *));
+    
+    windows_arr[0] = newwin((n_values + 2), 42, rows, 23);
+    box(windows_arr[0], 0, 0);
 
     for (int i = 0; i < n_values; i++) {
-        if (is_report) {
-            windows_menu[i + 1] = subwin(windows_menu[0], 1, COLS, (i + 3), 0);
-            mvwprintw(windows_menu[i + 1], 0, 2, "%s", (*values)[n_values + i].c_str());
-            mvwprintw(windows_menu[i + 1], 0, 148, "%s", (*values)[(n_values * 2) + i].c_str());
-            if ((stoi((*values)[(n_values * 3) + i])) >= 7) { 
-                wattron(windows_menu[i + 1], COLOR_PAIR(4));
-                mvwprintw(windows_menu[i + 1], 0, 168, "%s", (*values)[(n_values * 3) + i].c_str());
-                wattroff(windows_menu[i + 1], COLOR_PAIR(4));
-            } else if (((stoi((*values)[(n_values * 3) + i])) >= 4) &&
-                    ((stoi((*values)[(n_values * 3) + i])) < 7)) { 
-                wattron(windows_menu[i + 1], COLOR_PAIR(5));
-                mvwprintw(windows_menu[i + 1], 0, 168, "%s", (*values)[(n_values * 3) + i].c_str());
-                wattroff(windows_menu[i + 1], COLOR_PAIR(5));
-            } else {
-                wattron(windows_menu[i + 1], COLOR_PAIR(6));
-                mvwprintw(windows_menu[i + 1], 0, 168, "%s", (*values)[(n_values * 3) + i].c_str());
-                wattroff(windows_menu[i + 1], COLOR_PAIR(6));
-            }
-        } else {
-            windows_menu[i + 1] = subwin(windows_menu[0], 1, 42, ((i + 1) + rows), 23);
-            mvwprintw(windows_menu[i + 1], 0, 1, "%s", (*values)[n_values + i].c_str()); 
-        }
-    }
-    
-    wbkgd(windows_menu[0], COLOR_PAIR(2));
-    
-    if (is_report) {
-        mvwhline(windows_menu[0], 1, 2, ACS_HLINE, (COLS - 4));
-        mvwprintw(windows_menu[0], 1, 2,   "NAME");
-        mvwprintw(windows_menu[0], 1, 148, "PORT");
-        mvwprintw(windows_menu[0], 1, 168, "RISK");
-    } else {
-        box(windows_menu[0], 0, 0);
+        windows_arr[i + 1] = subwin(windows_arr[0], 1, 40, ((i + 1) + rows), 24);
+        mvwprintw(windows_arr[i + 1], 0, 1, "%s", (*values)[n_values + i].c_str()); 
     }
 
-    wbkgd(windows_menu[1], A_REVERSE);
-    
-    wrefresh(windows_menu[0]);
+    wbkgd(windows_arr[1], A_REVERSE);
+
+    wrefresh(windows_arr[0]);
 }
 
-int Ui::menu_scroll(vector<string> *values, bool is_report)
+int Ui::menu_scroll(vector<string> *values)
 {
     int key;
     int c_item = 0;
-    
-    if (!is_report)
-        data(&values, c_item);
 
+    menu_data(&values, c_item);
+    
     do {
         key = getch();
         switch(key)
         {
+            case KEY_RIGHT:
+            case KEY_TAB:
+                if (menu_data_lines > 36)
+                    menu_data_scroll();
+                break;
             case KEY_UP:
             case KEY_DOWN:
-                wbkgd(windows_menu[c_item + 1], COLOR_PAIR(2));
-                wrefresh(windows_menu[c_item + 1]);
+                wbkgd(windows_arr[c_item + 1], COLOR_PAIR(2));
+                wrefresh(windows_arr[c_item + 1]);
                 if (key == KEY_DOWN)
                     c_item = ((c_item + 1) % n_values);
                 else
                     c_item = (((c_item + n_values) - 1) % n_values);
-                wbkgd(windows_menu[c_item + 1], A_REVERSE);
-                wrefresh(windows_menu[c_item + 1]);
-                if (!is_report)
-                    data(&values, c_item);
-                break;
-            case KEY_TAB:
-                data_scroll();
+                wbkgd(windows_arr[c_item + 1], A_REVERSE);
+                wrefresh(windows_arr[c_item + 1]);
+                menu_data(&values, c_item);
                 break;
             case KEY_RETURN:
-                if (is_report) {
-                    data_report(&values, c_item);
-                    redrawwin(windows_menu[0]);
-                    wrefresh(windows_menu[0]);
-                    break;
-                } else {
-                    return c_item;
-                }
+                return c_item;
             default:
                 break;
         }
     } while (key != KEY_ESCAPE);
    
-    if (pad_data != NULL) {
-        delwin(pad_data);
-        pad_data = NULL;
-    }
+    delwin(window_menu_data);
+    window_menu_data = NULL;
 
     return -1;
 }
-
-void Ui::menu_delete(int windows_extra)
+void Ui::menu_data(vector<string> **values, int c_item)
 {
-    for (int i = 0; i <= (n_values + windows_extra); i++)
-        delwin(windows_menu[i]);
-    free(windows_menu);
-}
-
-void Ui::data(vector<string> **values, int c_item)
-{
-    lines_pad_data = 35;
-    long lines_str = 1;
+    menu_data_lines = 36;
+    long data_lines = 0;
 
     for (uint i = 0; i < (**values)[(n_values * 2) + c_item].size(); i++)
         if ((**values)[(n_values * 2) + c_item][i] == '\n')
-            ++lines_str;
+            ++data_lines;
 
-    if (lines_str > lines_pad_data)
-        lines_pad_data = lines_str;
+    if (data_lines > menu_data_lines)
+        menu_data_lines = data_lines;
+
+    if (window_menu_data != NULL) 
+        delwin(window_menu_data);
     
-    if (pad_data != NULL) 
-        delwin(pad_data);
-    
-    pad_data = newpad(lines_pad_data, 63);
-    wprintw(pad_data, "%s", ((**values)[(n_values * 2) + c_item]).c_str());
-    prefresh(pad_data, 0, 0, 7, 109, 41, 171);
+    window_menu_data = newpad(menu_data_lines, 63);
+    wprintw(window_menu_data, "%s", ((**values)[(n_values * 2) + c_item]).c_str());
+
+    prefresh(window_menu_data, 0, 0, 7, 109, 41, 171);
 }
 
-void Ui::data_scroll()
+void Ui::menu_data_scroll()
 {
     int key;
-    int n_lines = 0;
+    int c_line = 0;
     
-    keypad(pad_data, true);
+    mvaddch(23, 106, ACS_UARROW);
+    mvaddch(24, 106, ACS_DARROW);
+    refresh();
+    
+    keypad(window_menu_data, true);
     
     do {
-        prefresh(pad_data, n_lines, 0, 7, 109, 41, 171);
-        key = wgetch(pad_data);
+        prefresh(window_menu_data, c_line, 0, 7, 109, 41, 171);
+        key = wgetch(window_menu_data);
         switch(key)
         {
+            case KEY_LEFT:
+            case KEY_TAB:
+                key = KEY_ESCAPE;
+                break;
             case KEY_UP:
-                if (n_lines <= 0)
+                if (c_line <= 0)
                     continue;
-                n_lines--;
+                c_line--;
                 break;
             case KEY_DOWN:
-                if ((36 + n_lines) >= lines_pad_data)
+                if ((35 + c_line) >= menu_data_lines)
                     continue;
-                n_lines++;
+                c_line++;
                 break;
             default:
                 break;
         }
     } while (key != KEY_ESCAPE);
+    
+    mvprintw(23, 106, " ");
+    mvprintw(24, 106, " ");
 }
 
-void Ui::data_report(vector<string> **values, int c_item)
+void Ui::report(vector<string> *values)
+{
+    n_values = ((values->size()) / 5);
+    
+    windows_arr = (WINDOW **) malloc (n_values * sizeof(WINDOW *));
+    
+    windows_arr[0] = newpad((n_values + 35), COLS);
+
+    for (int i = 0; i < n_values; i++) {
+        windows_arr[i + 1] = subpad(windows_arr[0], 1, (COLS - 4), i, 0);
+        mvwprintw(windows_arr[i + 1], 0, 0, "%s", (*values)[n_values + i].c_str());
+        mvwprintw(windows_arr[i + 1], 0, 147, "%s", (*values)[(n_values * 2) + i].c_str());
+        if ((stoi((*values)[(n_values * 3) + i])) >= 7) { 
+            wattron(windows_arr[i + 1], COLOR_PAIR(4));
+            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 3) + i].c_str());
+            wattroff(windows_arr[i + 1], COLOR_PAIR(4));
+        } else if (((stoi((*values)[(n_values * 3) + i])) >= 4) &&
+                   ((stoi((*values)[(n_values * 3) + i])) < 7)) { 
+            wattron(windows_arr[i + 1], COLOR_PAIR(5));
+            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 3) + i].c_str());
+            wattroff(windows_arr[i + 1], COLOR_PAIR(5));
+        } else {
+            wattron(windows_arr[i + 1], COLOR_PAIR(6));
+            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 3) + i].c_str());
+            wattroff(windows_arr[i + 1], COLOR_PAIR(6));
+        }
+    }
+    
+    wbkgd(windows_arr[1], COLOR_PAIR(2));
+    wbkgd(windows_arr[1], A_REVERSE);
+    
+    prefresh(windows_arr[0], 0, 0, 7, 3, 41, (COLS - 4));
+}
+
+int Ui::report_scroll(vector<string> *values)
 {
     int key;
-    int n_lines = 0;
-    int lines_pad = 49;
-    long lines_str = 2;
+    int c_item = 0;
+    
+    keypad(windows_arr[0], true);
+    
+    do {
+        prefresh(windows_arr[0], c_item, 0, 7, 3, 41, (COLS - 4));
+        key = wgetch(windows_arr[0]);
+        switch(key)
+        {
+            case KEY_UP:
+                if (c_item > 0) {
+                    wbkgd(windows_arr[c_item + 1], COLOR_PAIR(2));
+                    c_item = (((c_item + n_values) - 1) % n_values);
+                }
+                break;
+            case KEY_DOWN:
+                if (c_item < (n_values - 1)) {
+                    c_item = ((c_item + 1) % n_values);
+                    wbkgd(windows_arr[c_item + 1], A_REVERSE);
+                }
+                break;
+            case KEY_RIGHT:
+            case KEY_RETURN:
+                report_data(&values, c_item);
+                break;
+            default:
+                break;
+        }
+    } while (key != KEY_ESCAPE);
+    
+    return -1;
+}
+
+void Ui::report_data(vector<string> **values, int c_item)
+{
+    int key;
+    int c_line = 0;
+    int report_data_lines = 36;
+    long data_lines = 2;
 
     for (uint i = 0; i < (**values)[(n_values * 4) + c_item].size(); i++)
         if ((**values)[(n_values * 4) + c_item][i] == '\n')
-            ++lines_str;
+            ++data_lines;
 
-    if (lines_str > lines_pad)
-        lines_pad = lines_str;
+    if (data_lines > report_data_lines)
+        report_data_lines = data_lines;
     
-    WINDOW *pad_data_report = newpad(lines_pad, COLS);
-    keypad(pad_data_report, true);
-    mvwprintw(pad_data_report, 1, 0, "%s", (**values)[(n_values * 4) + c_item].c_str());
+    WINDOW *window_report_data = newpad(report_data_lines, (COLS - 4));
+    keypad(window_report_data, true);
+
+    mvwprintw(window_report_data, 0, 0, "%s", (**values)[(n_values * 4) + c_item].c_str());
 
     do {
-        prefresh(pad_data_report, n_lines, 0, 0, 0, 48, 176);
-        key = wgetch(pad_data_report);
+        prefresh(window_report_data, c_line, 0, 7, 3, 41, (COLS - 4));
+        key = wgetch(window_report_data);
         switch(key)
         {
+            case KEY_LEFT:
+                key = KEY_ESCAPE;
+                break;
             case KEY_UP:
-                if (n_lines <= 0)
+                if (c_line <= 0)
                     continue;
-                n_lines--;
+                c_line--;
                 break;
             case KEY_DOWN:
-                if ((49 + n_lines) >= lines_pad)
+                if ((37 + c_line) >= report_data_lines)
                     continue;
-                n_lines++;
+                c_line++;
                 break;
             default:
                 break;
         }
     } while (key != KEY_ESCAPE);
     
-    delwin(pad_data_report);
+    delwin(window_report_data);
 }
 
+void Ui::delete_windows_arr(int windows_extra)
+{
+    for (int i = 1; i < (n_values + windows_extra); i++)
+        delwin(windows_arr[i]);
+    delwin(windows_arr[0]);
+    free(windows_arr);
+}
+void Ui::delete_arr_report()
+{
+    for (int i = 1; i < n_values; i++)
+        delwin(windows_arr[i]);
+    delwin(windows_arr[0]);
+    free(windows_arr);
+}
 void Ui::progress(string p)
 {  
     if ((p == "1") || (p == "-1")) {

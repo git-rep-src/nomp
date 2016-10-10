@@ -130,7 +130,7 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
                                 replace(value, finds, replaces);
                            }
                         }
-                        to_upper(name, is_report);
+                        to_upper(name);
                         ss_data << left << setw(max_width) << setfill(' ') << name << value << endl;
                     } else {
                         ret.push_back(element->get_first_child_text()->get_content() + "\n");
@@ -151,14 +151,12 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
     return ret;
 }
 
-void Xml::to_upper(string &str, bool is_report)
+void Xml::to_upper(string &str)
 {
     string upper;
     for (uint i = 0; i < str.size(); i++)
         upper += toupper(str[i]);
     str = upper;
-    if (is_report)
-        str.insert(0, "  ");
 }
 
 void Xml::replace(string &str, vector<string> &finds, vector<string> &replaces)
