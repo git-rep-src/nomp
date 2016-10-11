@@ -172,30 +172,32 @@ void Ui::main()
     form_driver(form_main, REQ_END_LINE);
 }
 
-void Ui::menu(vector<string> *values, int rows)
-{
-    n_values = ((values->size()) / 3);
-    
-    windows_arr = (WINDOW **) malloc ((n_values + 2) * sizeof(WINDOW *));
-    
-    windows_arr[0] = newwin((n_values + 2), 42, rows, 23);
-    box(windows_arr[0], 0, 0);
-
-    for (int i = 0; i < n_values; i++) {
-        windows_arr[i + 1] = subwin(windows_arr[0], 1, 40, ((i + 1) + rows), 24);
-        mvwprintw(windows_arr[i + 1], 0, 1, "%s", (*values)[n_values + i].c_str()); 
-    }
-
-    wbkgd(windows_arr[1], A_REVERSE);
-
-    wrefresh(windows_arr[0]);
-}
-
-int Ui::menu_scroll(vector<string> *values)
+int Ui::menu(vector<string> *values)
 {
     int key;
+    int row;
     int c_item = 0;
-
+    
+    n_values = ((values->size()) / 3);
+    
+    field_info(current_field(*p_form), NULL, NULL, &row, NULL, NULL, NULL);
+    if (field_index(current_field(form_main)) == 13)
+        row -= 7;
+    else
+        --row;
+    
+    windows_arr = (WINDOW **) malloc ((n_values + 1) * sizeof(WINDOW *));
+    windows_arr[0] = newwin((n_values + 2), 42, row, 23);
+    box(windows_arr[0], 0, 0);
+    
+    for (int i = 0; i < n_values; i++) {
+        windows_arr[i + 1] = subwin(windows_arr[0], 1, 40, ((i + 1) + row), 24);
+        mvwprintw(windows_arr[i + 1], 0, 1, "%s", (*values)[n_values + i].c_str()); 
+    }
+    
+    wbkgd(windows_arr[1], A_REVERSE);
+    wrefresh(windows_arr[0]);
+    
     menu_data(&values, c_item);
     
     do {
@@ -225,12 +227,10 @@ int Ui::menu_scroll(vector<string> *values)
                 break;
         }
     } while (key != KEY_ESCAPE);
-   
-    delwin(window_menu_data);
-    window_menu_data = NULL;
 
     return -1;
 }
+
 void Ui::menu_data(vector<string> **values, int c_item)
 {
     menu_data_lines = 36;
@@ -248,7 +248,6 @@ void Ui::menu_data(vector<string> **values, int c_item)
     
     window_menu_data = newpad(menu_data_lines, 63);
     wprintw(window_menu_data, "%s", ((**values)[(n_values * 2) + c_item]).c_str());
-
     prefresh(window_menu_data, 0, 0, 7, 109, 41, 171);
 }
 
@@ -291,14 +290,17 @@ void Ui::menu_data_scroll()
     mvprintw(24, 106, " ");
 }
 
-void Ui::report(vector<string> *values)
+int Ui::report(vector<string> *values)
 {
+    int key;
+    int c_item = 0;
+    
     n_values = ((values->size()) / 5);
     
-    windows_arr = (WINDOW **) malloc (n_values * sizeof(WINDOW *));
-    
+    windows_arr = (WINDOW **) malloc ((n_values + 1) * sizeof(WINDOW *));
     windows_arr[0] = newpad((n_values + 35), COLS);
-
+    keypad(windows_arr[0], true);
+    
     for (int i = 0; i < n_values; i++) {
         windows_arr[i + 1] = subpad(windows_arr[0], 1, (COLS - 4), i, 0);
         mvwprintw(windows_arr[i + 1], 0, 0, "%s", (*values)[n_values + i].c_str());
@@ -321,17 +323,8 @@ void Ui::report(vector<string> *values)
     
     wbkgd(windows_arr[1], COLOR_PAIR(2));
     wbkgd(windows_arr[1], A_REVERSE);
-    
     prefresh(windows_arr[0], 0, 0, 7, 3, 41, (COLS - 4));
-}
 
-int Ui::report_scroll(vector<string> *values)
-{
-    int key;
-    int c_item = 0;
-    
-    keypad(windows_arr[0], true);
-    
     do {
         prefresh(windows_arr[0], c_item, 0, 7, 3, 41, (COLS - 4));
         key = wgetch(windows_arr[0]);
@@ -377,7 +370,6 @@ void Ui::report_data(vector<string> **values, int c_item)
     
     WINDOW *window_report_data = newpad(report_data_lines, (COLS - 4));
     keypad(window_report_data, true);
-
     mvwprintw(window_report_data, 0, 0, "%s", (**values)[(n_values * 4) + c_item].c_str());
 
     do {
@@ -406,27 +398,55 @@ void Ui::report_data(vector<string> **values, int c_item)
     delwin(window_report_data);
 }
 
-void Ui::delete_windows_arr(int windows_extra)
+void Ui::delete_windows_arr()
 {
-    for (int i = 1; i < (n_values + windows_extra); i++)
+    for (int i = 1; i < (n_values + 1); i++)
         delwin(windows_arr[i]);
     delwin(windows_arr[0]);
     free(windows_arr);
+    
+    if (window_menu_data != NULL) {
+        delwin(window_menu_data);
+        window_menu_data = NULL;
+    }
 }
-void Ui::delete_arr_report()
+
+void Ui::indicator(bool is_menu, bool show)
 {
-    for (int i = 1; i < n_values; i++)
-        delwin(windows_arr[i]);
-    delwin(windows_arr[0]);
-    free(windows_arr);
+    int row;
+    int col;
+    int cols;
+    
+    field_info(current_field(*p_form), NULL, &cols, &row, &col, NULL, NULL);
+
+    if (show) {
+        if (is_menu) {
+            mvprintw(row, 66, "+");
+        } else {
+            mvaddch(row, col, ACS_CKBOARD);
+            mvaddch(row, (col + (cols - 1)), ACS_CKBOARD);
+        }
+        curs_set(0);
+    } else {
+        if (is_menu) {
+            mvprintw(row, 66, " ");
+        } else {
+            attron(COLOR_PAIR(1));
+            mvprintw(row, col, " ");
+            mvprintw(row, (col + (cols - 1)), " ");
+            attroff(COLOR_PAIR(1));
+        }
+        curs_set(1);
+    }
 }
+
 void Ui::progress(string p)
 {  
     if ((p == "1") || (p == "-1")) {
         for (int i = 0; i < 45; i++)
             mvdelch(32, 23);
     }
-
+    
     if (p == "-1") {
         mvprintw(32, 23, "  DONE  ");
         mvhline(32, 33, ACS_VLINE, 32);

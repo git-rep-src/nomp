@@ -97,7 +97,7 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
                             finds.push_back(", ");
                             replaces.push_back("\n");
                             replace(value, finds, replaces);
-                            wrap(value);
+                            format(value);
                         } else if ((name == "tags") && (value != "")) {
                             finds.push_back("cvss_base_vector=");
                             finds.push_back("vuldetect=");
@@ -120,10 +120,10 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
                             replaces.push_back("SOLUTION: ");
                             replaces.push_back("\n\n");
                             replace(value, finds, replaces);
-                            wrap(value);
+                            format(value);
                         } else if ((name == "description") && (value != "")) { 
                             if (is_report) {
-                                wrap(value);
+                                format(value);
                             } else {
                                 finds.push_back("\n");
                                 replaces.push_back("");
@@ -172,18 +172,19 @@ void Xml::replace(string &str, vector<string> &finds, vector<string> &replaces)
 }
 
 
-void Xml::wrap(string &str)
+void Xml::format(string &str)
 {
     istringstream f(str);
     stringstream ss;    
     string line;
     bool is_first_line = true; 
+    
     while (getline(f, line)) {
         if (is_first_line) {
-            ss << left << line << endl;
+            ss << line << endl;
             is_first_line = false;
         } else {
-            ss << left << setw(21) << setfill(' ') << " " << line << endl;
+            ss << setw(21) << setfill(' ') << " " << line << endl;
         }
     }
     str = ss.str().replace((ss.str().size() - 1), 1, "");

@@ -46,7 +46,7 @@ private:
     vector<int> i_fields;
 
     void driver();
-    void get(string cmd_opt, int rows = 0, bool get_data = true,
+    void get(string cmd_opt, bool get_data = true,
              string attr_name = "id", bool is_report = false);
     void refresh();
     void refresh_sleep();

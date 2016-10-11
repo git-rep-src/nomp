@@ -16,5 +16,5 @@ public:
 private:
     void to_upper(string &str);
     void replace(string &str, vector<string> &finds, vector<string> &replaces);
-    void wrap(string &str);
+    void format(string &str);
 };

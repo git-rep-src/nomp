@@ -41,124 +41,39 @@ void Nomp::driver()
                     case 2:
                     case 3:
                     case 4:
-                        if (!is_logged) {
-                            if (c_field == 3) {
+                        if (!is_logged)
+                            if (c_field == 3)
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
-                            } else if (c_field == 4) {
-                                attron(COLOR_PAIR(1));
-                                mvprintw(28, 77, " ");
-                                mvprintw(28, 96, " ");
-                                attroff(COLOR_PAIR(1));
-                                curs_set(1);
-                            } else {
+                            else if (c_field == 4)
+                                ui.indicator(false, false);
+                            else
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
-                            }
-                        } else {
-                            if (c_field == 2) {
-                                mvdelch(11, 66);
-                                curs_set(1);
-                            } else if (c_field == 3) {
-                                attron(COLOR_PAIR(1));
-                                mvprintw(13, 34, " ");
-                                mvprintw(13, 53, " ");
-                                attroff(COLOR_PAIR(1));
-                                curs_set(1);
-                            } else {
+                        else
+                            if (c_field == 2)
+                                ui.indicator(true, false);
+                            else if (c_field == 3)
+                                ui.indicator(false, false);
+                            else
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
-                            }
-                        }
                         break;
                     case 5:
-                        mvdelch(19, 66);
-                        curs_set(1);
-                        break;
                     case 6:
-                        mvdelch(21, 66);
-                        curs_set(1);
+                    case 8:
+                    case 9:
+                    case 12:
+                    case 13:
+                        ui.indicator(true, false);
                         break;
                     case 7:
-                        attron(COLOR_PAIR(1));
-                        mvprintw(23, 34, " ");
-                        mvprintw(23, 53, " ");
-                        attroff(COLOR_PAIR(1));
-                        curs_set(1);
-                        break;
-                    case 8:
-                        mvdelch(27, 66);
-                        curs_set(1);
-                        break;
-                    case 9:
-                        mvdelch(29, 66);
-                        curs_set(1);
-                        break;
                     case 10:
-                        if (is_task_running) {
-                            attron(COLOR_PAIR(1));
-                            mvprintw(33, 23, " ");
-                            mvprintw(33, 42, " ");
-                            attroff(COLOR_PAIR(1));
-                        } else {
-                            attron(COLOR_PAIR(1));
-                            mvprintw(33, 23, " ");
-                            mvprintw(33, 42, " ");
-                            attroff(COLOR_PAIR(1));
-                        }
-                        curs_set(1);
-                        break;
                     case 11:
-                        if (is_task_running) {
-                            attron(COLOR_PAIR(1));
-                            mvprintw(33, 45, " ");
-                            mvprintw(33, 64, " ");
-                            attroff(COLOR_PAIR(1));
-                        } else {
-                            attron(COLOR_PAIR(1));
-                            mvprintw(33, 45, " ");
-                            mvprintw(33, 64, " ");
-                            attroff(COLOR_PAIR(1));
-                        }
-                        curs_set(1);
-                        break;
-                    case 12:
-                        mvdelch(37, 66);
-                        curs_set(1);
-                        break;
-                    case 13:
-                        mvdelch(39, 66);
-                        curs_set(1);
-                        break;
                     case 14:
-                        if (is_task_running) {
-                            attron(COLOR_PAIR(1));
-                            mvprintw(41, 23, " ");
-                            mvprintw(41, 42, " ");
-                            attroff(COLOR_PAIR(1));
-                        } else {
-                            attron(COLOR_PAIR(1));
-                            mvprintw(41, 23, " ");
-                            mvprintw(41, 42, " ");
-                            attroff(COLOR_PAIR(1));
-                        }
-                        curs_set(1);
-                        break;
                     case 15:
-                        if (is_task_running) {
-                            attron(COLOR_PAIR(1));
-                            mvprintw(41, 45, " ");
-                            mvprintw(41, 64, " ");
-                            attroff(COLOR_PAIR(1));
-                        } else {
-                            attron(COLOR_PAIR(1));
-                            mvprintw(41, 45, " ");
-                            mvprintw(41, 64, " ");
-                            attroff(COLOR_PAIR(1));
-                        }
-                        curs_set(1);
+                        ui.indicator(false, false);
                         break;
                     default:
                         break;
                 }
-                
                 if (key == KEY_UP) {
                     if (c_field == 0)
                         c_field = ui.n_fields;
@@ -174,7 +89,6 @@ void Nomp::driver()
                     form_driver(*ui.p_form, REQ_NEXT_FIELD);
                     form_driver(*ui.p_form, REQ_END_LINE);
                 }
-                
                 switch(c_field)
                 {
                     case 0:
@@ -182,97 +96,35 @@ void Nomp::driver()
                     case 2:
                     case 3:
                     case 4:
-                        if (!is_logged) {
-                            if (c_field == 3) {
+                        if (!is_logged)
+                            if (c_field == 3)
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
-                            } else if (c_field == 4) {
-                                mvaddch(28, 77, ACS_CKBOARD);
-                                mvaddch(28, 96, ACS_CKBOARD);
-                                curs_set(0);
-                            } else {
+                            else if (c_field == 4)
+                                ui.indicator(false);
+                            else
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
-                            }
-                        } else {
-                            if (c_field == 2) {
-                                mvaddch(11, 66, ACS_DIAMOND);
-                                curs_set(0);
-                            } else if (c_field == 3) {
-                                mvaddch(13, 34, ACS_CKBOARD);
-                                mvaddch(13, 53, ACS_CKBOARD);
-                                curs_set(0);
-                            } else {
+                        else
+                            if (c_field == 2)
+                                ui.indicator();
+                            else if (c_field == 3)
+                                ui.indicator(false);
+                            else
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
-                            }
-                        }
                         break;
                     case 5:
-                        mvaddch(19, 66, ACS_DIAMOND);
-                        curs_set(0);
-                        break;
                     case 6:
-                        mvaddch(21, 66, ACS_DIAMOND);
-                        curs_set(0);
+                    case 8:
+                    case 9:
+                    case 12:
+                    case 13:
+                        ui.indicator();
                         break;
                     case 7:
-                        mvaddch(23, 34, ACS_CKBOARD);
-                        mvaddch(23, 53, ACS_CKBOARD);
-                        curs_set(0);
-                        break;
-                    case 8:
-                        mvaddch(27, 66, ACS_DIAMOND);
-                        curs_set(0);
-                        break;
-                    case 9:
-                        mvaddch(29, 66, ACS_DIAMOND);
-                        curs_set(0);
-                        break;
                     case 10:
-                        if (is_task_running) {
-                            mvaddch(33, 23, ACS_CKBOARD);
-                            mvaddch(33, 42, ACS_CKBOARD);
-                        } else {
-                            mvaddch(33, 23, ACS_CKBOARD);
-                            mvaddch(33, 42, ACS_CKBOARD);
-                        }
-                        curs_set(0);
-                        break;
                     case 11:
-                        if (is_task_running) {
-                            mvaddch(33, 45, ACS_CKBOARD);
-                            mvaddch(33, 64, ACS_CKBOARD);
-                        } else {
-                            mvaddch(33, 45, ACS_CKBOARD);
-                            mvaddch(33, 64, ACS_CKBOARD);
-                        }
-                        curs_set(0);
-                        break;
-                    case 12:
-                        mvaddch(37, 66, ACS_DIAMOND);
-                        curs_set(0);
-                        break;
-                    case 13:
-                        mvaddch(39, 66, ACS_DIAMOND);
-                        curs_set(0);
-                        break;
                     case 14:
-                        if (is_task_running) {
-                            mvaddch(41, 23, ACS_CKBOARD);
-                            mvaddch(41, 42, ACS_CKBOARD);
-                        } else {
-                            mvaddch(41, 23, ACS_CKBOARD);
-                            mvaddch(41, 42, ACS_CKBOARD);
-                        }
-                        curs_set(0);
-                        break;
                     case 15:
-                        if (is_task_running) {
-                            mvaddch(41, 45, ACS_CKBOARD);
-                            mvaddch(41, 64, ACS_CKBOARD);
-                        } else {
-                            mvaddch(41, 45, ACS_CKBOARD);
-                            mvaddch(41, 64, ACS_CKBOARD);
-                        }
-                        curs_set(0);
+                        ui.indicator(false);
                         break;
                     default:
                         break;
@@ -395,37 +247,36 @@ void Nomp::driver()
                                 case 2:
                                     xpaths.push_back("/get_port_lists_response/port_list"); 
                                     xpaths.push_back("/get_port_lists_response/port_list/name");
-                                    get("<get_port_lists/>", 10);
+                                    get("<get_port_lists/>");
                                     break;
                                 case 5:
                                     xpaths.push_back("/get_configs_response/config"); 
                                     xpaths.push_back("/get_configs_response/config/name");
-                                    get("<get_configs/>", 18);
+                                    get("<get_configs/>");
                                     break;
                                 case 6:
                                     xpaths.push_back("/get_targets_response/target"); 
                                     xpaths.push_back("/get_targets_response/target/name");
-                                    get("<get_targets/>", 20);
+                                    get("<get_targets/>");
                                     break;
                                 case 8:
                                     xpaths.push_back("/get_tasks_response/task"); 
                                     xpaths.push_back("/get_tasks_response/task/name");
-                                    get("<get_tasks/>", 26);
+                                    get("<get_tasks/>");
                                     break;
                                 case 9:
                                     xret = times;
-                                    ui.menu(&xret, 28);
+                                    ui.menu(&xret);
                                     break;
                                 case 12:
                                     xpaths.push_back("/get_tasks_response/task/second_last_report/report"); // TODO: CAMBIAR 
                                     xpaths.push_back("/get_tasks_response/task/name");
-                                    get("<get_tasks/>", 36);
+                                    get("<get_tasks/>");
                                     break;
                                 case 13:
                                     xpaths.push_back("/get_report_formats_response/report_format"); 
                                     xpaths.push_back("/get_report_formats_response/report_format/name");
-                                    get("<get_report_formats/>", 32);
-                                    cmd = command.create(&user_configs, "<get_report_formats/>");
+                                    get("<get_report_formats/>");
                                     break;
                                 case 14:
                                     xnodes.push_back("get_reports");
@@ -441,19 +292,18 @@ void Nomp::driver()
                                     xpaths.push_back("/get_reports_response/report/report/results/result/name");
                                     xpaths.push_back("/get_reports_response/report/report/results/result/port");
                                     xpaths.push_back("/get_reports_response/report/report/results/result/severity");
-                                    get(xret[0], 0, true, "id", true);
+                                    get(xret[0], true, "id", true);
                                     break;
                                 default:
                                     break;
                             }
-                           
-                            if (c_field == 14) {
-                                c_item = ui.report_scroll(&xret);
-                                ui.delete_arr_report();
-                            } else {
-                                c_item = ui.menu_scroll(&xret);
-                                ui.delete_windows_arr(2);
-                            }
+                            
+                            if (c_field != 14)
+                                c_item = ui.menu(&xret);
+                            else
+                                c_item = ui.report(&xret);
+                            
+                            ui.delete_windows_arr();
                             
                             if (c_item >= 0) {
                                 if (c_field == 2)
@@ -490,20 +340,14 @@ void Nomp::driver()
     //quit();
 }
 
-void Nomp::get(string cmd_opt, int rows, bool get_data, string attr_name, bool is_report)
+void Nomp::get(string cmd_opt, bool get_data, string attr_name, bool is_report)
 {
     cmd = command.create(&user_configs, cmd_opt);
-    if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
+
+    if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos)
         ui.error(cret);
-    } else {
+    else
         xret = xml.parse(&cret, &xpaths, attr_name, get_data, is_report);
-        if (rows != -1) {
-            if (is_report)
-                ui.report(&xret);
-            else
-                ui.menu(&xret, rows);
-        }
-    }
 }
 
 void Nomp::refresh()
@@ -519,7 +363,7 @@ void Nomp::refresh()
     xret = xml.create(&xnodes, &xvalues);
 
     xpaths.push_back("/get_tasks_response/task/progress"); 
-    get(xret[0], -1, false);
+    get(xret[0], false);
     
     ui.progress(xret[0].erase(xret[0].size() - 1));
     

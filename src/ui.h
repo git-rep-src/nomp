@@ -24,12 +24,10 @@ public:
     FORM **p_form = NULL;
     
     void main();
-    void menu(vector<string> *values, int rows);
-    int menu_scroll(vector<string> *values);
-    void report(vector<string> *values);
-    int report_scroll(vector<string> *values);
-    void delete_windows_arr(int windows_extra = 0);
-    void delete_arr_report();
+    int menu(vector<string> *values);
+    int report(vector<string> *values);
+    void delete_windows_arr();
+    void indicator(bool is_menu = true, bool show = true);
     void progress(string p);
     void error(const string err);
     void cleanup();
