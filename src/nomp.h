@@ -24,8 +24,8 @@ private:
     const vector<string> times = {
         "30", "60", "120", "300",
         " 30 sec", " 60 sec", "120 sec", "300 sec",
-        "REFRESH  30 seconds", "REFRESH  60 seconds",
-        "REFRESH  2 minutes", "REFRESH  5 minutes"
+        "COMMENT  Refresh every 30 seconds.", "COMMENT  Refresh every 60 seconds.",
+        "COMMENT  Refresh every 2 minutes.", "COMMENT  Refresh every 5 minutes."
     };
    
     string port_list_id;

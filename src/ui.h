@@ -24,8 +24,8 @@ public:
     FORM **p_form = NULL;
     
     void main();
-    int menu(vector<string> *values);
-    int report(vector<string> *values);
+    int menu(vector<string> *values, uint n);
+    int report(vector<string> *values, uint n);
     void delete_windows_arr();
     void indicator(bool is_menu = true, bool show = true);
     void progress(string p);
@@ -47,8 +47,8 @@ private:
     WINDOW *window_menu_data = NULL;
     
     void login();
-    void menu_data(vector<string> **values, int c_item);
+    void menu_data(vector<string> **values, int c_item, uint n);
     void menu_data_scroll();
-    void report_data(vector<string> **values, int c_item);
+    void report_data(vector<string> **values, int c_item, uint n);
     char *trim_whitespaces(char *str);
 };

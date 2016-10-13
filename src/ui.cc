@@ -172,13 +172,13 @@ void Ui::main()
     form_driver(form_main, REQ_END_LINE);
 }
 
-int Ui::menu(vector<string> *values)
+int Ui::menu(vector<string> *values, uint n)
 {
     int key;
     int row;
     int c_item = 0;
     
-    n_values = ((values->size()) / 3);
+    n_values = ((values->size()) / n);
     
     field_info(current_field(*p_form), NULL, NULL, &row, NULL, NULL, NULL);
     if (field_index(current_field(form_main)) == 13)
@@ -187,6 +187,7 @@ int Ui::menu(vector<string> *values)
         --row;
     
     windows_arr = (WINDOW **) malloc ((n_values + 1) * sizeof(WINDOW *));
+    
     windows_arr[0] = newwin((n_values + 2), 42, row, 23);
     box(windows_arr[0], 0, 0);
     
@@ -198,7 +199,7 @@ int Ui::menu(vector<string> *values)
     wbkgd(windows_arr[1], A_REVERSE);
     wrefresh(windows_arr[0]);
     
-    menu_data(&values, c_item);
+    menu_data(&values, c_item, n);
     
     do {
         key = getch();
@@ -219,7 +220,7 @@ int Ui::menu(vector<string> *values)
                     c_item = (((c_item + n_values) - 1) % n_values);
                 wbkgd(windows_arr[c_item + 1], A_REVERSE);
                 wrefresh(windows_arr[c_item + 1]);
-                menu_data(&values, c_item);
+                menu_data(&values, c_item, n);
                 break;
             case KEY_RETURN:
                 return c_item;
@@ -231,14 +232,16 @@ int Ui::menu(vector<string> *values)
     return -1;
 }
 
-void Ui::menu_data(vector<string> **values, int c_item)
+void Ui::menu_data(vector<string> **values, int c_item, uint n)
 {
     menu_data_lines = 36;
     long data_lines = 0;
 
+    /*
     for (uint i = 0; i < (**values)[(n_values * 2) + c_item].size(); i++)
         if ((**values)[(n_values * 2) + c_item][i] == '\n')
             ++data_lines;
+    */
 
     if (data_lines > menu_data_lines)
         menu_data_lines = data_lines;
@@ -247,7 +250,10 @@ void Ui::menu_data(vector<string> **values, int c_item)
         delwin(window_menu_data);
     
     window_menu_data = newpad(menu_data_lines, 63);
-    wprintw(window_menu_data, "%s", ((**values)[(n_values * 2) + c_item]).c_str());
+    
+    for (uint i = 2; i < n; i++)
+        wprintw(window_menu_data, "%s", ((**values)[(n_values * i) + c_item]).c_str());
+    
     prefresh(window_menu_data, 0, 0, 7, 109, 41, 171);
 }
 
@@ -290,39 +296,44 @@ void Ui::menu_data_scroll()
     mvprintw(24, 106, " ");
 }
 
-int Ui::report(vector<string> *values)
+int Ui::report(vector<string> *values, uint n)
 {
     int key;
     int c_item = 0;
-    
-    n_values = ((values->size()) / 5);
+
+    n_values = ((values->size()) / n);
     
     windows_arr = (WINDOW **) malloc ((n_values + 1) * sizeof(WINDOW *));
+    
     windows_arr[0] = newpad((n_values + 35), COLS);
     keypad(windows_arr[0], true);
     
     for (int i = 0; i < n_values; i++) {
         windows_arr[i + 1] = subpad(windows_arr[0], 1, (COLS - 4), i, 0);
+        
         mvwprintw(windows_arr[i + 1], 0, 0, "%s", (*values)[n_values + i].c_str());
-        mvwprintw(windows_arr[i + 1], 0, 147, "%s", (*values)[(n_values * 2) + i].c_str());
-        if ((stoi((*values)[(n_values * 3) + i])) >= 7) { 
+        mvwprintw(windows_arr[i + 1], 0, 130, "%s", (*values)[(n_values * 2) + i].c_str());
+        mvwprintw(windows_arr[i + 1], 0, 147, "%s", (*values)[(n_values * 3) + i].c_str());
+        
+        if ((stoi((*values)[(n_values * 4) + i])) >= 7) { 
             wattron(windows_arr[i + 1], COLOR_PAIR(4));
-            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 3) + i].c_str());
+            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
             wattroff(windows_arr[i + 1], COLOR_PAIR(4));
-        } else if (((stoi((*values)[(n_values * 3) + i])) >= 4) &&
-                   ((stoi((*values)[(n_values * 3) + i])) < 7)) { 
+        } else if (((stoi((*values)[(n_values * 4) + i])) >= 4) &&
+                   ((stoi((*values)[(n_values * 4) + i])) < 7)) { 
             wattron(windows_arr[i + 1], COLOR_PAIR(5));
-            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 3) + i].c_str());
+            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
             wattroff(windows_arr[i + 1], COLOR_PAIR(5));
         } else {
             wattron(windows_arr[i + 1], COLOR_PAIR(6));
-            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 3) + i].c_str());
+            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
             wattroff(windows_arr[i + 1], COLOR_PAIR(6));
         }
     }
     
     wbkgd(windows_arr[1], COLOR_PAIR(2));
     wbkgd(windows_arr[1], A_REVERSE);
+    
     prefresh(windows_arr[0], 0, 0, 7, 3, 41, (COLS - 4));
 
     do {
@@ -344,7 +355,7 @@ int Ui::report(vector<string> *values)
                 break;
             case KEY_RIGHT:
             case KEY_RETURN:
-                report_data(&values, c_item);
+                report_data(&values, c_item, n);
                 break;
             default:
                 break;
@@ -354,24 +365,26 @@ int Ui::report(vector<string> *values)
     return -1;
 }
 
-void Ui::report_data(vector<string> **values, int c_item)
+void Ui::report_data(vector<string> **values, int c_item, uint n)
 {
     int key;
     int c_line = 0;
     int report_data_lines = 36;
     long data_lines = 2;
 
-    for (uint i = 0; i < (**values)[(n_values * 4) + c_item].size(); i++)
-        if ((**values)[(n_values * 4) + c_item][i] == '\n')
-            ++data_lines;
-
+    for (uint i = 5; i < n; i++)
+        for (uint ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
+            if ((**values)[(n_values * i) + c_item][ii] == '\n')
+                ++data_lines;
     if (data_lines > report_data_lines)
         report_data_lines = data_lines;
     
     WINDOW *window_report_data = newpad(report_data_lines, (COLS - 4));
     keypad(window_report_data, true);
-    mvwprintw(window_report_data, 0, 0, "%s", (**values)[(n_values * 4) + c_item].c_str());
-
+    
+    for (uint i = 5; i < n; i++)
+        wprintw(window_report_data, "%s", ((**values)[(n_values * i) + c_item]).c_str());
+    
     do {
         prefresh(window_report_data, c_line, 0, 7, 3, 41, (COLS - 4));
         key = wgetch(window_report_data);

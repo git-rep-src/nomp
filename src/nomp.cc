@@ -247,26 +247,54 @@ void Nomp::driver()
                                 case 2:
                                     xpaths.push_back("/get_port_lists_response/port_list"); 
                                     xpaths.push_back("/get_port_lists_response/port_list/name");
+                                    xpaths.push_back("/get_port_lists_response/port_list/name");
+                                    xpaths.push_back("/get_port_lists_response/port_list/comment");
+                                    xpaths.push_back("/get_port_lists_response/port_list/creation_time");
+                                    xpaths.push_back("/get_port_lists_response/port_list/modification_time");
+                                    xpaths.push_back("/get_port_lists_response/port_list/port_count/all"); 
+                                    xpaths.push_back("/get_port_lists_response/port_list/port_count/tcp"); 
+                                    xpaths.push_back("/get_port_lists_response/port_list/port_count/udp"); 
                                     get("<get_port_lists/>");
                                     break;
                                 case 5:
                                     xpaths.push_back("/get_configs_response/config"); 
                                     xpaths.push_back("/get_configs_response/config/name");
+                                    xpaths.push_back("/get_configs_response/config/name");
+                                    xpaths.push_back("/get_configs_response/config/comment");
+                                    xpaths.push_back("/get_configs_response/config/creation_time");
+                                    xpaths.push_back("/get_configs_response/config/modification_time");
+                                    xpaths.push_back("/get_configs_response/config/family_count");
+                                    xpaths.push_back("/get_configs_response/config/nvt_count");
                                     get("<get_configs/>");
                                     break;
                                 case 6:
                                     xpaths.push_back("/get_targets_response/target"); 
                                     xpaths.push_back("/get_targets_response/target/name");
+                                    xpaths.push_back("/get_targets_response/target/name");
+                                    xpaths.push_back("/get_targets_response/target/comment");
+                                    xpaths.push_back("/get_targets_response/target/creation_time");
+                                    xpaths.push_back("/get_targets_response/target/modification_time");
+                                    xpaths.push_back("/get_targets_response/target/hosts");
+                                    xpaths.push_back("/get_targets_response/target/port_list/name");
+                                    xpaths.push_back("/get_targets_response/target/alive_tests");
                                     get("<get_targets/>");
                                     break;
                                 case 8:
                                     xpaths.push_back("/get_tasks_response/task"); 
                                     xpaths.push_back("/get_tasks_response/task/name");
+                                    xpaths.push_back("/get_tasks_response/task/name");
+                                    xpaths.push_back("/get_tasks_response/task/comment");
+                                    xpaths.push_back("/get_tasks_response/task/creation_time");
+                                    xpaths.push_back("/get_tasks_response/task/modification_time");
+                                    xpaths.push_back("/get_tasks_response/task/config/name");
+                                    xpaths.push_back("/get_tasks_response/task/target/name");
+                                    xpaths.push_back("/get_tasks_response/task/scanner/name");
+                                    xpaths.push_back("/get_tasks_response/task/status");
                                     get("<get_tasks/>");
                                     break;
                                 case 9:
                                     xret = times;
-                                    ui.menu(&xret);
+                                    ui.menu(&xret, 3);
                                     break;
                                 case 12:
                                     xpaths.push_back("/get_tasks_response/task/second_last_report/report"); // TODO: CAMBIAR 
@@ -276,6 +304,14 @@ void Nomp::driver()
                                 case 13:
                                     xpaths.push_back("/get_report_formats_response/report_format"); 
                                     xpaths.push_back("/get_report_formats_response/report_format/name");
+                                    xpaths.push_back("/get_report_formats_response/report_format/name");
+                                    xpaths.push_back("/get_report_formats_response/report_format/comment");
+                                    xpaths.push_back("/get_report_formats_response/report_format/creation_time");
+                                    xpaths.push_back("/get_report_formats_response/report_format/modification_time");
+                                    xpaths.push_back("/get_report_formats_response/report_format/extension");
+                                    xpaths.push_back("/get_report_formats_response/report_format/content_type");
+                                    xpaths.push_back("/get_report_formats_response/report_format/summary");
+                                    xpaths.push_back("/get_report_formats_response/report_format/description");
                                     get("<get_report_formats/>");
                                     break;
                                 case 14:
@@ -290,8 +326,16 @@ void Nomp::driver()
 
                                     xpaths.push_back("/get_reports_response/report/report/results/result"); 
                                     xpaths.push_back("/get_reports_response/report/report/results/result/name");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/host");
                                     xpaths.push_back("/get_reports_response/report/report/results/result/port");
                                     xpaths.push_back("/get_reports_response/report/report/results/result/severity");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/name");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/family");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/bid");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/cve");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/xref");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/tags");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/description");
                                     get(xret[0], true, "id", true);
                                     break;
                                 default:
@@ -299,9 +343,9 @@ void Nomp::driver()
                             }
                             
                             if (c_field != 14)
-                                c_item = ui.menu(&xret);
+                                c_item = ui.menu(&xret, xpaths.size());
                             else
-                                c_item = ui.report(&xret);
+                                c_item = ui.report(&xret, xpaths.size());
                             
                             ui.delete_windows_arr();
                             
