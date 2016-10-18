@@ -18,14 +18,13 @@ Ui::Ui() :
     
     if (has_colors()) {
         start_color();
-
         init_pair(1, COLOR_BLACK, COLOR_WHITE);
         init_pair(2, COLOR_WHITE, COLOR_BLACK);
         init_pair(3, COLOR_WHITE, COLOR_WHITE);
         init_pair(4, COLOR_RED, COLOR_BLACK);
         init_pair(5, COLOR_YELLOW, COLOR_BLACK);
         init_pair(6, COLOR_BLUE, COLOR_BLACK);
-        init_pair(7, COLOR_WHITE, COLOR_RED);
+        init_pair(7, COLOR_GREEN, COLOR_BLACK);
     }
     
     login();
@@ -237,12 +236,11 @@ void Ui::menu_data(vector<string> **values, int c_item, uint n)
     menu_data_lines = 36;
     long data_lines = 0;
 
-    /*
-    for (uint i = 0; i < (**values)[(n_values * 2) + c_item].size(); i++)
-        if ((**values)[(n_values * 2) + c_item][i] == '\n')
-            ++data_lines;
-    */
-
+    for (uint i = 2; i < n; i++)
+        for (uint ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
+            if ((**values)[(n_values * i) + c_item][ii] == '\n')
+                ++data_lines;
+    
     if (data_lines > menu_data_lines)
         menu_data_lines = data_lines;
 
@@ -312,8 +310,8 @@ int Ui::report(vector<string> *values, uint n)
         windows_arr[i + 1] = subpad(windows_arr[0], 1, (COLS - 4), i, 0);
         
         mvwprintw(windows_arr[i + 1], 0, 0, "%s", (*values)[n_values + i].c_str());
-        mvwprintw(windows_arr[i + 1], 0, 130, "%s", (*values)[(n_values * 2) + i].c_str());
-        mvwprintw(windows_arr[i + 1], 0, 147, "%s", (*values)[(n_values * 3) + i].c_str());
+        mvwprintw(windows_arr[i + 1], 0, 129, "%s", (*values)[(n_values * 2) + i].c_str());
+        mvwprintw(windows_arr[i + 1], 0, 146, "%s", (*values)[(n_values * 3) + i].c_str());
         
         if ((stoi((*values)[(n_values * 4) + i])) >= 7) { 
             wattron(windows_arr[i + 1], COLOR_PAIR(4));
@@ -376,6 +374,7 @@ void Ui::report_data(vector<string> **values, int c_item, uint n)
         for (uint ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
             if ((**values)[(n_values * i) + c_item][ii] == '\n')
                 ++data_lines;
+
     if (data_lines > report_data_lines)
         report_data_lines = data_lines;
     
@@ -411,20 +410,42 @@ void Ui::report_data(vector<string> **values, int c_item, uint n)
     delwin(window_report_data);
 }
 
-void Ui::delete_windows_arr()
-{
-    for (int i = 1; i < (n_values + 1); i++)
-        delwin(windows_arr[i]);
-    delwin(windows_arr[0]);
-    free(windows_arr);
-    
-    if (window_menu_data != NULL) {
-        delwin(window_menu_data);
-        window_menu_data = NULL;
+void Ui::progress(string p)
+{  
+    if ((p == "1") || (p == "-1")) {
+        for (int i = 0; i < 45; i++)
+            mvdelch(32, 23);
     }
+    
+    if (p == "-1") {
+        mvprintw(32, 23, "  DONE  ");
+        mvhline(32, 33, ACS_VLINE, 32);
+    } else {
+        mvprintw(32, 23, " %s/100 ", p.c_str());
+        mvhline(32, 33, ACS_VLINE, (stoi(p) / 3));
+    }
+    
+    refresh();
 }
 
-void Ui::indicator(bool is_menu, bool show)
+void Ui::status(pair<string, int> sts)
+{
+    // TODO: FALTA WINDOW PARA LOGIN
+    
+    WINDOW *window_status = newwin(35, 63, 7, 109);
+
+    wattron(window_status, COLOR_PAIR(sts.second));
+    mvwprintw(window_status, 0, 0, "[]");
+    wattroff(window_status, COLOR_PAIR(sts.second));
+    
+    mvwprintw(window_status, 0, 3, sts.first.c_str());
+    
+    wrefresh(window_status);
+
+    delwin(window_status);
+}
+
+void Ui::marker(bool is_menu, bool show)
 {
     int row;
     int col;
@@ -453,32 +474,17 @@ void Ui::indicator(bool is_menu, bool show)
     }
 }
 
-void Ui::progress(string p)
-{  
-    if ((p == "1") || (p == "-1")) {
-        for (int i = 0; i < 45; i++)
-            mvdelch(32, 23);
-    }
-    
-    if (p == "-1") {
-        mvprintw(32, 23, "  DONE  ");
-        mvhline(32, 33, ACS_VLINE, 32);
-    } else {
-        mvprintw(32, 23, " %s/100 ", p.c_str());
-        mvhline(32, 33, ACS_VLINE, (stoi(p) / 3));
-    }
-    
-    refresh();
-}
-
-void Ui::error(const string err)
+void Ui::delete_windows_arr()
 {
-    touchwin(stdscr);
-    refresh();
+    for (int i = 1; i < (n_values + 1); i++)
+        delwin(windows_arr[i]);
+    delwin(windows_arr[0]);
+    free(windows_arr);
     
-    attron(COLOR_PAIR(7));
-    mvprintw(13, 20, err.c_str());
-    attroff(COLOR_PAIR(7));
+    if (window_menu_data != NULL) {
+        delwin(window_menu_data);
+        window_menu_data = NULL;
+    }
 }
 
 void Ui::cleanup()
@@ -487,35 +493,4 @@ void Ui::cleanup()
         free_field(p_fields[i]);
     unpost_form(*p_form);
     free_form(*p_form);
-}
-
-vector<string> Ui::get_fields_value(vector<int> *i_fields, int i)
-{
-    int n = i_fields->back();
-    vector<string> ret;
-    
-    for (; i <= n; i++)
-        ret.push_back(string(trim_whitespaces(field_buffer(p_fields[i], 0))));
-
-    return ret;
-}
-
-char *Ui::trim_whitespaces(char *str)
-{
-    char *end;
-
-    while (isspace(*str))
-        str++;
-
-    if (*str == 0) 
-        return str;
-
-    end = (str + (strnlen(str, 128) - 1));
-
-    while ((end > str) && isspace(*end))
-        end--;
-
-    *(end + 1) = '\0';
-
-    return str;
 }
