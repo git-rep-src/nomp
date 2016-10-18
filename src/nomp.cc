@@ -1,13 +1,19 @@
+#include <algorithm>
+#include <utility>
 #include <iostream>
-#include <fstream>//
+#include <fstream>
 #include <chrono>//
 #include <thread>//
 
+#include "xml.h"
+#include "base64.h"
 #include "nomp.h"
 
 Nomp::Nomp() :
+    c_field(2),
     is_logged(false),
-    is_task_running(false)
+    is_task_running(false),
+    ids(7)
 {
     driver();
 }
@@ -19,8 +25,6 @@ Nomp::~Nomp()
 void Nomp::driver()
 { 
     int key;
-    int c_item;
-    int c_field = 2;
 
     do {
         key = getch();
@@ -45,14 +49,14 @@ void Nomp::driver()
                             if (c_field == 3)
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                             else if (c_field == 4)
-                                ui.indicator(false, false);
+                                ui.marker(false, false);
                             else
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
                         else
                             if (c_field == 2)
-                                ui.indicator(true, false);
+                                ui.marker(true, false);
                             else if (c_field == 3)
-                                ui.indicator(false, false);
+                                ui.marker(false, false);
                             else
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
                         break;
@@ -62,14 +66,14 @@ void Nomp::driver()
                     case 9:
                     case 12:
                     case 13:
-                        ui.indicator(true, false);
+                        ui.marker(true, false);
                         break;
                     case 7:
                     case 10:
                     case 11:
                     case 14:
                     case 15:
-                        ui.indicator(false, false);
+                        ui.marker(false, false);
                         break;
                     default:
                         break;
@@ -100,14 +104,14 @@ void Nomp::driver()
                             if (c_field == 3)
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                             else if (c_field == 4)
-                                ui.indicator(false);
+                                ui.marker(false);
                             else
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
                         else
                             if (c_field == 2)
-                                ui.indicator();
+                                ui.marker();
                             else if (c_field == 3)
-                                ui.indicator(false);
+                                ui.marker(false);
                             else
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
                         break;
@@ -117,45 +121,46 @@ void Nomp::driver()
                     case 9:
                     case 12:
                     case 13:
-                        ui.indicator();
+                        ui.marker();
                         break;
                     case 7:
                     case 10:
                     case 11:
                     case 14:
                     case 15:
-                        ui.indicator(false);
+                        ui.marker(false);
                         break;
                     default:
                         break;
                 }
                 break;
-            case KEY_DELCHAR:
-                // TODO: Que no salte al field anterior al borrar todo el texto.
-                form_driver(*ui.p_form, REQ_DEL_PREV);
+            case KEY_BACKSPACE:
+                form_driver(*ui.p_form, REQ_LEFT_CHAR);
+                form_driver(*ui.p_form, REQ_DEL_CHAR);
                 break;
             case KEY_RETURN:
+                validators.clear();
+                status.str(string());
+                oret.clear();
                 if (!is_logged) {
                     if (c_field == 4) {
-                        i_fields.clear();
-                        for (int i = 0; i < 4; i++)
-                            i_fields.push_back(i);
-                        user_configs = ui.get_fields_value(&i_fields, 0);
-                        cmd = command.create(&user_configs, "<get_version/>");
-                        if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
-                            ui.error(cret);
-                        } else {
-                            is_logged = true;
-                            c_field = 0;
-                            ui.cleanup();
-                            ui.main();
+                        user_configs.clear();
+                        for (int i = 0; i <= 3; i++)
+                            validators.insert(make_pair(make_pair(i, true), make_pair(true, -1)));
+                        if (validate(user_configs)) {
+                            if (omp("<get_version/>")) {
+                                is_logged = true;
+                                c_field = 0;
+                                ui.cleanup();
+                                ui.main();
+                            }
                         }
                     }
                     break;
                 } else {
-                    i_fields.clear();
                     xnodes.clear();
                     xvalues.clear();
+                    xret.clear();
                     switch(c_field)
 		            {
                         case 3:
@@ -163,74 +168,38 @@ void Nomp::driver()
                             xnodes.push_back("name");
                             xnodes.push_back("hosts");
                             xnodes.push_back("port_list");
-                            for (int i = 0; i < 2; i++)
-                                i_fields.push_back(i);
-                            xvalues = ui.get_fields_value(&i_fields, 0);
-                            xvalues.push_back(port_list_id + "__attr__");
-                            xret = xml.create(&xnodes, &xvalues);
-                            cmd = command.create(&user_configs, xret[0]);
-                            if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
-                                ui.error(cret);
-                            } else {
-                                break;//
-                            }
+                            validators.insert(make_pair(make_pair(0, true), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(1, true), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(2, true), make_pair(false, 0)));
+                            create();
                             break;
                         case 7:
                             xnodes.push_back("create_task");
                             xnodes.push_back("name");
                             xnodes.push_back("config");
                             xnodes.push_back("target");
-                            i_fields.push_back(4);
-                            xvalues = ui.get_fields_value(&i_fields, 4);
-                            xvalues.push_back(config_id + "__attr__");
-                            xvalues.push_back(target_id + "__attr__");
-                            xret = xml.create(&xnodes, &xvalues);
-                            cmd = command.create(&user_configs, xret[0]);
-                            if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
-                                ui.error(cret);
-                            } else {
-                                break;//
-                            }
+                            validators.insert(make_pair(make_pair(4, true), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(5, true), make_pair(false, 1)));
+                            validators.insert(make_pair(make_pair(6, true), make_pair(false, 2)));
+                            create();
                             break;
                         case 10:
-                            xnodes.push_back("start_task");
-                            xnodes.push_back("task_id");
-                            xvalues.push_back(task_id + "__attr__");
-                            xret = xml.create(&xnodes, &xvalues);
-                            cmd = command.create(&user_configs, xret[0]);
-                            if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
-                                ui.error(cret);
-                            } else {
-                                is_task_running = true;
-                                refresh();
-                                //set_field_buffer(ui.p_fields[11], 0, "       PAUSE");
+                            if (!is_task_running) {
+                                xnodes.push_back("start_task");
+                                xnodes.push_back("task_id");
+                                validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
+                                validators.insert(make_pair(make_pair(9, true), make_pair(false, 4)));
+                                if (create())
+                                    is_task_running = true;
                             }
                             break;
                         case 11:
                             if (is_task_running) {
                                 xnodes.push_back("stop_task");
                                 xnodes.push_back("task_id");
-                                xvalues.push_back(task_id + "__attr__");
-                                xret = xml.create(&xnodes, &xvalues);
-                                cmd = command.create(&user_configs, xret[0]);
-                                if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
-                                    ui.error(cret);
-                                } else {
+                                validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
+                                if (create())
                                     is_task_running = false;
-                                }
-                            }
-                            break;
-                            if (is_task_running) {
-                                xnodes.push_back("stop_task");
-                                xnodes.push_back("task_id");
-                                xvalues.push_back(task_id + "__attr__");
-                                xret = xml.create(&xnodes, &xvalues);
-                                cmd = command.create(&user_configs, xret[0]);
-                                if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos) {
-                                    ui.error(cret);
-                                } else {
-                                    is_task_running = false;
-                                }
                             }
                             break;
                         case 2:
@@ -241,6 +210,7 @@ void Nomp::driver()
                         case 12:
                         case 13:
                         case 14:
+                        case 15:
                             xpaths.clear();
                             switch(c_field)
                             {
@@ -276,7 +246,6 @@ void Nomp::driver()
                                     xpaths.push_back("/get_targets_response/target/modification_time");
                                     xpaths.push_back("/get_targets_response/target/hosts");
                                     xpaths.push_back("/get_targets_response/target/port_list/name");
-                                    xpaths.push_back("/get_targets_response/target/alive_tests");
                                     get("<get_targets/>");
                                     break;
                                 case 8:
@@ -286,15 +255,17 @@ void Nomp::driver()
                                     xpaths.push_back("/get_tasks_response/task/comment");
                                     xpaths.push_back("/get_tasks_response/task/creation_time");
                                     xpaths.push_back("/get_tasks_response/task/modification_time");
+                                    xpaths.push_back("/get_tasks_response/task/scanner/name");
                                     xpaths.push_back("/get_tasks_response/task/config/name");
                                     xpaths.push_back("/get_tasks_response/task/target/name");
-                                    xpaths.push_back("/get_tasks_response/task/scanner/name");
                                     xpaths.push_back("/get_tasks_response/task/status");
                                     get("<get_tasks/>");
                                     break;
                                 case 9:
-                                    xret = times;
-                                    ui.menu(&xret, 3);
+                                    xpaths.push_back("");
+                                    xpaths.push_back("");
+                                    xret = refreshes;
+                                    fill(false);
                                     break;
                                 case 12:
                                     xpaths.push_back("/get_tasks_response/task/second_last_report/report"); // TODO: CAMBIAR 
@@ -315,61 +286,48 @@ void Nomp::driver()
                                     get("<get_report_formats/>");
                                     break;
                                 case 14:
+                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
                                     xnodes.push_back("get_reports");
-                                    xnodes.push_back("report_id"); 
                                     xnodes.push_back("filter");
-                                    xvalues.push_back(report_id + "__attr__");
+                                    xnodes.push_back("report_id"); 
                                     xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
                                                        notes=0 overrides=0 rows=10000 delta_states=gn \
                                                        result_hosts_only=1 ignore_pagination=1__attr__");
-                                    xret = xml.create(&xnodes, &xvalues);//
-
-                                    xpaths.push_back("/get_reports_response/report/report/results/result"); 
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/name");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/host");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/port");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/severity");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/name");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/family");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/bid");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/cve");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/xref");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/tags");
-                                    xpaths.push_back("/get_reports_response/report/report/results/result/description");
-                                    get(xret[0], true, "id", true);
+                                    if (create(true)) {
+                                        xpaths.push_back("/get_reports_response/report/report/results/result"); 
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/name");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/host");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/port");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/severity");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/name");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/family");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/bid");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/cve");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/xref");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/tags");
+                                        xpaths.push_back("/get_reports_response/report/report/results/result/description");
+                                        get(xret[0], "id", true, true);
+                                    }
+                                    break;
+                                case 15:
+                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
+                                    validators.insert(make_pair(make_pair(13, true), make_pair(false, 6)));
+                                    xnodes.push_back("get_reports");
+                                    xnodes.push_back("filter");
+                                    xnodes.push_back("report_id"); 
+                                    xnodes.push_back("format_id"); 
+                                    xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
+                                                       notes=0 overrides=0 rows=10000 delta_states=gn \
+                                                       result_hosts_only=1 ignore_pagination=1__attr__");
+                                    if (create(true)) {
+                                        xpaths.push_back("/get_reports_response/report"); 
+                                        if (get(xret[0], "id", false, true))
+                                            write();
+                                    }
                                     break;
                                 default:
                                     break;
                             }
-                            
-                            if (c_field != 14)
-                                c_item = ui.menu(&xret, xpaths.size());
-                            else
-                                c_item = ui.report(&xret, xpaths.size());
-                            
-                            ui.delete_windows_arr();
-                            
-                            if (c_item >= 0) {
-                                if (c_field == 2)
-                                    port_list_id = xret[c_item];
-                                else if (c_field == 5)
-                                    config_id = xret[c_item];
-                                else if (c_field == 6)
-                                    target_id = xret[c_item];
-                                else if (c_field == 8)
-                                    task_id = xret[c_item];
-                                else if (c_field == 9)
-                                    refresh_id = xret[c_item];
-                                else if (c_field == 12)
-                                    report_id = xret[c_item];
-                                else if (c_field == 13)
-                                    report_format_id = xret[c_item];
-
-                                set_field_buffer(ui.p_fields[c_field], 0, xret[(xret.size() / 3) + c_item].c_str());
-                            }
-
-                            touchwin(stdscr);
-                            break;
                         default:
                             break;
                     }
@@ -384,14 +342,139 @@ void Nomp::driver()
     //quit();
 }
 
-void Nomp::get(string cmd_opt, bool get_data, string attr_name, bool is_report)
+bool Nomp::get(string args, string attr, bool get_data, bool is_report)
 {
-    cmd = command.create(&user_configs, cmd_opt);
+    if (omp(args)) {
+        Xml xml;
+        if (xml.parse(&oret, &xpaths, &xret, attr, get_data, is_report)) {
+            if (get_data)
+                fill(is_report);
+        } else {
+            status << "INTERNAL ERROR";
+            ui.status(make_pair(status.str(), 4));
+            return false;
+        }
+    } else {
+        status << "RESOURCE CREATE ERROR";
+        ui.status(make_pair(status.str(), 4));
+        return false;
+    }
 
-    if ((cret = command.execute(cmd)).find("__ERROR__") != string::npos)
-        ui.error(cret);
+    return true;
+}
+
+bool Nomp::create(bool is_report)
+{
+    if (validate(xvalues)) {
+        Xml xml;
+        if (xml.create(&xnodes, &xvalues, &xret, is_report)) {
+            if (!is_report) {
+                if (omp(xret[0])) {
+                    status << "RESOURCE CREATED";
+                    ui.status(make_pair(status.str(), 7));
+                } else {    
+                    status << "RESOURCE CREATE ERROR";
+                    ui.status(make_pair(status.str(), 4));
+                    return false;
+                }
+            }
+        } else {
+            status << "INTERNAL ERROR";
+            ui.status(make_pair(status.str(), 4));
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+void Nomp::write()
+{
+    transform(extension.begin(), extension.end(), extension.begin(),::tolower);
+
+    ofstream file("/home/user/.nomp/" + ids[5] + "." + extension); // TODO: $HOME 
+
+    if (file.is_open()) {
+        vector<BYTE> data = base64_decode(xret[1]);
+        for (uint i = 0; i < data.size(); i++)
+            file << data[i];
+        file.close();
+        status << "RESOURCE CREATED";
+        ui.status(make_pair(status.str(), 7));
+    } else {
+        status << "RESOURCE CREATE ERROR";
+        ui.status(make_pair(status.str(), 4));
+    }
+}
+
+void Nomp::fill(bool is_report)
+{
+    int c_item;
+    
+    if (is_report)
+        c_item = ui.report(&xret, xpaths.size());
     else
-        xret = xml.parse(&cret, &xpaths, attr_name, get_data, is_report);
+        c_item = ui.menu(&xret, xpaths.size());
+                            
+    if (c_item >= 0) {
+        switch(c_field)
+        {
+            case 2:
+                ids[0] = xret[c_item];
+                break;
+            case 5:
+                ids[1] = xret[c_item];
+                break;
+            case 6:
+                ids[2] = xret[c_item];
+                break;
+            case 8:
+                ids[3] = xret[c_item];
+                break;
+            case 9:
+                ids[4] = xret[c_item];
+                break;
+            case 12:
+                ids[5] = xret[c_item];
+                break;
+            case 13:
+                ids[6] = xret[c_item];
+                extension = xret[(xret.size() / xpaths.size()) + c_item].c_str();
+                break;
+            default:
+                break;
+        }
+        set_field_buffer(ui.p_fields[c_field], 0, 
+                         xret[(xret.size() / xpaths.size()) + c_item].c_str());
+    }
+
+    ui.delete_windows_arr();
+    touchwin(stdscr);
+}
+
+bool Nomp::validate(vector<string> &vec)
+{
+    for (map<pair<int, bool>, pair<bool, int>>::iterator it = validators.begin();
+         it != validators.end(); ++it) {
+        if (it->first.second) {
+            if (!isblank(field_buffer(ui.p_fields[it->first.first], 0)[0])) {
+                if (it->second.first)
+                    vec.push_back(string(field_buffer(ui.p_fields[it->first.first], 0)));
+                else if (it->second.second != -1)
+                    vec.push_back(ids[it->second.second] + "__attr__");
+            } else {
+                status << "THE FIELD " << to_string(it->first.first + 1) << " CANNOT BE BLANK";
+                ui.status(make_pair(status.str(), 5));
+                return false;
+            }
+        } else if (it->second.first) {
+            vec.push_back(string(field_buffer(ui.p_fields[it->first.first], 0)));
+        }
+    }
+    
+    return true;
 }
 
 void Nomp::refresh()
@@ -401,13 +484,13 @@ void Nomp::refresh()
     xpaths.clear();
     
     xnodes.push_back("get_tasks");
-    xnodes.push_back("task_id");
-    xvalues.push_back(task_id + "__attr__");
+    xnodes.push_back(ids[3]);
+    xvalues.push_back(ids[3] + "__attr__");
     
-    xret = xml.create(&xnodes, &xvalues);
+    //xret = xml.create(&xnodes, &xvalues);
 
     xpaths.push_back("/get_tasks_response/task/progress"); 
-    get(xret[0], false);
+    //get(xret[0], false);
     
     ui.progress(xret[0].erase(xret[0].size() - 1));
     
@@ -419,6 +502,31 @@ void Nomp::refresh()
 
 void Nomp::refresh_sleep()
 {
-    std::this_thread::sleep_for(std::chrono::seconds(stoi(refresh_id)));
+    std::this_thread::sleep_for(std::chrono::seconds(stoi(ids[4])));
     refresh();
+}
+
+bool Nomp::omp(const string args)
+{
+    char buf[BUFSIZ];
+    const string cmd = "omp -h " + user_configs[0] +
+                       " -p "    + user_configs[1] +
+                       " -u "    + user_configs[2] + 
+                       " -w "    + user_configs[3] + 
+                       " -X '"   + args + "'";
+
+    FILE *fp = popen(cmd.c_str(), "r");
+    if (!fp)
+        return false;
+    
+    oret.clear();
+
+    while (!feof(fp))
+        if (fgets(buf, BUFSIZ, fp) != NULL)
+            oret += buf;
+
+    if (pclose(fp) != 0)
+        return false;
+
+    return true;
 }

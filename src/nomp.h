@@ -1,9 +1,9 @@
 #include <string>
+#include <sstream>
 #include <vector>
+#include <map>
 
 #include "ui.h"
-#include "xml.h"
-#include "command.h"
 
 using namespace std;
 
@@ -15,39 +15,33 @@ public:
 
 private:
     Ui ui;
-    Xml xml;
-    Command command;
+
+    int c_field;
 
     bool is_logged;
     bool is_task_running;
     
-    const vector<string> times = {
-        "30", "60", "120", "300",
-        " 30 sec", " 60 sec", "120 sec", "300 sec",
-        "COMMENT  Refresh every 30 seconds.", "COMMENT  Refresh every 60 seconds.",
-        "COMMENT  Refresh every 2 minutes.", "COMMENT  Refresh every 5 minutes."
-    };
-   
-    string port_list_id;
-    string config_id;
-    string target_id;
-    string task_id;
-    string refresh_id;
-    string report_id;
-    string report_format_id;
-    string cmd;
-    string cret;
+    string oret;
+    string extension;
+    stringstream status;
 
+    vector<string> ids;
     vector<string> user_configs;
     vector<string> xnodes;
     vector<string> xvalues;
     vector<string> xpaths;
     vector<string> xret;
-    vector<int> i_fields;
+    const vector<string> refreshes = {"30", "60", "120", "300", " 30 sec", " 60 sec","120 sec", "300 sec"};
+    
+    map<pair<int, bool>, pair<bool, int>> validators;
 
     void driver();
-    void get(string cmd_opt, bool get_data = true,
-             string attr_name = "id", bool is_report = false);
+    bool get(string args, string attr = "id", bool get_data = true, bool is_report = false);
+    bool create(bool is_report = false);
+    void write();
+    void fill(bool is_report);
+    bool validate(vector<string> &vec);
     void refresh();
     void refresh_sleep();
+    bool omp(const string args);
 };
