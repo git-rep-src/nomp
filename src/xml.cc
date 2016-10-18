@@ -2,9 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>//
-
-#include <libxml++/libxml++.h>
-
+#include <algorithm>//
 #include "xml.h"
 
 Xml::Xml()
@@ -15,16 +13,16 @@ Xml::~Xml()
 {
 }
 
-vector<string> Xml::create(vector<string> *nodes, vector<string> *values)
+bool Xml::create(vector<string> *nodes, vector<string> *values, vector<string> *xret,
+                 bool is_report)
 {
     int n = (nodes->size() - 1);
-    vector<string> ret;
     
     try {
         xmlpp::Document doc;
         xmlpp::Element *root = doc.create_root_node((*nodes)[0]);
         
-        if ((nodes->size() > 2) && ((*nodes)[0] != "get_reports")) {
+        if ((nodes->size() > 2) && !is_report) {
             xmlpp::Element *childs[n]; 
             for (int i = 0; i < n; i++) {
                 childs[i] = root->add_child_element((*nodes)[i + 1]);
@@ -38,33 +36,29 @@ vector<string> Xml::create(vector<string> *nodes, vector<string> *values)
                 root->set_attribute((*nodes)[i + 1], (*values)[i].erase((*values)[i].size() - 8));
         }
 
-        ret.push_back(doc.write_to_string());
-    } catch (const std::exception& ex) {
-        ret.clear();
-        ret.push_back("__ERROR__");
+        xret->push_back(doc.write_to_string());
+    } catch (...) {
+        return false;
     }
 
-    return ret;
+    return true;
 }
 
-vector<string> Xml::parse(string *content, vector<string> *paths, const string attr_name,
-                          bool get_data, bool is_report)
+bool Xml::parse(string *content, vector<string> *paths, vector<string> *xret,
+                const string attr, bool get_data, bool is_report)
 {   
-    uint quiebre = 2;
-    uint max_width = 19;
-    bool is_data = false;
-    stringstream ss_data;
-    string name;
+    uint offset;
+    uint max_width;
     string value;
-    vector<string> finds;
-    vector<string> replaces;
-    vector<string> ret;
 
     if (is_report) {
-        quiebre = 5;
-        max_width = 13; //21
+        offset = 5;
+        max_width = 13;
+    } else {    
+        offset = 2;
+        max_width = 19;
     }
-   
+
     try {
         xmlpp::DomParser parser;
         parser.parse_memory(*content);
@@ -73,166 +67,198 @@ vector<string> Xml::parse(string *content, vector<string> *paths, const string a
         xmlpp::Node::NodeSet node = root->find((*paths)[0]);
     
         for (uint n = 0; n < paths->size(); n++) {
-            if (n >= quiebre)
-                is_data = true;
-            
             node = root->find((*paths)[n]);
-            
             for (uint i = 1; i <= node.size(); i++) {
                 xmlpp::Element *element = (xmlpp::Element *)node.at(i - 1);
-                const xmlpp::Attribute *attribute = element->get_attribute(attr_name);
-                
-                if (attribute && !is_data) {
-                    ret.push_back(attribute->get_value());
-                } else {
-                    if (is_data) {
-                        name = node.at(i - 1)->get_name();
-                        
-                        if (element->has_child_text())
-                            value = element->get_first_child_text()->get_content();
-                        else
-                            value = "-";
-                        
-                        if ((value == "NOCVE") || (value == "NOBID") || (value == "NOXREF")) {
-                            value = "-";
-                        }
-
-                        if (name == "creation_time") {
-                            name = "creation time";
-                        } else if (name == "modification_time") {
-                            name = "modification time";
-                        } else if (name == "family_count") {
-                            name = "family count";
-                        } else if (name == "nvt_count") {
-                            name = "nvt count";
-                        } else if (name == "alive_tests") {
-                            name = "alive tests";
-                        } else if (name == "content_type") {
-                            name = "content type";
-                        } else if (name == "cve") {
-                            if (value != "-") {
-                                finds.push_back(", ");
-                                replaces.push_back("\n");
-                                replace(value, finds, replaces);
-                                format(value);
-                                value.replace((value.size() - 1), 1, " ");
-                            }
-                        } else if (name == "xref") {
-                            name = "REFERENCES";
-                            if (value == "-") {
-                                value.replace(value.size(), 1, " ");
-                            } else {
-                                finds.push_back("URL:");
-                                finds.push_back(", ");
-                                replaces.push_back("");
-                                replaces.push_back("\n");
-                                replace(value, finds, replaces);
-                                format(value);
-                                value.replace((value.size() - 1), 1, " ");
-                            }
-                        } else if ((name == "tags") && (value != "-")) {
-                            name = "DETAILS";
-                            finds.push_back("cvss_base_vector=");
-                            finds.push_back("vuldetect=");
-                            finds.push_back("insight=");
-                            finds.push_back("qod_type=");
-                            finds.push_back("impact=");
-                            finds.push_back("affected=");
-                            finds.push_back("summary=");
-                            finds.push_back("solution_type=");
-                            finds.push_back("solution=");
-                            finds.push_back("|");
-                            replaces.push_back("VECTOR");
-                            replaces.push_back("VULDETECT\n");
-                            replaces.push_back("INSIGHT\n");
-                            replaces.push_back("TYPE\n");
-                            replaces.push_back("IMPACT\n");
-                            replaces.push_back("AFFECTED\n");
-                            replaces.push_back("SUMMARY\n");
-                            replaces.push_back("SOLUTION TYPE\n");
-                            replaces.push_back("SOLUTION\n");
-                            replaces.push_back("\n\n");
-                            replace(value, finds, replaces);
-                            value.insert(value.size(), "\n");
-                            
-                            size_t found = value.find("\n");
-                            if (found != string::npos)
-                                  value.replace(0, found+1, "");
-                            
-                            format(value);
-                        } else if (name == "description") { 
-                            if (is_report) {
-                                //name.insert(name.size(), "\n");
-                                //value.insert(value.size(), "\n");
-                                format(value);
-                            } else {
-                                finds.push_back("\n");
-                                replaces.push_back("");
-                                replace(value, finds, replaces);
-                           }
-                        }
-                        
-                        to_upper(name);
-                        
-                        ss_data << left << setw(max_width) << setfill(' ') << name << value << endl;
+                const xmlpp::Attribute *attribute = element->get_attribute(attr);
+                if (get_data) {
+                    if (attribute && (n < offset)) {
+                        xret->push_back(attribute->get_value());
                     } else {
-                        ret.push_back(element->get_first_child_text()->get_content() + "\n");
+                        if (n >= offset) {
+                            set_format(&node, &element, &xret, i, max_width);
+                        } else {
+                            value = element->get_first_child_text()->get_content();
+                            if (node.at(i - 1)->get_path() == "/get_reports_response/report/report/results/result[" +
+                                to_string(i) + "]/name")
+                                set_wrap(value, 120, true);
+                            else if (node.at(i - 1)->get_path() == "/get_reports_response/report/report/results/result[" +
+                                     to_string(i) + "]/host")
+                                set_wrap(value, 15, true);
+                            xret->push_back(value);
+                        }
                     }
-                }
-                if (is_data) {
-                    ret.push_back(ss_data.str());
-                    ss_data.str(string());
-                    ss_data.clear();
+                } else {
+                    if (attribute && !is_report)
+                        offset = 111; //BORRRAR
+                    else
+                        xret->push_back(element->get_first_child_text()->get_content());
                 }
             }
         }
-    } catch (const std::exception& ex) {
-        ret.clear();
-        ret.push_back("__ERROR__");
+    } catch (...) {
+        return false;
     }
     
-    return ret;
+    return true;
 }
 
-void Xml::to_upper(string &str)
+void Xml::set_format(xmlpp::Node::NodeSet *node, xmlpp::Element **element,
+                     vector<string> **xret, uint &i, uint &max_width)
 {
-    string upper;
+    string name;
+    string value = "-";
+    stringstream ss;
+    vector<string> targets;
+    vector<string> replaces;
 
-    for (uint i = 0; i < str.size(); i++)
-        upper += toupper(str[i]);
-    
-    str = upper;
-}
-
-void Xml::replace(string &str, vector<string> &finds, vector<string> &replaces)
-{
-    for (uint n = 0; n < finds.size(); n++) {
-        for (string::size_type i = 0; (i = str.find(finds[n], i)) != string::npos;) {
-            str.replace(i, finds[n].length(), replaces[n]);
-            i += replaces[n].length();
-        }
+    if ((node->at(i - 1)->get_path() == "/get_tasks_response/task[" +
+        to_string(i) + "]/scanner/name") ||
+        (node->at(i - 1)->get_path() == "/get_targets_response/target[" +
+        to_string(i) + "]/port_list/name")) {
+        name = "PORTS";
+    } else if (node->at(i - 1)->get_path() == "/get_tasks_response/task[" +
+               to_string(i) + "]/config/name") {
+        name = "SCAN";
+    } else if (node->at(i - 1)->get_path() == "/get_tasks_response/task[" +
+               to_string(i) + "]/target/name") {
+        name = "TARGET";
+    } else {
+        name = node->at(i - 1)->get_name();
     }
+
+    if ((*element)->has_child_text() &&
+        ((*element)->get_first_child_text()->get_content() != "NOCVE") &&
+        ((*element)->get_first_child_text()->get_content() != "NOBID") &&
+        ((*element)->get_first_child_text()->get_content() != "NOXREF"))
+        value = (*element)->get_first_child_text()->get_content();
+
+    targets.push_back("_");
+    replaces.push_back(" ");
+    replace(name, targets, replaces);
+   
+    targets.push_back("  ");
+    replaces.push_back("");
+    replace(value, targets, replaces);
     
-    finds.clear();
-    replaces.clear();
+    if ((name == "comment") && (value != "-")) {
+        set_wrap(value, 43); // TODO: ENVIAR COLS EN LUGAR DE 40.
+    } else if (name == "cve") {
+        targets.push_back(", ");
+        replaces.push_back("\n");
+        replace(value, targets, replaces);
+    } else if (name == "xref") {
+        name = "REFERENCES";
+        targets.push_back("URL:");
+        targets.push_back(", ");
+        replaces.push_back("");
+        replaces.push_back("\n");
+        replace(value, targets, replaces);
+    } else if ((name == "tags") && (value != "-")) {
+        name = "DETAILS";
+        size_t n = value.find("|");
+        if (n != string::npos)
+            value.replace(0, (n + 1), "");
+        targets.push_back("vuldetect=");
+        targets.push_back("insight=");
+        targets.push_back("qod_type=");
+        targets.push_back("impact=");
+        targets.push_back("affected=");
+        targets.push_back("summary=");
+        targets.push_back("solution_type=");
+        targets.push_back("solution=");
+        targets.push_back("|");
+        replaces.push_back("VULDETECT\n");
+        replaces.push_back("INSIGHT\n");
+        replaces.push_back("TYPE\n");
+        replaces.push_back("IMPACT\n");
+        replaces.push_back("AFFECTED\n");
+        replaces.push_back("SUMMARY\n");
+        replaces.push_back("SOLUTION TYPE\n");
+        replaces.push_back("SOLUTION\n");
+        replaces.push_back("\n\n");
+        replace(value, targets, replaces);
+        value.insert(value.size(), "\n\n");
+        set_wrap(value, 100); // TODO: ENVIAR COLS EN LUGAR DE 155.
+    } else if ((name == "description") && (value != "-")) {
+        if (max_width == 13)
+            set_wrap(value, 100); // TODO: ENVIAR COLS EN LUGAR DE 155.
+        else
+            set_wrap(value, 43); // TODO: ENVIAR COLS EN LUGAR DE 40.
+    }
+
+    set_width(value, max_width);
+    set_uppercase(name);
+    
+    ss << left << setw(max_width) << setfill(' ') << name << value << endl;
+    (*xret)->push_back(ss.str());
 }
 
-
-void Xml::format(string &str)
+void Xml::set_wrap(string &str, uint p, bool replace)
 {
     istringstream f(str);
     stringstream ss;    
     string line;
-    bool is_first_line = true; 
+    uint n = 1;
     
     while (getline(f, line)) {
-        if (is_first_line) {
+        if (line.size() >= p) {
+            if (replace) {
+                line.replace((p - 3), (line.size() - (p - 3)), "...");
+            } else {
+                for (uint i = 0; i < line.size(); i++) {
+                    if (i > (p * n)) {
+                        line.insert((p * n), "\n");
+                        ++n;
+                    }
+                }
+                n = 1;
+            }
+        }
+        ss << line << endl;
+    }
+    
+    str = ss.str();
+}
+
+void Xml::set_width(string &str, uint &max_width)
+{
+    istringstream f(str);
+    stringstream ss;    
+    string line;
+    bool is_first = true; 
+    
+    while (getline(f, line)) {
+        if (is_first) {
             ss << line << endl;
-            is_first_line = false;
+            is_first = false;
         } else {
-            ss << setw(13) << setfill(' ') << " " << line << endl;//21
+            ss << setw(max_width) << setfill(' ') << " " << line << endl;
         }
     }
     
-    str = ss.str();//.replace((ss.str().size() - 1), 1, "");
+    str = ss.str().replace((ss.str().size() - 1), 1, "");
+}
+
+void Xml::set_uppercase(string &str)
+{
+    string uppercase;
+
+    for (uint i = 0; i < str.size(); i++)
+        uppercase += toupper(str[i]);
+    
+    str = uppercase;
+}
+
+void Xml::replace(string &str, vector<string> &targets, vector<string> &replaces)
+{
+    for (uint n = 0; n < targets.size(); n++) {
+        for (string::size_type i = 0; (i = str.find(targets[n], i)) != string::npos;) {
+            str.replace(i, targets[n].length(), replaces[n]);
+            i += replaces[n].length();
+        }
+    }
+    
+    targets.clear();
+    replaces.clear();
 }
