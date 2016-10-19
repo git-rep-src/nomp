@@ -11,7 +11,7 @@
 
 Nomp::Nomp() :
     c_field(2),
-    is_logged(false),
+    is_login(true),
     is_task_running(false),
     ids(7)
 {
@@ -45,7 +45,7 @@ void Nomp::driver()
                     case 2:
                     case 3:
                     case 4:
-                        if (!is_logged)
+                        if (is_login)
                             if (c_field == 3)
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                             else if (c_field == 4)
@@ -100,7 +100,7 @@ void Nomp::driver()
                     case 2:
                     case 3:
                     case 4:
-                        if (!is_logged)
+                        if (is_login)
                             if (c_field == 3)
                                 set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
                             else if (c_field == 4)
@@ -142,17 +142,20 @@ void Nomp::driver()
                 validators.clear();
                 status.str(string());
                 oret.clear();
-                if (!is_logged) {
+                if (is_login) {
                     if (c_field == 4) {
                         user_configs.clear();
                         for (int i = 0; i <= 3; i++)
                             validators.insert(make_pair(make_pair(i, true), make_pair(true, -1)));
                         if (validate(user_configs)) {
                             if (omp("<get_version/>")) {
-                                is_logged = true;
+                                is_login = false;
                                 c_field = 0;
                                 ui.cleanup();
                                 ui.main();
+                            } else {
+                                status << "RESOURCE CREATE ERROR";
+                                ui.status(make_pair(status.str(), 4), is_login);
                             }
                         }
                     }
@@ -189,8 +192,10 @@ void Nomp::driver()
                                 xnodes.push_back("task_id");
                                 validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
                                 validators.insert(make_pair(make_pair(9, true), make_pair(false, 4)));
-                                if (create())
+                                if (create()) {
                                     is_task_running = true;
+                                    refresh();
+                                }
                             }
                             break;
                         case 11:
@@ -293,7 +298,7 @@ void Nomp::driver()
                                     xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
                                                        notes=0 overrides=0 rows=10000 delta_states=gn \
                                                        result_hosts_only=1 ignore_pagination=1__attr__");
-                                    if (create(true)) {
+                                    if (create(false)) {
                                         xpaths.push_back("/get_reports_response/report/report/results/result"); 
                                         xpaths.push_back("/get_reports_response/report/report/results/result/name");
                                         xpaths.push_back("/get_reports_response/report/report/results/result/host");
@@ -319,7 +324,7 @@ void Nomp::driver()
                                     xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
                                                        notes=0 overrides=0 rows=10000 delta_states=gn \
                                                        result_hosts_only=1 ignore_pagination=1__attr__");
-                                    if (create(true)) {
+                                    if (create(false)) {
                                         xpaths.push_back("/get_reports_response/report"); 
                                         if (get(xret[0], "id", false, true))
                                             write();
@@ -363,12 +368,12 @@ bool Nomp::get(string args, string attr, bool get_data, bool is_report)
     return true;
 }
 
-bool Nomp::create(bool is_report)
+bool Nomp::create(bool exec)
 {
     if (validate(xvalues)) {
         Xml xml;
-        if (xml.create(&xnodes, &xvalues, &xret, is_report)) {
-            if (!is_report) {
+        if (xml.create(&xnodes, &xvalues, &xret, !exec)) {
+            if (exec) {
                 if (omp(xret[0])) {
                     status << "RESOURCE CREATED";
                     ui.status(make_pair(status.str(), 7));
@@ -407,6 +412,29 @@ void Nomp::write()
         status << "RESOURCE CREATE ERROR";
         ui.status(make_pair(status.str(), 4));
     }
+}
+
+bool Nomp::validate(vector<string> &vec)
+{
+    for (map<pair<int, bool>, pair<bool, int>>::iterator it = validators.begin();
+         it != validators.end(); ++it) {
+        if (it->first.second) {
+            if (!isblank(field_buffer(ui.p_fields[it->first.first], 0)[0])) {
+                if (it->second.first)
+                    vec.push_back(string(field_buffer(ui.p_fields[it->first.first], 0)));
+                else if (it->second.second != -1)
+                    vec.push_back(ids[it->second.second] + "__attr__");
+            } else {
+                status << "THE FIELD " << to_string(it->first.first + 1) << " CANNOT BE BLANK";
+                ui.status(make_pair(status.str(), 5), is_login);
+                return false;
+            }
+        } else if (it->second.first) {
+            vec.push_back(string(field_buffer(ui.p_fields[it->first.first], 0)));
+        }
+    }
+    
+    return true;
 }
 
 void Nomp::fill(bool is_report)
@@ -454,47 +482,30 @@ void Nomp::fill(bool is_report)
     touchwin(stdscr);
 }
 
-bool Nomp::validate(vector<string> &vec)
-{
-    for (map<pair<int, bool>, pair<bool, int>>::iterator it = validators.begin();
-         it != validators.end(); ++it) {
-        if (it->first.second) {
-            if (!isblank(field_buffer(ui.p_fields[it->first.first], 0)[0])) {
-                if (it->second.first)
-                    vec.push_back(string(field_buffer(ui.p_fields[it->first.first], 0)));
-                else if (it->second.second != -1)
-                    vec.push_back(ids[it->second.second] + "__attr__");
-            } else {
-                status << "THE FIELD " << to_string(it->first.first + 1) << " CANNOT BE BLANK";
-                ui.status(make_pair(status.str(), 5));
-                return false;
-            }
-        } else if (it->second.first) {
-            vec.push_back(string(field_buffer(ui.p_fields[it->first.first], 0)));
-        }
-    }
-    
-    return true;
-}
-
 void Nomp::refresh()
 {
+    /* TODO: Usar un condicional para no ejecutarla si bool is_refresh_blocked es true.
+     * poner is_refresh_blocked true o false desde driver().
+     */
+
+    xret.clear();
     xnodes.clear();
     xvalues.clear();
     xpaths.clear();
     
+    validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
     xnodes.push_back("get_tasks");
-    xnodes.push_back(ids[3]);
-    xvalues.push_back(ids[3] + "__attr__");
+    xnodes.push_back("id");
     
-    //xret = xml.create(&xnodes, &xvalues);
-
-    xpaths.push_back("/get_tasks_response/task/progress"); 
-    //get(xret[0], false);
+    if (create(false)) {
+        xpaths.push_back("/get_tasks_response/task/progress");
+        if (get(xret[0], "id", false, true))
+            ui.progress(xret.back());
+    } 
     
-    ui.progress(xret[0].erase(xret[0].size() - 1));
-    
-    if (is_task_running) {
+    if (xret.back() == "-1") {
+        is_task_running = false;
+    } else {
         std::thread t(&Nomp::refresh_sleep, this);
         t.detach();
     }
@@ -513,7 +524,8 @@ bool Nomp::omp(const string args)
                        " -p "    + user_configs[1] +
                        " -u "    + user_configs[2] + 
                        " -w "    + user_configs[3] + 
-                       " -X '"   + args + "'";
+                       " -X '"   + args + "'"      +
+                       " 2>/dev/null";
 
     FILE *fp = popen(cmd.c_str(), "r");
     if (!fp)

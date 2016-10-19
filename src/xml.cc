@@ -14,7 +14,7 @@ Xml::~Xml()
 }
 
 bool Xml::create(vector<string> *nodes, vector<string> *values, vector<string> *xret,
-                 bool is_report)
+                 bool is_root)
 {
     int n = (nodes->size() - 1);
     
@@ -22,7 +22,7 @@ bool Xml::create(vector<string> *nodes, vector<string> *values, vector<string> *
         xmlpp::Document doc;
         xmlpp::Element *root = doc.create_root_node((*nodes)[0]);
         
-        if ((nodes->size() > 2) && !is_report) {
+        if ((nodes->size() > 2) && !is_root) {
             xmlpp::Element *childs[n]; 
             for (int i = 0; i < n; i++) {
                 childs[i] = root->add_child_element((*nodes)[i + 1]);

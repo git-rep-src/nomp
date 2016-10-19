@@ -18,7 +18,7 @@ private:
 
     int c_field;
 
-    bool is_logged;
+    bool is_login;
     bool is_task_running;
     
     string oret;
@@ -37,10 +37,10 @@ private:
 
     void driver();
     bool get(string args, string attr = "id", bool get_data = true, bool is_report = false);
-    bool create(bool is_report = false);
+    bool create(bool exec = true);
     void write();
-    void fill(bool is_report);
     bool validate(vector<string> &vec);
+    void fill(bool is_report);
     void refresh();
     void refresh_sleep();
     bool omp(const string args);

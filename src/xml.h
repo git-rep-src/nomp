@@ -13,7 +13,7 @@ public:
     ~Xml();
 
     bool create(vector<string> *nodes, vector<string> *values, vector<string> *xret,
-                bool is_report = false);
+                bool is_root = false);
     bool parse(string *content, vector<string> *paths, vector<string> *xret,
                const string attr = "id", bool get_data = true, bool is_report = false);
 private:
