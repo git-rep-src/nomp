@@ -115,7 +115,7 @@ void Ui::main()
     fields_main[15] = new_field(1, 20, 41, 45, 0, 0);
     fields_main[16] = NULL;
 
-    for (int i =  0; i <= n_fields; i++) {
+    for (int i = 0; i <= n_fields; i++) {
         if ((i != 0) && (i != 1) && (i != 4))
             field_opts_off(fields_main[i], O_EDIT);
         if ((i != 3) && (i != 7) &&
@@ -412,33 +412,31 @@ void Ui::report_data(vector<string> **values, int c_item, uint n)
 
 void Ui::progress(string p)
 {  
-    if ((p == "1") || (p == "-1")) {
-        for (int i = 0; i < 45; i++)
-            mvdelch(32, 23);
-    }
-    
     if (p == "-1") {
-        mvprintw(32, 23, "  DONE  ");
-        mvhline(32, 33, ACS_VLINE, 32);
+        // TODO: BORRAR LA LINE DE PROGRESS
+        status(make_pair("TASK FINISHED", 7));
     } else {
-        mvprintw(32, 23, " %s/100 ", p.c_str());
-        mvhline(32, 33, ACS_VLINE, (stoi(p) / 3));
+        mvprintw(31, 23, " %s/100 ", p.c_str());
+        mvhline(31, 33, ACS_VLINE, (stoi(p) / 3));
     }
     
     refresh();
 }
 
-void Ui::status(pair<string, int> sts)
+void Ui::status(pair<string, int> sts, bool is_login)
 {
-    // TODO: FALTA WINDOW PARA LOGIN
+    WINDOW *window_status;
     
-    WINDOW *window_status = newwin(35, 63, 7, 109);
+    if (is_login)
+        window_status = newwin(1, 42, 18, 66);
+    else
+        window_status = newwin(35, 63, 7, 109);
 
     wattron(window_status, COLOR_PAIR(sts.second));
-    mvwprintw(window_status, 0, 0, "[]");
+    mvwprintw(window_status, 0, 0, "STATUS:");
     wattroff(window_status, COLOR_PAIR(sts.second));
     
-    mvwprintw(window_status, 0, 3, sts.first.c_str());
+    mvwprintw(window_status, 0, 8, sts.first.c_str());
     
     wrefresh(window_status);
 

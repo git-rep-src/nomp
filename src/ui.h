@@ -28,7 +28,7 @@ public:
     int menu(vector<string> *values, uint n);
     int report(vector<string> *values, uint n);
     void progress(string p);
-    void status(pair<string, int> sts);
+    void status(pair<string, int> sts, bool is_login = false);
     void marker(bool is_menu = true, bool show = true);
     void delete_windows_arr();
     void cleanup();
