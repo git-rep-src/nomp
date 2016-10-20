@@ -1,8 +1,8 @@
 #ifndef UI_H
 #define UI_H
 
-#include<vector>
-#include<string>
+#include <vector>
+#include <string>
 
 #include <form.h>
 
@@ -19,9 +19,9 @@ public:
 
     int n_fields;
     
-    const std::vector<std::string> fields_names =
+    const std::vector<std::string> fields_name =
     {
-       "HOST",
+        "HOST",
         "PORT",
         "USER",
         "PASSWORD",

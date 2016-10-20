@@ -1,4 +1,4 @@
-//#include<iostream>
+//#include <iostream>//
 
 #include "ui.h"
 
@@ -69,16 +69,16 @@ void Ui::login()
     set_field_buffer(fields_login[1], 0, "9390");
     set_field_buffer(fields_login[2], 0, "user");
     set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS");
-    set_field_buffer(fields_login[4], 0, fields_names[4].c_str());
+    set_field_buffer(fields_login[4], 0, fields_name[4].c_str());
     
     form_login = new_form(fields_login);
     scale_form(form_login, &rows, &cols);
     post_form(form_login);
     
-    mvprintw(20, 61, fields_names[0].c_str());
-    mvprintw(22, 61, fields_names[1].c_str());
-    mvprintw(24, 61, fields_names[2].c_str());
-    mvprintw(26, 57, fields_names[3].c_str());
+    mvprintw(20, 61, fields_name[0].c_str());
+    mvprintw(22, 61, fields_name[1].c_str());
+    mvprintw(24, 61, fields_name[2].c_str());
+    mvprintw(26, 57, fields_name[3].c_str());
     
     refresh();
 
@@ -139,28 +139,28 @@ void Ui::main()
     set_field_back(fields_main[14], COLOR_PAIR(1));
     set_field_back(fields_main[15], COLOR_PAIR(1));
     
-    set_field_buffer(fields_main[3], 0, fields_names[8].c_str());
-    set_field_buffer(fields_main[7], 0, fields_names[12].c_str());
-    set_field_buffer(fields_main[10], 0, fields_names[16].c_str());
-    set_field_buffer(fields_main[11], 0, fields_names[17].c_str());
-    set_field_buffer(fields_main[14], 0, fields_names[20].c_str());
-    set_field_buffer(fields_main[15], 0, fields_names[21].c_str());
+    set_field_buffer(fields_main[3], 0, fields_name[8].c_str());
+    set_field_buffer(fields_main[7], 0, fields_name[12].c_str());
+    set_field_buffer(fields_main[10], 0, fields_name[16].c_str());
+    set_field_buffer(fields_main[11], 0, fields_name[17].c_str());
+    set_field_buffer(fields_main[14], 0, fields_name[20].c_str());
+    set_field_buffer(fields_main[15], 0, fields_name[21].c_str());
     
     form_main = new_form(fields_main);
     scale_form(form_main, &rows, &cols);
     post_form(form_main);
 
-    mvprintw(7, 18, fields_names[5].c_str());
-    mvprintw(9, 17, fields_names[6].c_str());
-    mvprintw(11, 17, fields_names[7].c_str());
-    mvprintw(17, 18, fields_names[9].c_str());
-    mvprintw(19, 18, fields_names[10].c_str());
-    mvprintw(21, 16, fields_names[11].c_str());
-    mvprintw(27, 18, fields_names[13].c_str());
-    mvprintw(29, 15, fields_names[14].c_str());
-    mvprintw(31, 14, fields_names[15].c_str());
-    mvprintw(37, 18, fields_names[18].c_str());
-    mvprintw(39, 16, fields_names[19].c_str());
+    mvprintw(7, 18, fields_name[5].c_str());
+    mvprintw(9, 17, fields_name[6].c_str());
+    mvprintw(11, 17, fields_name[7].c_str());
+    mvprintw(17, 18, fields_name[9].c_str());
+    mvprintw(19, 18, fields_name[10].c_str());
+    mvprintw(21, 16, fields_name[11].c_str());
+    mvprintw(27, 18, fields_name[13].c_str());
+    mvprintw(29, 15, fields_name[14].c_str());
+    mvprintw(31, 14, fields_name[15].c_str());
+    mvprintw(37, 18, fields_name[18].c_str());
+    mvprintw(39, 16, fields_name[19].c_str());
     
     curs_set(1);
     
@@ -188,9 +188,9 @@ int Ui::menu(std::vector<std::string> *values, uint n)
     windows_arr[0] = newwin((n_values + 2), 42, row, 23);
     box(windows_arr[0], 0, 0);
     
-    for (int i = 0; i < n_values; i++) {
-        windows_arr[i + 1] = subwin(windows_arr[0], 1, 40, ((i + 1) + row), 24);
-        mvwprintw(windows_arr[i + 1], 0, 1, "%s", (*values)[n_values + i].c_str()); 
+    for (int i = 1; i <= n_values; i++) {
+        windows_arr[i] = subwin(windows_arr[0], 1, 40, (i + row), 24);
+        mvwprintw(windows_arr[i], 0, 1, "%s", (*values)[n_values + (i - 1)].c_str()); 
     }
     
     wbkgd(windows_arr[1], A_REVERSE);
@@ -304,26 +304,26 @@ int Ui::report(std::vector<std::string> *values, uint n)
     windows_arr[0] = newpad((n_values + 35), COLS);
     keypad(windows_arr[0], true);
     
-    for (int i = 0; i < n_values; i++) {
-        windows_arr[i + 1] = subpad(windows_arr[0], 1, (COLS - 4), i, 0);
+    for (int i = 1; i <= n_values; i++) {
+        windows_arr[i] = subpad(windows_arr[0], 1, (COLS - 4), (i - 1), 0);
         
-        mvwprintw(windows_arr[i + 1], 0, 0, "%s", (*values)[n_values + i].c_str());
-        mvwprintw(windows_arr[i + 1], 0, 129, "%s", (*values)[(n_values * 2) + i].c_str());
-        mvwprintw(windows_arr[i + 1], 0, 146, "%s", (*values)[(n_values * 3) + i].c_str());
+        mvwprintw(windows_arr[i], 0, 0, "%s", (*values)[n_values + i].c_str());
+        mvwprintw(windows_arr[i], 0, 129, "%s", (*values)[(n_values * 2) + i].c_str());
+        mvwprintw(windows_arr[i], 0, 146, "%s", (*values)[(n_values * 3) + i].c_str());
         
         if ((stoi((*values)[(n_values * 4) + i])) >= 7) { 
-            wattron(windows_arr[i + 1], COLOR_PAIR(4));
-            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
-            wattroff(windows_arr[i + 1], COLOR_PAIR(4));
+            wattron(windows_arr[i], COLOR_PAIR(4));
+            mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
+            wattroff(windows_arr[i], COLOR_PAIR(4));
         } else if (((stoi((*values)[(n_values * 4) + i])) >= 4) &&
                    ((stoi((*values)[(n_values * 4) + i])) < 7)) { 
-            wattron(windows_arr[i + 1], COLOR_PAIR(5));
-            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
-            wattroff(windows_arr[i + 1], COLOR_PAIR(5));
+            wattron(windows_arr[i], COLOR_PAIR(5));
+            mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
+            wattroff(windows_arr[i], COLOR_PAIR(5));
         } else {
-            wattron(windows_arr[i + 1], COLOR_PAIR(6));
-            mvwprintw(windows_arr[i + 1], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
-            wattroff(windows_arr[i + 1], COLOR_PAIR(6));
+            wattron(windows_arr[i], COLOR_PAIR(6));
+            mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
+            wattroff(windows_arr[i], COLOR_PAIR(6));
         }
     }
     
@@ -351,7 +351,7 @@ int Ui::report(std::vector<std::string> *values, uint n)
                 break;
             case KEY_RIGHT:
             case KEY_RETURN:
-                report_data(&values, c_item, n);
+                report_data(&values, (c_item + 1), n);
                 break;
             default:
                 break;
