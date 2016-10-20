@@ -1,12 +1,13 @@
 #include <thread>
 #include <fstream>
-#include <algorithm>
+#include <unistd.h>
+#include <pwd.h>
 
 //#include <iostream>//
 
-#include "base64.h"
-#include "xml.h"
 #include "nomp.h"
+#include "xml.h"
+#include "base64.h"
 
 Nomp::Nomp() :
     c_field(2),
@@ -141,6 +142,7 @@ void Nomp::driver()
             case KEY_RETURN:
                 validators.clear();
                 oret.clear();
+                xret.clear();
                 if (is_login) {
                     if (c_field == 4) {
                         user_configs.clear();
@@ -153,7 +155,7 @@ void Nomp::driver()
                                 ui.cleanup();
                                 ui.main();
                             } else {
-                                ui.status(std::make_pair("RESOURCE CREATE ERROR", 4), is_login);
+                                ui.status(std::make_pair("LOGIN ERROR", 4), is_login);
                             }
                         }
                     }
@@ -161,7 +163,6 @@ void Nomp::driver()
                 } else {
                     xnodes.clear();
                     xvalues.clear();
-                    xret.clear();
                     switch(c_field)
 		            {
                         case 3:
@@ -255,26 +256,30 @@ void Nomp::driver()
                                     get("<get_targets/>");
                                     break;
                                 case 8:
-                                    xpaths.push_back("/get_tasks_response/task"); 
-                                    xpaths.push_back("/get_tasks_response/task/name");
-                                    xpaths.push_back("/get_tasks_response/task/name");
-                                    xpaths.push_back("/get_tasks_response/task/comment");
-                                    xpaths.push_back("/get_tasks_response/task/creation_time");
-                                    xpaths.push_back("/get_tasks_response/task/modification_time");
-                                    xpaths.push_back("/get_tasks_response/task/scanner/name");
-                                    xpaths.push_back("/get_tasks_response/task/config/name");
-                                    xpaths.push_back("/get_tasks_response/task/target/name");
-                                    xpaths.push_back("/get_tasks_response/task/status");
-                                    get("<get_tasks/>");
+                                    if (!is_task_running) {
+                                        xpaths.push_back("/get_tasks_response/task"); 
+                                        xpaths.push_back("/get_tasks_response/task/name");
+                                        xpaths.push_back("/get_tasks_response/task/name");
+                                        xpaths.push_back("/get_tasks_response/task/comment");
+                                        xpaths.push_back("/get_tasks_response/task/creation_time");
+                                        xpaths.push_back("/get_tasks_response/task/modification_time");
+                                        xpaths.push_back("/get_tasks_response/task/scanner/name");
+                                        xpaths.push_back("/get_tasks_response/task/config/name");
+                                        xpaths.push_back("/get_tasks_response/task/target/name");
+                                        xpaths.push_back("/get_tasks_response/task/status");
+                                        get("<get_tasks/>");
+                                    }
                                     break;
                                 case 9:
-                                    xpaths.push_back("");
-                                    xpaths.push_back("");
-                                    xret = refreshes;
-                                    fill(false);
+                                    if (!is_task_running) {
+                                        xpaths.push_back("");
+                                        xpaths.push_back("");
+                                        xret = refreshes;
+                                        fill(false);
+                                    }
                                     break;
                                 case 12:
-                                    xpaths.push_back("/get_tasks_response/task/second_last_report/report"); // TODO: CAMBIAR 
+                                    xpaths.push_back("/get_tasks_response/task/first_report/report"); // TODO: CAMBIAR 
                                     xpaths.push_back("/get_tasks_response/task/name");
                                     get("<get_tasks/>");
                                     break;
@@ -327,7 +332,7 @@ void Nomp::driver()
                                                        result_hosts_only=1 ignore_pagination=1__attr__");
                                     if (create(false)) {
                                         xpaths.push_back("/get_reports_response/report"); 
-                                        if (get(xret[0], "id", false, true))
+                                        if (get(xret[0], "extension", false, true))
                                             write();
                                     }
                                     break;
@@ -356,11 +361,11 @@ bool Nomp::get(std::string args, std::string attr, bool get_data, bool is_report
             if (get_data)
                 fill(is_report);
         } else {
-            ui.status(std::make_pair("INTERNAL ERROR", 4));
+            ui.status(std::make_pair("XML INTERNAL ERROR", 4));
             return false;
         }
     } else {
-        ui.status(std::make_pair("RESOURCE CREATE ERROR", 4));
+        ui.status(std::make_pair("GET RESOURCE ERROR", 4));
         return false;
     }
 
@@ -376,12 +381,12 @@ bool Nomp::create(bool exec)
                 if (omp(xret[0])) {
                     ui.status(std::make_pair("RESOURCE CREATED", 7));
                 } else {    
-                    ui.status(std::make_pair("RESOURCE CREATE ERROR", 4));
+                    ui.status(std::make_pair("CREATE RESOURCE ERROR", 4));
                     return false;
                 }
             }
         } else {
-            ui.status(std::make_pair("INTERNAL ERROR", 4));
+            ui.status(std::make_pair("XML INTERNAL ERROR", 4));
             return false;
         }
     } else {
@@ -393,18 +398,17 @@ bool Nomp::create(bool exec)
 
 void Nomp::write()
 {
-    std::transform(extension.begin(), extension.end(), extension.begin(),::tolower);
-
-    std::ofstream file("/home/user/.nomp/" + ids[5] + "." + extension); // TODO: $HOME 
-
+    passwd *pw = getpwuid(getuid());
+    
+    std::ofstream file(std::string(pw->pw_dir) + "/.nomp/" + ids[5] + "." + xret[1]); 
     if (file.is_open()) {
-        std::vector<BYTE> data = base64_decode(xret[1]);
+        std::vector<BYTE> data = base64_decode(xret[2]);
         for (uint i = 0; i < data.size(); i++)
             file << data[i];
         file.close();
-        ui.status(std::make_pair("RESOURCE CREATED", 7));
+        ui.status(std::make_pair("EXPORTED " + ids[5] + "." + xret[1], 7));
     } else {
-        ui.status(std::make_pair("RESOURCE CREATE ERROR", 4));
+        ui.status(std::make_pair("EXPORT ERROR", 4));
     }
 }
 
@@ -422,11 +426,11 @@ bool Nomp::validate(std::vector<std::string> &vec)
                 int n = it->first.first;
                 if (!is_login) {
                    if (n < 11)
-                       n = n + 5;
+                       n += 5;
                    else   
-                       n = n + 6;
+                       n += 6;
                 }
-                ui.status(std::make_pair("THE " + ui.fields_names[n] + " FIELD CANNOT BE BLANK", 5), is_login);
+                ui.status(std::make_pair("THE " + ui.fields_name[n] + " FIELD CANNOT BE BLANK", 5), is_login);
                 return false;
             }
         } else if (it->second.first) {
@@ -471,13 +475,11 @@ void Nomp::fill(bool is_report)
                 break;
             case 13:
                 ids[6] = xret[c_item];
-                extension = xret[(xret.size() / xpaths.size()) + c_item].c_str();
                 break;
             default:
                 break;
         }
-        set_field_buffer(ui.p_fields[c_field], 0, 
-                         xret[(xret.size() / xpaths.size()) + c_item].c_str());
+        set_field_buffer(ui.p_fields[c_field], 0, xret[((xret.size() / xpaths.size()) + c_item)].c_str());
     }
 
     is_refresh_blocked = false;
@@ -500,7 +502,7 @@ void Nomp::refresh()
     
         if (create(false)) {
             xpaths.push_back("/get_tasks_response/task/progress");
-            if (get(xret[0], "id", false, true))
+            if (get(xret[0], "", false, true))
                 ui.progress(xret.back());
         } 
     }

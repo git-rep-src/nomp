@@ -21,7 +21,6 @@ private:
     bool is_refresh_blocked;
     
     std::string oret;
-    std::string extension;
 
     std::vector<std::string> ids;
     std::vector<std::string> user_configs;

@@ -91,10 +91,12 @@ bool Xml::parse(std::string *content, std::vector<std::string> *paths,
                         }
                     }
                 } else {
-                    if (attribute && !is_report)
-                        offset = 111; //BORRRAR
-                    else
+                    if (attribute) 
+                        xret->push_back(attribute->get_value());
+                    if (element->has_child_text())
                         xret->push_back(element->get_first_child_text()->get_content());
+                    else
+                        xret->push_back("");
                 }
             }
         }
