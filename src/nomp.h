@@ -1,11 +1,9 @@
-#include <string>
-#include <sstream>
-#include <vector>
+#ifndef NOMP_H
+#define NOMP_H
+
 #include <map>
 
 #include "ui.h"
-
-using namespace std;
 
 class Nomp
 {
@@ -20,28 +18,40 @@ private:
 
     bool is_login;
     bool is_task_running;
+    bool is_refresh_blocked;
     
-    string oret;
-    string extension;
-    stringstream status;
+    std::string oret;
+    std::string extension;
 
-    vector<string> ids;
-    vector<string> user_configs;
-    vector<string> xnodes;
-    vector<string> xvalues;
-    vector<string> xpaths;
-    vector<string> xret;
-    const vector<string> refreshes = {"30", "60", "120", "300", " 30 sec", " 60 sec","120 sec", "300 sec"};
+    std::vector<std::string> ids;
+    std::vector<std::string> user_configs;
+    std::vector<std::string> xnodes;
+    std::vector<std::string> xvalues;
+    std::vector<std::string> xpaths;
+    std::vector<std::string> xret;
+    const std::vector<std::string> refreshes =
+    {
+        "30",
+        "60",
+        "120",
+        "300",
+        " 30 sec",
+        " 60 sec",
+        "120 sec",
+        "300 sec"
+    };
     
-    map<pair<int, bool>, pair<bool, int>> validators;
+    std::map<std::pair<int, bool>,std::pair<bool, int>> validators;
 
     void driver();
-    bool get(string args, string attr = "id", bool get_data = true, bool is_report = false);
+    bool get(std::string args, std::string attr = "id", bool get_data = true, bool is_report = false);
     bool create(bool exec = true);
     void write();
-    bool validate(vector<string> &vec);
+    bool validate(std::vector<std::string> &vec);
     void fill(bool is_report);
     void refresh();
     void refresh_sleep();
-    bool omp(const string args);
+    bool omp(const std::string args);
 };
+
+#endif

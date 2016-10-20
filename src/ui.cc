@@ -1,8 +1,6 @@
-#include <string.h>
-#include<iostream>
-#include "ui.h"
+//#include<iostream>
 
-using namespace std;
+#include "ui.h"
 
 Ui::Ui() :
     n_values(0)
@@ -71,16 +69,16 @@ void Ui::login()
     set_field_buffer(fields_login[1], 0, "9390");
     set_field_buffer(fields_login[2], 0, "user");
     set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS");
-    set_field_buffer(fields_login[4], 0, "       LOGIN");
+    set_field_buffer(fields_login[4], 0, fields_names[4].c_str());
     
     form_login = new_form(fields_login);
     scale_form(form_login, &rows, &cols);
     post_form(form_login);
     
-    mvprintw(20, 57, "    HOST");
-    mvprintw(22, 57, "    PORT");
-    mvprintw(24, 57, "    USER");
-    mvprintw(26, 57, "PASSWORD");
+    mvprintw(20, 61, fields_names[0].c_str());
+    mvprintw(22, 61, fields_names[1].c_str());
+    mvprintw(24, 61, fields_names[2].c_str());
+    mvprintw(26, 57, fields_names[3].c_str());
     
     refresh();
 
@@ -141,28 +139,28 @@ void Ui::main()
     set_field_back(fields_main[14], COLOR_PAIR(1));
     set_field_back(fields_main[15], COLOR_PAIR(1));
     
-    set_field_buffer(fields_main[3], 0,  "   CREATE TARGET");
-    set_field_buffer(fields_main[7], 0,  "    CREATE TASK");
-    set_field_buffer(fields_main[10], 0, "       START");
-    set_field_buffer(fields_main[11], 0, "       STOP");
-    set_field_buffer(fields_main[14], 0, "    SHOW REPORT");
-    set_field_buffer(fields_main[15], 0, "   EXPORT REPORT");
+    set_field_buffer(fields_main[3], 0, fields_names[8].c_str());
+    set_field_buffer(fields_main[7], 0, fields_names[12].c_str());
+    set_field_buffer(fields_main[10], 0, fields_names[16].c_str());
+    set_field_buffer(fields_main[11], 0, fields_names[17].c_str());
+    set_field_buffer(fields_main[14], 0, fields_names[20].c_str());
+    set_field_buffer(fields_main[15], 0, fields_names[21].c_str());
     
     form_main = new_form(fields_main);
     scale_form(form_main, &rows, &cols);
     post_form(form_main);
 
-    mvprintw(7, 14,  "    NAME");
-    mvprintw(9, 14,  "   HOSTS");
-    mvprintw(11, 14, "   PORTS");
-    mvprintw(17, 14, "    NAME");
-    mvprintw(19, 14, "    SCAN");
-    mvprintw(21, 14, "  TARGET");
-    mvprintw(27, 14, "    TASK");
-    mvprintw(29, 14, " REFRESH");
-    mvprintw(31, 14, "PROGRESS");
-    mvprintw(37, 14, "    TASK");
-    mvprintw(39, 14, "  FORMAT");
+    mvprintw(7, 18, fields_names[5].c_str());
+    mvprintw(9, 17, fields_names[6].c_str());
+    mvprintw(11, 17, fields_names[7].c_str());
+    mvprintw(17, 18, fields_names[9].c_str());
+    mvprintw(19, 18, fields_names[10].c_str());
+    mvprintw(21, 16, fields_names[11].c_str());
+    mvprintw(27, 18, fields_names[13].c_str());
+    mvprintw(29, 15, fields_names[14].c_str());
+    mvprintw(31, 14, fields_names[15].c_str());
+    mvprintw(37, 18, fields_names[18].c_str());
+    mvprintw(39, 16, fields_names[19].c_str());
     
     curs_set(1);
     
@@ -171,7 +169,7 @@ void Ui::main()
     form_driver(form_main, REQ_END_LINE);
 }
 
-int Ui::menu(vector<string> *values, uint n)
+int Ui::menu(std::vector<std::string> *values, uint n)
 {
     int key;
     int row;
@@ -231,7 +229,7 @@ int Ui::menu(vector<string> *values, uint n)
     return -1;
 }
 
-void Ui::menu_data(vector<string> **values, int c_item, uint n)
+void Ui::menu_data(std::vector<std::string> **values, int c_item, uint n)
 {
     menu_data_lines = 36;
     long data_lines = 0;
@@ -294,7 +292,7 @@ void Ui::menu_data_scroll()
     mvprintw(24, 106, " ");
 }
 
-int Ui::report(vector<string> *values, uint n)
+int Ui::report(std::vector<std::string> *values, uint n)
 {
     int key;
     int c_item = 0;
@@ -363,7 +361,7 @@ int Ui::report(vector<string> *values, uint n)
     return -1;
 }
 
-void Ui::report_data(vector<string> **values, int c_item, uint n)
+void Ui::report_data(std::vector<std::string> **values, int c_item, uint n)
 {
     int key;
     int c_line = 0;
@@ -410,11 +408,17 @@ void Ui::report_data(vector<string> **values, int c_item, uint n)
     delwin(window_report_data);
 }
 
-void Ui::progress(string p)
+void Ui::progress(std::string p)
 {  
-    if (p == "-1") {
-        // TODO: BORRAR LA LINE DE PROGRESS
-        status(make_pair("TASK FINISHED", 7));
+    if ((p == "-1") || (p == "-2") || (p == "-3")) {
+        for (int i = 0; i <= 45; i++)
+            mvdelch(31, 23);
+        if (p == "-1")
+            status(std::make_pair("TASK FINISHED", 7));
+        else if (p == "-2")
+            status(std::make_pair("TASK STOPED", 5));
+        else
+            status(std::make_pair("TASK PAUSED", 5));
     } else {
         mvprintw(31, 23, " %s/100 ", p.c_str());
         mvhline(31, 33, ACS_VLINE, (stoi(p) / 3));
@@ -423,23 +427,28 @@ void Ui::progress(string p)
     refresh();
 }
 
-void Ui::status(pair<string, int> sts, bool is_login)
+void Ui::status(std::pair<std::string, int> sts, bool is_login)
 {
+    int start_x = 0;
+    int max_y;
+    int max_x;
     WINDOW *window_status;
-    
-    if (is_login)
-        window_status = newwin(1, 42, 18, 66);
-    else
+
+    if (is_login) {
+        window_status = newwin(1, 63, 18, 55);
+        getmaxyx(window_status, max_y, max_x);
+        start_x = ((max_x - (sts.first.size() + 8)) / 2); 
+    } else {
         window_status = newwin(35, 63, 7, 109);
+    }
+    max_y = 0;
 
     wattron(window_status, COLOR_PAIR(sts.second));
-    mvwprintw(window_status, 0, 0, "STATUS:");
+    mvwprintw(window_status, max_y, start_x, "[STATUS]");
     wattroff(window_status, COLOR_PAIR(sts.second));
-    
-    mvwprintw(window_status, 0, 8, sts.first.c_str());
+    mvwprintw(window_status, max_y, (start_x + 9), sts.first.c_str());
     
     wrefresh(window_status);
-
     delwin(window_status);
 }
 

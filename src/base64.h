@@ -1,5 +1,5 @@
-#ifndef _BASE64_H_
-#define _BASE64_H_
+#ifndef BASE64_H
+#define BASE64_H
 
 #include <vector>
 #include <string>

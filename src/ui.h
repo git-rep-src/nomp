@@ -1,11 +1,10 @@
-#include<string>
+#ifndef UI_H
+#define UI_H
+
 #include<vector>
-#include <utility> 
-#include<iostream>//
+#include<string>
 
 #include <form.h>
-
-using namespace std;
 
 const int KEY_RETURN = 10;
 const int KEY_TAB = 9;
@@ -19,16 +18,42 @@ public:
     ~Ui();
 
     int n_fields;
+    
+    const std::vector<std::string> fields_names =
+    {
+       "HOST",
+        "PORT",
+        "USER",
+        "PASSWORD",
+        "       LOGIN",
+        "NAME",
+        "HOSTS",
+        "PORTS",
+        "   CREATE TARGET",
+        "NAME",
+        "SCAN",
+        "TARGET",
+        "    CREATE TASK",
+        "TASK",
+        "REFRESH",
+        "PROGRESS",
+        "       START",
+        "       STOP",
+        "TASK",
+        "FORMAT",
+        "    SHOW REPORT",
+        "   EXPORT REPORT"
+    };
 
     FIELD **p_fields = NULL;
     FORM **p_form = NULL;
     
     void login();
     void main();
-    int menu(vector<string> *values, uint n);
-    int report(vector<string> *values, uint n);
-    void progress(string p);
-    void status(pair<string, int> sts, bool is_login = false);
+    int menu(std::vector<std::string> *values, uint n);
+    int report(std::vector<std::string> *values, uint n);
+    void progress(std::string p);
+    void status(std::pair<std::string, int> sts, bool is_login = false);
     void marker(bool is_menu = true, bool show = true);
     void delete_windows_arr();
     void cleanup();
@@ -46,7 +71,9 @@ private:
     WINDOW **windows_arr = NULL;
     WINDOW *window_menu_data = NULL;
 
-    void menu_data(vector<string> **values, int c_item, uint n);
+    void menu_data(std::vector<std::string> **values, int c_item, uint n);
     void menu_data_scroll();
-    void report_data(vector<string> **values, int c_item, uint n);
+    void report_data(std::vector<std::string> **values, int c_item, uint n);
 };
+
+#endif

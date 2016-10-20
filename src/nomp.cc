@@ -1,18 +1,18 @@
-#include <algorithm>
-#include <utility>
-#include <iostream>
+#include <thread>
 #include <fstream>
-#include <chrono>//
-#include <thread>//
+#include <algorithm>
 
-#include "xml.h"
+//#include <iostream>//
+
 #include "base64.h"
+#include "xml.h"
 #include "nomp.h"
 
 Nomp::Nomp() :
     c_field(2),
     is_login(true),
     is_task_running(false),
+    is_refresh_blocked(false),
     ids(7)
 {
     driver();
@@ -140,13 +140,12 @@ void Nomp::driver()
                 break;
             case KEY_RETURN:
                 validators.clear();
-                status.str(string());
                 oret.clear();
                 if (is_login) {
                     if (c_field == 4) {
                         user_configs.clear();
                         for (int i = 0; i <= 3; i++)
-                            validators.insert(make_pair(make_pair(i, true), make_pair(true, -1)));
+                            validators.insert(std::make_pair(std::make_pair(i, true), std::make_pair(true, -1)));
                         if (validate(user_configs)) {
                             if (omp("<get_version/>")) {
                                 is_login = false;
@@ -154,8 +153,7 @@ void Nomp::driver()
                                 ui.cleanup();
                                 ui.main();
                             } else {
-                                status << "RESOURCE CREATE ERROR";
-                                ui.status(make_pair(status.str(), 4), is_login);
+                                ui.status(std::make_pair("RESOURCE CREATE ERROR", 4), is_login);
                             }
                         }
                     }
@@ -171,9 +169,9 @@ void Nomp::driver()
                             xnodes.push_back("name");
                             xnodes.push_back("hosts");
                             xnodes.push_back("port_list");
-                            validators.insert(make_pair(make_pair(0, true), make_pair(true, -1)));
-                            validators.insert(make_pair(make_pair(1, true), make_pair(true, -1)));
-                            validators.insert(make_pair(make_pair(2, true), make_pair(false, 0)));
+                            validators.insert(std::make_pair(std::make_pair(0, true), std::make_pair(true, -1)));
+                            validators.insert(std::make_pair(std::make_pair(1, true), std::make_pair(true, -1)));
+                            validators.insert(std::make_pair(std::make_pair(2, true), std::make_pair(false, 0)));
                             create();
                             break;
                         case 7:
@@ -181,17 +179,17 @@ void Nomp::driver()
                             xnodes.push_back("name");
                             xnodes.push_back("config");
                             xnodes.push_back("target");
-                            validators.insert(make_pair(make_pair(4, true), make_pair(true, -1)));
-                            validators.insert(make_pair(make_pair(5, true), make_pair(false, 1)));
-                            validators.insert(make_pair(make_pair(6, true), make_pair(false, 2)));
+                            validators.insert(std::make_pair(std::make_pair(4, true), std::make_pair(true, -1)));
+                            validators.insert(std::make_pair(std::make_pair(5, true), std::make_pair(false, 1)));
+                            validators.insert(std::make_pair(std::make_pair(6, true), std::make_pair(false, 2)));
                             create();
                             break;
                         case 10:
                             if (!is_task_running) {
                                 xnodes.push_back("start_task");
                                 xnodes.push_back("task_id");
-                                validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
-                                validators.insert(make_pair(make_pair(9, true), make_pair(false, 4)));
+                                validators.insert(std::make_pair(std::make_pair(8, true), std::make_pair(false, 3)));
+                                validators.insert(std::make_pair(std::make_pair(9, true), std::make_pair(false, 4)));
                                 if (create()) {
                                     is_task_running = true;
                                     refresh();
@@ -202,9 +200,12 @@ void Nomp::driver()
                             if (is_task_running) {
                                 xnodes.push_back("stop_task");
                                 xnodes.push_back("task_id");
-                                validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
-                                if (create())
+                                validators.insert(std::make_pair(std::make_pair(8, true), std::make_pair(false, 3)));
+                                if (create()) {
                                     is_task_running = false;
+                                    is_refresh_blocked = false;
+                                    ui.progress("-2");
+                                }
                             }
                             break;
                         case 2:
@@ -291,7 +292,7 @@ void Nomp::driver()
                                     get("<get_report_formats/>");
                                     break;
                                 case 14:
-                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
+                                    validators.insert(std::make_pair(std::make_pair(12, true), std::make_pair(false, 5)));
                                     xnodes.push_back("get_reports");
                                     xnodes.push_back("filter");
                                     xnodes.push_back("report_id"); 
@@ -315,8 +316,8 @@ void Nomp::driver()
                                     }
                                     break;
                                 case 15:
-                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
-                                    validators.insert(make_pair(make_pair(13, true), make_pair(false, 6)));
+                                    validators.insert(std::make_pair(std::make_pair(12, true), std::make_pair(false, 5)));
+                                    validators.insert(std::make_pair(std::make_pair(13, true), std::make_pair(false, 6)));
                                     xnodes.push_back("get_reports");
                                     xnodes.push_back("filter");
                                     xnodes.push_back("report_id"); 
@@ -347,7 +348,7 @@ void Nomp::driver()
     //quit();
 }
 
-bool Nomp::get(string args, string attr, bool get_data, bool is_report)
+bool Nomp::get(std::string args, std::string attr, bool get_data, bool is_report)
 {
     if (omp(args)) {
         Xml xml;
@@ -355,13 +356,11 @@ bool Nomp::get(string args, string attr, bool get_data, bool is_report)
             if (get_data)
                 fill(is_report);
         } else {
-            status << "INTERNAL ERROR";
-            ui.status(make_pair(status.str(), 4));
+            ui.status(std::make_pair("INTERNAL ERROR", 4));
             return false;
         }
     } else {
-        status << "RESOURCE CREATE ERROR";
-        ui.status(make_pair(status.str(), 4));
+        ui.status(std::make_pair("RESOURCE CREATE ERROR", 4));
         return false;
     }
 
@@ -375,17 +374,14 @@ bool Nomp::create(bool exec)
         if (xml.create(&xnodes, &xvalues, &xret, !exec)) {
             if (exec) {
                 if (omp(xret[0])) {
-                    status << "RESOURCE CREATED";
-                    ui.status(make_pair(status.str(), 7));
+                    ui.status(std::make_pair("RESOURCE CREATED", 7));
                 } else {    
-                    status << "RESOURCE CREATE ERROR";
-                    ui.status(make_pair(status.str(), 4));
+                    ui.status(std::make_pair("RESOURCE CREATE ERROR", 4));
                     return false;
                 }
             }
         } else {
-            status << "INTERNAL ERROR";
-            ui.status(make_pair(status.str(), 4));
+            ui.status(std::make_pair("INTERNAL ERROR", 4));
             return false;
         }
     } else {
@@ -397,40 +393,44 @@ bool Nomp::create(bool exec)
 
 void Nomp::write()
 {
-    transform(extension.begin(), extension.end(), extension.begin(),::tolower);
+    std::transform(extension.begin(), extension.end(), extension.begin(),::tolower);
 
-    ofstream file("/home/user/.nomp/" + ids[5] + "." + extension); // TODO: $HOME 
+    std::ofstream file("/home/user/.nomp/" + ids[5] + "." + extension); // TODO: $HOME 
 
     if (file.is_open()) {
-        vector<BYTE> data = base64_decode(xret[1]);
+        std::vector<BYTE> data = base64_decode(xret[1]);
         for (uint i = 0; i < data.size(); i++)
             file << data[i];
         file.close();
-        status << "RESOURCE CREATED";
-        ui.status(make_pair(status.str(), 7));
+        ui.status(std::make_pair("RESOURCE CREATED", 7));
     } else {
-        status << "RESOURCE CREATE ERROR";
-        ui.status(make_pair(status.str(), 4));
+        ui.status(std::make_pair("RESOURCE CREATE ERROR", 4));
     }
 }
 
-bool Nomp::validate(vector<string> &vec)
+bool Nomp::validate(std::vector<std::string> &vec)
 {
-    for (map<pair<int, bool>, pair<bool, int>>::iterator it = validators.begin();
+    for (std::map<std::pair<int, bool>, std::pair<bool, int>>::iterator it = validators.begin();
          it != validators.end(); ++it) {
         if (it->first.second) {
             if (!isblank(field_buffer(ui.p_fields[it->first.first], 0)[0])) {
                 if (it->second.first)
-                    vec.push_back(string(field_buffer(ui.p_fields[it->first.first], 0)));
+                    vec.push_back(std::string(field_buffer(ui.p_fields[it->first.first], 0)));
                 else if (it->second.second != -1)
                     vec.push_back(ids[it->second.second] + "__attr__");
             } else {
-                status << "THE FIELD " << to_string(it->first.first + 1) << " CANNOT BE BLANK";
-                ui.status(make_pair(status.str(), 5), is_login);
+                int n = it->first.first;
+                if (!is_login) {
+                   if (n < 11)
+                       n = n + 5;
+                   else   
+                       n = n + 6;
+                }
+                ui.status(std::make_pair("THE " + ui.fields_names[n] + " FIELD CANNOT BE BLANK", 5), is_login);
                 return false;
             }
         } else if (it->second.first) {
-            vec.push_back(string(field_buffer(ui.p_fields[it->first.first], 0)));
+            vec.push_back(std::string(field_buffer(ui.p_fields[it->first.first], 0)));
         }
     }
     
@@ -440,7 +440,9 @@ bool Nomp::validate(vector<string> &vec)
 void Nomp::fill(bool is_report)
 {
     int c_item;
-    
+   
+    is_refresh_blocked = true;
+
     if (is_report)
         c_item = ui.report(&xret, xpaths.size());
     else
@@ -478,36 +480,39 @@ void Nomp::fill(bool is_report)
                          xret[(xret.size() / xpaths.size()) + c_item].c_str());
     }
 
+    is_refresh_blocked = false;
+    
     ui.delete_windows_arr();
     touchwin(stdscr);
 }
 
 void Nomp::refresh()
 {
-    /* TODO: Usar un condicional para no ejecutarla si bool is_refresh_blocked es true.
-     * poner is_refresh_blocked true o false desde driver().
-     */
-
-    xret.clear();
-    xnodes.clear();
-    xvalues.clear();
-    xpaths.clear();
+    if (is_task_running && !is_refresh_blocked) {
+        xnodes.clear();
+        xvalues.clear();
+        xpaths.clear();
+        xret.clear();
     
-    validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
-    xnodes.push_back("get_tasks");
-    xnodes.push_back("id");
+        validators.insert(std::make_pair(std::make_pair(8, true), std::make_pair(false, 3)));
+        xnodes.push_back("get_tasks");
+        xnodes.push_back("id");
     
-    if (create(false)) {
-        xpaths.push_back("/get_tasks_response/task/progress");
-        if (get(xret[0], "id", false, true))
-            ui.progress(xret.back());
-    } 
+        if (create(false)) {
+            xpaths.push_back("/get_tasks_response/task/progress");
+            if (get(xret[0], "id", false, true))
+                ui.progress(xret.back());
+        } 
+    }
     
-    if (xret.back() == "-1") {
-        is_task_running = false;
-    } else {
-        std::thread t(&Nomp::refresh_sleep, this);
-        t.detach();
+    if (is_task_running) {
+        if (xret.back() == "-1") {
+            is_task_running = false;
+            is_refresh_blocked = false;
+        } else {
+            std::thread t(&Nomp::refresh_sleep, this);
+            t.detach();
+        }
     }
 }
 
@@ -517,15 +522,15 @@ void Nomp::refresh_sleep()
     refresh();
 }
 
-bool Nomp::omp(const string args)
+bool Nomp::omp(const std::string args)
 {
     char buf[BUFSIZ];
-    const string cmd = "omp -h " + user_configs[0] +
-                       " -p "    + user_configs[1] +
-                       " -u "    + user_configs[2] + 
-                       " -w "    + user_configs[3] + 
-                       " -X '"   + args + "'"      +
-                       " 2>/dev/null";
+    const std::string cmd = "omp -h " + user_configs[0] +
+                            " -p "    + user_configs[1] +
+                            " -u "    + user_configs[2] + 
+                            " -w "    + user_configs[3] + 
+                            " -X '"   + args + "'"      +
+                            " 2>/dev/null";
 
     FILE *fp = popen(cmd.c_str(), "r");
     if (!fp)

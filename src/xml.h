@@ -1,10 +1,7 @@
-#include <string>
-#include <vector>
+#ifndef XML_H
+#define XML_H
 
 #include <libxml++/libxml++.h>
-
-using namespace std;
-using namespace xmlpp;
 
 class Xml
 {
@@ -12,15 +9,19 @@ public:
     Xml();
     ~Xml();
 
-    bool create(vector<string> *nodes, vector<string> *values, vector<string> *xret,
-                bool is_root = false);
-    bool parse(string *content, vector<string> *paths, vector<string> *xret,
-               const string attr = "id", bool get_data = true, bool is_report = false);
+    bool create(std::vector<std::string> *nodes, std::vector<std::string> *values,
+                std::vector<std::string> *xret, bool is_root = false);
+    bool parse(std::string *content, std::vector<std::string> *paths,
+               std::vector<std::string> *xret, const std::string attr = "id",
+               bool get_data = true, bool is_report = false);
 private:
     void set_format(xmlpp::Node::NodeSet *node, xmlpp::Element **element,
-                    vector<string> **xret, uint &i, uint &max_width);
-    void set_wrap(string &str, uint p, bool replace = false);
-    void set_width(string &str, uint &max_width);
-    void set_uppercase(string &str);
-    void replace(string &str, vector<string> &finds, vector<string> &replaces);
+                    std::vector<std::string> **xret, uint &i, uint &max_width);
+    void set_wrap(std::string &str, uint p, bool replace = false);
+    void set_width(std::string &str, uint &max_width);
+    void set_uppercase(std::string &str);
+    void replace(std::string &str, std::vector<std::string> &finds,
+                 std::vector<std::string> &replaces);
 };
+
+#endif
