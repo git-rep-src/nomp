@@ -14,10 +14,10 @@ Xml::~Xml()
 {
 }
 
-bool Xml::create(std::vector<std::string> *nodes, std::vector<std::string> *values,
-                 std::vector<std::string> *xret, bool is_root)
+bool Xml::create(const std::vector<std::string> *nodes, std::vector<std::string> *values,
+                 std::vector<std::string> *xret, const bool &is_root)
 {
-    int n = (nodes->size() - 1);
+    std::size_t n = (nodes->size() - 1);
     
     try {
         xmlpp::Document doc;
@@ -25,7 +25,7 @@ bool Xml::create(std::vector<std::string> *nodes, std::vector<std::string> *valu
         
         if ((nodes->size() > 2) && !is_root) {
             xmlpp::Element *childs[n]; 
-            for (int i = 0; i < n; i++) {
+            for (std::size_t i = 0; i < n; i++) {
                 childs[i] = root->add_child_element((*nodes)[i + 1]);
                 if ((*values)[i].find("__attr__") != std::string::npos)
                     childs[i]->set_attribute("id", (*values)[i].erase((*values)[i].size() - 8));
@@ -33,7 +33,7 @@ bool Xml::create(std::vector<std::string> *nodes, std::vector<std::string> *valu
                     childs[i]->add_child_text((*values)[i]);
             }
         } else {
-            for (int i = 0; i < n; i++)
+            for (std::size_t i = 0; i < n; i++)
                 root->set_attribute((*nodes)[i + 1], (*values)[i].erase((*values)[i].size() - 8));
         }
 
@@ -45,12 +45,12 @@ bool Xml::create(std::vector<std::string> *nodes, std::vector<std::string> *valu
     return true;
 }
 
-bool Xml::parse(std::string *content, std::vector<std::string> *paths,
-                std::vector<std::string> *xret, const std::string attr,
-                bool get_data, bool is_report)
+bool Xml::parse(const std::string *content, const std::vector<std::string> *paths,
+                std::vector<std::string> *xret, const std::string &attr,
+                const bool &get_data, const bool &is_report)
 {   
-    uint offset;
-    uint max_width;
+    std::size_t offset;
+    int max_width;
     std::string value;
 
     if (is_report) {
@@ -68,9 +68,9 @@ bool Xml::parse(std::string *content, std::vector<std::string> *paths,
         xmlpp::Node *root = parser.get_document()->get_root_node();
         xmlpp::Node::NodeSet node = root->find((*paths)[0]);
     
-        for (uint n = 0; n < paths->size(); n++) {
+        for (std::size_t n = 0; n < paths->size(); n++) {
             node = root->find((*paths)[n]);
-            for (uint i = 1; i <= node.size(); i++) {
+            for (std::size_t i = 1; i <= node.size(); i++) {
                 xmlpp::Element *element = (xmlpp::Element *)node.at(i - 1);
                 const xmlpp::Attribute *attribute = element->get_attribute(attr);
                 if (get_data) {
@@ -78,15 +78,15 @@ bool Xml::parse(std::string *content, std::vector<std::string> *paths,
                         xret->push_back(attribute->get_value());
                     } else {
                         if (n >= offset) {
-                            set_format(&node, &element, &xret, i, max_width);
+                            format(&node, &element, &xret, i, max_width);
                         } else {
                             value = element->get_first_child_text()->get_content();
                             if (node.at(i - 1)->get_path() ==
                                 "/get_reports_response/report/report/results/result[" + std::to_string(i) + "]/name")
-                                set_wrap(value, 120, true);
+                                wrap(value, 120, true);
                             else if (node.at(i - 1)->get_path() ==
                                      "/get_reports_response/report/report/results/result[" + std::to_string(i) + "]/host")
-                                set_wrap(value, 15, true);
+                                wrap(value, 15, true);
                             xret->push_back(value);
                         }
                     }
@@ -107,8 +107,9 @@ bool Xml::parse(std::string *content, std::vector<std::string> *paths,
     return true;
 }
 
-void Xml::set_format(xmlpp::Node::NodeSet *node, xmlpp::Element **element,
-                     std::vector<std::string> **xret, uint &i, uint &max_width)
+void Xml::format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
+                 std::vector<std::string> **xret, const std::size_t &i,
+                 const int &max_width)
 {
     std::string name;
     std::string value = "-";
@@ -142,7 +143,7 @@ void Xml::set_format(xmlpp::Node::NodeSet *node, xmlpp::Element **element,
     replace(value, targets, replaces);
     
     if ((name == "comment") && (value != "-")) {
-        set_wrap(value, 43); // TODO: ENVIAR COLS EN LUGAR DE 40.
+        wrap(value, 43); // TODO: ENVIAR COLS EN LUGAR DE 40.
     } else if (name == "cve") {
         targets.push_back(", ");
         replaces.push_back("\n");
@@ -156,7 +157,7 @@ void Xml::set_format(xmlpp::Node::NodeSet *node, xmlpp::Element **element,
         replace(value, targets, replaces);
     } else if ((name == "tags") && (value != "-")) {
         name = "DETAILS";
-        size_t n = value.find("|");
+        std::size_t n = value.find("|");
         if (n != std::string::npos)
             value.replace(0, (n + 1), "");
         targets.push_back("vuldetect=");
@@ -179,35 +180,35 @@ void Xml::set_format(xmlpp::Node::NodeSet *node, xmlpp::Element **element,
         replaces.push_back("\n\n");
         replace(value, targets, replaces);
         value.insert(value.size(), "\n\n");
-        set_wrap(value, 100); // TODO: ENVIAR COLS EN LUGAR DE 155.
+        wrap(value, 100); // TODO: ENVIAR COLS EN LUGAR DE 155.
     } else if ((name == "description") && (value != "-")) {
         if (max_width == 13)
-            set_wrap(value, 100); // TODO: ENVIAR COLS EN LUGAR DE 155.
+            wrap(value, 100); // TODO: ENVIAR COLS EN LUGAR DE 155.
         else
-            set_wrap(value, 43); // TODO: ENVIAR COLS EN LUGAR DE 40.
+            wrap(value, 43); // TODO: ENVIAR COLS EN LUGAR DE 40.
     }
 
-    set_width(value, max_width);
-    set_uppercase(name);
+    width(value, max_width);
+    uppercase(name);
     
     ss << std::left << std::setw(max_width) << std::setfill(' ') << name << value << std::endl;
     
     (*xret)->push_back(ss.str());
 }
 
-void Xml::set_wrap(std::string &str, uint p, bool replace)
+void Xml::wrap(std::string &str, const std::size_t &p, const bool replace)
 {
-    std::istringstream f(str);
-    std::stringstream ss;    
+    std::size_t n = 1;
     std::string line;
-    uint n = 1;
+    std::stringstream ss;    
+    std::istringstream f(str);
     
     while (getline(f, line)) {
         if (line.size() >= p) {
             if (replace) {
                 line.replace((p - 3), (line.size() - (p - 3)), "...");
             } else {
-                for (uint i = 0; i < line.size(); i++) {
+                for (std::size_t i = 0; i < line.size(); i++) {
                     if (i > (p * n)) {
                         line.insert((p * n), "\n");
                         ++n;
@@ -222,12 +223,12 @@ void Xml::set_wrap(std::string &str, uint p, bool replace)
     str = ss.str();
 }
 
-void Xml::set_width(std::string &str, uint &max_width)
+inline void Xml::width(std::string &str, const int &max_width)
 {
-    std::istringstream f(str);
-    std::stringstream ss;
-    std::string line;
     bool is_first = true; 
+    std::string line;
+    std::stringstream ss;
+    std::istringstream f(str);
     
     while (getline(f, line)) {
         if (is_first) {
@@ -241,26 +242,26 @@ void Xml::set_width(std::string &str, uint &max_width)
     str = ss.str().replace((ss.str().size() - 1), 1, "");
 }
 
-void Xml::set_uppercase(std::string &str)
+inline void Xml::uppercase(std::string &str)
 {
     std::string uppercase;
 
-    for (uint i = 0; i < str.size(); i++)
+    for (std::size_t i = 0; i < str.size(); i++)
         uppercase += toupper(str[i]);
     
     str = uppercase;
 }
 
-void Xml::replace(std::string &str, std::vector<std::string> &targets,
-                  std::vector<std::string> &replaces)
+inline void Xml::replace(std::string &str, std::vector<std::string> &targets,
+                         std::vector<std::string> &replaces)
 {
-    for (uint n = 0; n < targets.size(); n++) {
+    for (std::size_t n = 0; n < targets.size(); n++) {
         for (std::string::size_type i = 0; (i = str.find(targets[n], i)) != std::string::npos;) {
             str.replace(i, targets[n].length(), replaces[n]);
             i += replaces[n].length();
         }
     }
     
-    targets.clear();
-    replaces.clear();
+    std::vector<std::string>().swap(targets);
+    std::vector<std::string>().swap(replaces);
 }

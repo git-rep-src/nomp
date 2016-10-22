@@ -1,8 +1,8 @@
 #include <thread>
 #include <fstream>
+#include <algorithm>
 #include <unistd.h>
 #include <pwd.h>
-
 //#include <iostream>//
 
 #include "nomp.h"
@@ -13,7 +13,7 @@ Nomp::Nomp() :
     c_field(2),
     is_login(true),
     is_task_running(false),
-    is_refresh_blocked(false),
+    is_auto_refresh_blocked(false),
     ids(7)
 {
     driver();
@@ -140,12 +140,9 @@ void Nomp::driver()
                 form_driver(*ui.p_form, REQ_DEL_CHAR);
                 break;
             case KEY_RETURN:
-                validators.clear();
-                oret.clear();
-                xret.clear();
                 if (is_login) {
                     if (c_field == 4) {
-                        user_configs.clear();
+                        std::vector<std::string>().swap(user_configs);
                         for (int i = 0; i <= 3; i++)
                             validators.insert(std::make_pair(std::make_pair(i, true), std::make_pair(true, -1)));
                         if (validate(user_configs)) {
@@ -159,10 +156,7 @@ void Nomp::driver()
                             }
                         }
                     }
-                    break;
                 } else {
-                    xnodes.clear();
-                    xvalues.clear();
                     switch(c_field)
 		            {
                         case 3:
@@ -193,7 +187,7 @@ void Nomp::driver()
                                 validators.insert(std::make_pair(std::make_pair(9, true), std::make_pair(false, 4)));
                                 if (create()) {
                                     is_task_running = true;
-                                    refresh();
+                                    auto_refresh();
                                 }
                             }
                             break;
@@ -204,7 +198,7 @@ void Nomp::driver()
                                 validators.insert(std::make_pair(std::make_pair(8, true), std::make_pair(false, 3)));
                                 if (create()) {
                                     is_task_running = false;
-                                    is_refresh_blocked = false;
+                                    is_auto_refresh_blocked = false;
                                     ui.progress("-2");
                                 }
                             }
@@ -218,7 +212,6 @@ void Nomp::driver()
                         case 13:
                         case 14:
                         case 15:
-                            xpaths.clear();
                             switch(c_field)
                             {
                                 case 2:
@@ -274,7 +267,7 @@ void Nomp::driver()
                                     if (!is_task_running) {
                                         xpaths.push_back("");
                                         xpaths.push_back("");
-                                        xret = refreshes;
+                                        xret = auto_refresh_times;
                                         fill(false);
                                     }
                                     break;
@@ -339,10 +332,17 @@ void Nomp::driver()
                                 default:
                                     break;
                             }
+                            std::vector<std::string>().swap(xpaths);
+                            break;
                         default:
                             break;
                     }
+                    std::vector<std::string>().swap(xnodes);
+                    std::vector<std::string>().swap(xvalues);
                 }
+                std::string().swap(oret);
+                std::vector<std::string>().swap(xret);
+                std::map<std::pair<int, bool>, std::pair<bool, int>>().swap(validators);
                 break;
             default:
                 form_driver(*ui.p_form, key);
@@ -353,7 +353,8 @@ void Nomp::driver()
     //quit();
 }
 
-bool Nomp::get(std::string args, std::string attr, bool get_data, bool is_report)
+bool Nomp::get(const std::string &args, const std::string &attr,
+               const bool &get_data, const bool &is_report)
 {
     if (omp(args)) {
         Xml xml;
@@ -372,7 +373,7 @@ bool Nomp::get(std::string args, std::string attr, bool get_data, bool is_report
     return true;
 }
 
-bool Nomp::create(bool exec)
+bool Nomp::create(const bool &exec)
 {
     if (validate(xvalues)) {
         Xml xml;
@@ -403,7 +404,7 @@ void Nomp::write()
     std::ofstream file(std::string(pw->pw_dir) + "/.nomp/" + ids[5] + "." + xret[1]); 
     if (file.is_open()) {
         std::vector<BYTE> data = base64_decode(xret[2]);
-        for (uint i = 0; i < data.size(); i++)
+        for (std::size_t i = 0; i < data.size(); i++)
             file << data[i];
         file.close();
         ui.status(std::make_pair("EXPORTED " + ids[5] + "." + xret[1], 7));
@@ -412,16 +413,16 @@ void Nomp::write()
     }
 }
 
-bool Nomp::validate(std::vector<std::string> &vec)
+bool Nomp::validate(std::vector<std::string> &v)
 {
     for (std::map<std::pair<int, bool>, std::pair<bool, int>>::iterator it = validators.begin();
          it != validators.end(); ++it) {
         if (it->first.second) {
             if (!isblank(field_buffer(ui.p_fields[it->first.first], 0)[0])) {
                 if (it->second.first)
-                    vec.push_back(std::string(field_buffer(ui.p_fields[it->first.first], 0)));
+                    v.push_back(trim(field_buffer(ui.p_fields[it->first.first], 0)));
                 else if (it->second.second != -1)
-                    vec.push_back(ids[it->second.second] + "__attr__");
+                    v.push_back(ids[it->second.second] + "__attr__");
             } else {
                 int n = it->first.first;
                 if (!is_login) {
@@ -434,18 +435,29 @@ bool Nomp::validate(std::vector<std::string> &vec)
                 return false;
             }
         } else if (it->second.first) {
-            vec.push_back(std::string(field_buffer(ui.p_fields[it->first.first], 0)));
+            v.push_back(trim(field_buffer(ui.p_fields[it->first.first], 0)));
         }
     }
     
     return true;
 }
 
-void Nomp::fill(bool is_report)
+inline std::string Nomp::trim(const char *c)
+{
+    std::string str(c);
+    
+    str.erase(unique(str.begin(), str.end(), [] (char a, char b) {
+        return isspace(a) && isspace(b);}), str.end());
+    str.replace((str.size() - 1), 1, "");
+
+    return str;
+}
+
+void Nomp::fill(const bool &is_report)
 {
     int c_item;
    
-    is_refresh_blocked = true;
+    is_auto_refresh_blocked = true;
 
     if (is_report)
         c_item = ui.report(&xret, xpaths.size());
@@ -482,19 +494,21 @@ void Nomp::fill(bool is_report)
         set_field_buffer(ui.p_fields[c_field], 0, xret[((xret.size() / xpaths.size()) + c_item)].c_str());
     }
 
-    is_refresh_blocked = false;
-    
+    is_auto_refresh_blocked = false;
+
     ui.delete_windows_arr();
     touchwin(stdscr);
 }
 
-void Nomp::refresh()
+void Nomp::auto_refresh()
 {
-    if (is_task_running && !is_refresh_blocked) {
-        xnodes.clear();
-        xvalues.clear();
-        xpaths.clear();
-        xret.clear();
+    if (is_task_running && !is_auto_refresh_blocked) {
+        std::map<std::pair<int, bool>, std::pair<bool, int>>().swap(validators);
+        std::vector<std::string>().swap(xnodes);
+        std::vector<std::string>().swap(xvalues);
+        std::vector<std::string>().swap(xpaths);
+        std::vector<std::string>().swap(xret);
+        std::string().swap(oret);
     
         validators.insert(std::make_pair(std::make_pair(8, true), std::make_pair(false, 3)));
         xnodes.push_back("get_tasks");
@@ -510,21 +524,21 @@ void Nomp::refresh()
     if (is_task_running) {
         if (xret.back() == "-1") {
             is_task_running = false;
-            is_refresh_blocked = false;
+            is_auto_refresh_blocked = false;
         } else {
-            std::thread t(&Nomp::refresh_sleep, this);
+            std::thread t(&Nomp::auto_refresh_sleep, this);
             t.detach();
         }
     }
 }
 
-void Nomp::refresh_sleep()
+void Nomp::auto_refresh_sleep()
 {
     std::this_thread::sleep_for(std::chrono::seconds(stoi(ids[4])));
-    refresh();
+    auto_refresh();
 }
 
-bool Nomp::omp(const std::string args)
+bool Nomp::omp(const std::string &args)
 {
     char buf[BUFSIZ];
     const std::string cmd = "omp -h " + user_configs[0] +
@@ -538,8 +552,6 @@ bool Nomp::omp(const std::string args)
     if (!fp)
         return false;
     
-    oret.clear();
-
     while (!feof(fp))
         if (fgets(buf, BUFSIZ, fp) != NULL)
             oret += buf;

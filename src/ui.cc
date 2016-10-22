@@ -51,7 +51,7 @@ void Ui::login()
     fields_login[4] = new_field(1, 20, 28, 77, 0, 0);
     fields_login[5] = NULL;
     
-    for (int i = 0; i <= n_fields; i++) {
+    for (std::size_t i = 0; i <= n_fields; i++) {
         if (i == 4)
             field_opts_off(fields_login[i], O_EDIT);
         else
@@ -67,8 +67,8 @@ void Ui::login()
     
     set_field_buffer(fields_login[0], 0, "localhost");
     set_field_buffer(fields_login[1], 0, "9390");
-    set_field_buffer(fields_login[2], 0, "user");
-    set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS");
+    set_field_buffer(fields_login[2], 0, "user");              // TODO: BORRAR
+    set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS"); // TODO: BORAR
     set_field_buffer(fields_login[4], 0, fields_name[4].c_str());
     
     form_login = new_form(fields_login);
@@ -77,7 +77,7 @@ void Ui::login()
     
     mvprintw(20, 61, fields_name[0].c_str());
     mvprintw(22, 61, fields_name[1].c_str());
-    mvprintw(24, 61, fields_name[2].c_str());
+    mvprintw(24, 57, fields_name[2].c_str());
     mvprintw(26, 57, fields_name[3].c_str());
     
     refresh();
@@ -113,7 +113,7 @@ void Ui::main()
     fields_main[15] = new_field(1, 20, 41, 45, 0, 0);
     fields_main[16] = NULL;
 
-    for (int i = 0; i <= n_fields; i++) {
+    for (std::size_t i = 0; i <= n_fields; i++) {
         if ((i != 0) && (i != 1) && (i != 4))
             field_opts_off(fields_main[i], O_EDIT);
         if ((i != 3) && (i != 7) &&
@@ -169,11 +169,11 @@ void Ui::main()
     form_driver(form_main, REQ_END_LINE);
 }
 
-int Ui::menu(std::vector<std::string> *values, uint n)
+int Ui::menu(std::vector<std::string> *values, std::size_t n)
 {
     int key;
     int row;
-    int c_item = 0;
+    unsigned int c_item = 0;
     
     n_values = ((values->size()) / n);
     
@@ -188,7 +188,7 @@ int Ui::menu(std::vector<std::string> *values, uint n)
     windows_arr[0] = newwin((n_values + 2), 42, row, 23);
     box(windows_arr[0], 0, 0);
     
-    for (int i = 1; i <= n_values; i++) {
+    for (std::size_t i = 1; i <= n_values; i++) {
         windows_arr[i] = subwin(windows_arr[0], 1, 40, (i + row), 24);
         mvwprintw(windows_arr[i], 0, 1, "%s", (*values)[n_values + (i - 1)].c_str()); 
     }
@@ -229,13 +229,14 @@ int Ui::menu(std::vector<std::string> *values, uint n)
     return -1;
 }
 
-void Ui::menu_data(std::vector<std::string> **values, int c_item, uint n)
+void Ui::menu_data(std::vector<std::string> **values, unsigned int c_item,
+                               std::size_t n)
 {
     menu_data_lines = 36;
     long data_lines = 0;
 
-    for (uint i = 2; i < n; i++)
-        for (uint ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
+    for (std::size_t i = 2; i < n; i++)
+        for (std::size_t ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
             if ((**values)[(n_values * i) + c_item][ii] == '\n')
                 ++data_lines;
     
@@ -247,7 +248,7 @@ void Ui::menu_data(std::vector<std::string> **values, int c_item, uint n)
     
     window_menu_data = newpad(menu_data_lines, 63);
     
-    for (uint i = 2; i < n; i++)
+    for (std::size_t i = 2; i < n; i++)
         wprintw(window_menu_data, "%s", ((**values)[(n_values * i) + c_item]).c_str());
     
     prefresh(window_menu_data, 0, 0, 7, 109, 41, 171);
@@ -292,10 +293,10 @@ void Ui::menu_data_scroll()
     mvprintw(24, 106, " ");
 }
 
-int Ui::report(std::vector<std::string> *values, uint n)
+int Ui::report(std::vector<std::string> *values, std::size_t n)
 {
     int key;
-    int c_item = 0;
+    unsigned int c_item = 0;
 
     n_values = ((values->size()) / n);
     
@@ -304,7 +305,7 @@ int Ui::report(std::vector<std::string> *values, uint n)
     windows_arr[0] = newpad((n_values + 35), COLS);
     keypad(windows_arr[0], true);
     
-    for (int i = 1; i <= n_values; i++) {
+    for (std::size_t i = 1; i <= n_values; i++) {
         windows_arr[i] = subpad(windows_arr[0], 1, (COLS - 4), (i - 1), 0);
         
         mvwprintw(windows_arr[i], 0, 0, "%s", (*values)[n_values + i].c_str());
@@ -361,15 +362,16 @@ int Ui::report(std::vector<std::string> *values, uint n)
     return -1;
 }
 
-void Ui::report_data(std::vector<std::string> **values, int c_item, uint n)
+void Ui::report_data(std::vector<std::string> **values, unsigned int c_item,
+                     std::size_t n)
 {
     int key;
     int c_line = 0;
-    int report_data_lines = 36;
+    long report_data_lines = 36;
     long data_lines = 2;
 
-    for (uint i = 5; i < n; i++)
-        for (uint ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
+    for (std::size_t i = 5; i < n; i++)
+        for (std::size_t ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
             if ((**values)[(n_values * i) + c_item][ii] == '\n')
                 ++data_lines;
 
@@ -379,7 +381,7 @@ void Ui::report_data(std::vector<std::string> **values, int c_item, uint n)
     WINDOW *window_report_data = newpad(report_data_lines, (COLS - 4));
     keypad(window_report_data, true);
     
-    for (uint i = 5; i < n; i++)
+    for (std::size_t i = 5; i < n; i++)
         wprintw(window_report_data, "%s", ((**values)[(n_values * i) + c_item]).c_str());
     
     do {
@@ -483,7 +485,7 @@ void Ui::marker(bool is_menu, bool show)
 
 void Ui::delete_windows_arr()
 {
-    for (int i = 1; i < (n_values + 1); i++)
+    for (std::size_t i = 1; i < (n_values + 1); i++)
         delwin(windows_arr[i]);
     delwin(windows_arr[0]);
     free(windows_arr);
@@ -496,7 +498,7 @@ void Ui::delete_windows_arr()
 
 void Ui::cleanup()
 {
-    for (int i = 0; i <= n_fields; i++)
+    for (std::size_t i = 0; i <= n_fields; i++)
         free_field(p_fields[i]);
     unpost_form(*p_form);
     free_form(*p_form);

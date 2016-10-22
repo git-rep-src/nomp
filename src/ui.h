@@ -17,13 +17,13 @@ public:
     Ui();
     ~Ui();
 
-    int n_fields;
+    std::size_t n_fields;
     
     const std::vector<std::string> fields_name =
     {
         "HOST",
         "PORT",
-        "USER",
+        "USERNAME",
         "PASSWORD",
         "       LOGIN",
         "NAME",
@@ -50,8 +50,8 @@ public:
     
     void login();
     void main();
-    int menu(std::vector<std::string> *values, uint n);
-    int report(std::vector<std::string> *values, uint n);
+    int menu(std::vector<std::string> *values, std::size_t n);
+    int report(std::vector<std::string> *values, std::size_t n);
     void progress(std::string p);
     void status(std::pair<std::string, int> sts, bool is_login = false);
     void marker(bool is_menu = true, bool show = true);
@@ -59,8 +59,8 @@ public:
     void cleanup();
 
 private:
-    int n_values;
-    int menu_data_lines = 36;
+    std::size_t n_values;
+    long menu_data_lines = 36;
 
     FIELD *fields_login[6];
     FIELD *fields_main[17];
@@ -71,9 +71,11 @@ private:
     WINDOW **windows_arr = NULL;
     WINDOW *window_menu_data = NULL;
 
-    void menu_data(std::vector<std::string> **values, int c_item, uint n);
+    void menu_data(std::vector<std::string> **values,
+                   unsigned int c_item, std::size_t n);
     void menu_data_scroll();
-    void report_data(std::vector<std::string> **values, int c_item, uint n);
+    void report_data(std::vector<std::string> **values,
+                     unsigned int c_item, std::size_t n);
 };
 
 #endif
