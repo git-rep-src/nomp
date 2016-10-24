@@ -1,6 +1,37 @@
-//#include <iostream>//
+#include <sys/ioctl.h>
+#include <signal.h>
+#include <iostream>//
 
 #include "ui.h"
+
+void resize_terminal(int sig)
+{
+    struct winsize w;
+    ioctl(fileno(stdout), TIOCGWINSZ, &w);
+    std::cout << w.ws_row << "X" << w.ws_col << " ";
+
+endwin();
+initscr();
+refresh();
+clear();
+refresh();
+/*
+int x,y;
+getmaxyx(stdscr, y, x);
+
+wmove(upScreen, 0, 0);
+wmove(downScreen, y/2, 0);
+wresize(upScreen, y/2, x);
+wresize(downScreen, y/2, x);
+wclear(upScreen);
+wclear(downScreen);
+waddstr(upScreen, "test1");
+waddstr(downScreen, "test2");
+wrefresh(upScreen);
+wrefresh(downScreen);
+refresh();
+*/
+}
 
 Ui::Ui() :
     n_values(0)
@@ -21,11 +52,10 @@ Ui::Ui() :
         init_pair(3, COLOR_WHITE, COLOR_WHITE);
         init_pair(4, COLOR_RED, COLOR_BLACK);
         init_pair(5, COLOR_YELLOW, COLOR_BLACK);
-        init_pair(6, COLOR_BLUE, COLOR_BLACK);
-        init_pair(7, COLOR_GREEN, COLOR_BLACK);
+        init_pair(6, COLOR_GREEN, COLOR_BLACK);
     }
     
-    login();
+    signal(SIGWINCH, resize_terminal);
 }
 
 Ui::~Ui()
@@ -34,121 +64,112 @@ Ui::~Ui()
     endwin();
 }
 
-void Ui::login()
+void Ui::login(std::vector<std::string> *user_configs)
 {
     int rows;
     int cols;
-   
-    p_fields = &fields_login[0];
-    p_form = &form_login;
-
-    n_fields = ((sizeof(fields_login) / sizeof(fields_login[0])) - 2);
     
-    fields_login[0] = new_field(1, 42, 20, 66, 0, 0);
-    fields_login[1] = new_field(1, 42, 22, 66, 0, 0);
-    fields_login[2] = new_field(1, 42, 24, 66, 0, 0);
-    fields_login[3] = new_field(1, 42, 26, 66, 0, 0);
-    fields_login[4] = new_field(1, 20, 28, 77, 0, 0);
-    fields_login[5] = NULL;
+    fields[0] = new_field(1, 42, 20, (COLS / 2.63), 0, 0);
+    fields[1] = new_field(1, 42, 22, (COLS / 2.63), 0, 0);
+    fields[2] = new_field(1, 42, 24, (COLS / 2.63), 0, 0);
+    fields[3] = new_field(1, 42, 26, (COLS / 2.63), 0, 0);
+    fields[4] = new_field(1, 20, 28, 77, 0, 0);
+    fields[5] = NULL;
     
-    for (std::size_t i = 0; i <= n_fields; i++) {
+    for (int i = 0; i <= 4; i++) {
         if (i == 4)
-            field_opts_off(fields_login[i], O_EDIT);
+            field_opts_off(fields[i], O_EDIT);
         else
-            set_field_just(fields_login[i], JUSTIFY_CENTER);
-        field_opts_off(fields_login[i], O_AUTOSKIP);
+            set_field_just(fields[i], JUSTIFY_CENTER);
+        field_opts_off(fields[i], O_AUTOSKIP);
     }
     
-    set_field_back(fields_login[0], COLOR_PAIR(1));
-    set_field_back(fields_login[1], COLOR_PAIR(1));
-    set_field_back(fields_login[2], COLOR_PAIR(2));
-    set_field_back(fields_login[3], COLOR_PAIR(3));
-    set_field_back(fields_login[4], COLOR_PAIR(1));
+    set_field_back(fields[0], COLOR_PAIR(1));
+    set_field_back(fields[1], COLOR_PAIR(1));
+    set_field_back(fields[2], COLOR_PAIR(2));
+    set_field_back(fields[3], COLOR_PAIR(3));
+    set_field_back(fields[4], COLOR_PAIR(1));
     
-    set_field_buffer(fields_login[0], 0, "localhost");
-    set_field_buffer(fields_login[1], 0, "9390");
-    set_field_buffer(fields_login[2], 0, "user");              // TODO: BORRAR
-    set_field_buffer(fields_login[3], 0, "ak474747**OPENVAS"); // TODO: BORAR
-    set_field_buffer(fields_login[4], 0, fields_name[4].c_str());
+    set_field_buffer(fields[0], 0, (*user_configs)[0].c_str());
+    set_field_buffer(fields[1], 0, (*user_configs)[1].c_str());
+    set_field_buffer(fields[2], 0, (*user_configs)[2].c_str());
+    set_field_buffer(fields[3], 0, (*user_configs)[3].c_str());
+    set_field_buffer(fields[4], 0, fields_name[4].c_str());
     
-    form_login = new_form(fields_login);
-    scale_form(form_login, &rows, &cols);
-    post_form(form_login);
+    form = new_form(fields);
+    scale_form(form, &rows, &cols);
+    post_form(form);
     
-    mvprintw(20, 61, fields_name[0].c_str());
-    mvprintw(22, 61, fields_name[1].c_str());
-    mvprintw(24, 57, fields_name[2].c_str());
-    mvprintw(26, 57, fields_name[3].c_str());
+    mvprintw(20, (COLS / 2.85), fields_name[0].c_str());
+    mvprintw(22, (COLS / 2.85), fields_name[1].c_str());
+    mvprintw(24, (COLS / 3.05), fields_name[2].c_str());
+    mvprintw(26, (COLS / 3.05), fields_name[3].c_str());
     
     refresh();
 
-    set_current_field(form_login, fields_login[2]);
-    form_driver(form_login, REQ_END_LINE);
+    set_current_field(form, fields[2]);
+    form_driver(form, REQ_END_LINE);
 }
 
 void Ui::main()
 {
     int rows;
     int cols;
-     
-    p_fields = &fields_main[0];
-    p_form = &form_main;
-    n_fields = ((sizeof(fields_main) / sizeof(fields_main[0])) - 2);
     
-    fields_main[0] = new_field(1, 42, 7, 23, 0, 0);
-    fields_main[1] = new_field(1, 42, 9, 23, 0, 0);
-    fields_main[2] = new_field(1, 42, 11, 23, 0, 0);
-    fields_main[3] = new_field(1, 20, 13, 34, 0, 0);
-    fields_main[4] = new_field(1, 42, 17, 23, 0, 0);
-    fields_main[5] = new_field(1, 42, 19, 23, 0, 0);
-    fields_main[6] = new_field(1, 42, 21, 23, 0, 0);
-    fields_main[7] = new_field(1, 20, 23, 34, 0, 0);
-    fields_main[8] = new_field(1, 42, 27, 23, 0, 0);
-    fields_main[9] = new_field(1, 42, 29, 23, 0, 0);
-    fields_main[10] = new_field(1, 20, 33, 23, 0, 0);
-    fields_main[11] = new_field(1, 20, 33, 45, 0, 0);
-    fields_main[12] = new_field(1, 42, 37, 23, 0, 0);
-    fields_main[13] = new_field(1, 42, 39, 23, 0, 0);
-    fields_main[14] = new_field(1, 20, 41, 23, 0, 0);
-    fields_main[15] = new_field(1, 20, 41, 45, 0, 0);
-    fields_main[16] = NULL;
+    fields[0] = new_field(1, 42, 7, 23, 0, 0);
+    fields[1] = new_field(1, 42, 9, 23, 0, 0);
+    fields[2] = new_field(1, 42, 11, 23, 0, 0);
+    fields[3] = new_field(1, 20, 13, 34, 0, 0);
+    fields[4] = new_field(1, 42, 17, 23, 0, 0);
+    fields[5] = new_field(1, 42, 19, 23, 0, 0);
+    fields[6] = new_field(1, 42, 21, 23, 0, 0);
+    fields[7] = new_field(1, 20, 23, 34, 0, 0);
+    fields[8] = new_field(1, 42, 27, 23, 0, 0);
+    fields[9] = new_field(1, 42, 29, 23, 0, 0);
+    fields[10] = new_field(1, 20, 33, 23, 0, 0);
+    fields[11] = new_field(1, 20, 33, 45, 0, 0);
+    fields[12] = new_field(1, 42, 37, 23, 0, 0);
+    fields[13] = new_field(1, 42, 39, 23, 0, 0);
+    fields[14] = new_field(1, 20, 41, 23, 0, 0);
+    fields[15] = new_field(1, 20, 41, 45, 0, 0);
+    fields[16] = NULL;
 
-    for (std::size_t i = 0; i <= n_fields; i++) {
+    for (int i = 0; i <= 15; i++) {
         if ((i != 0) && (i != 1) && (i != 4))
-            field_opts_off(fields_main[i], O_EDIT);
+            field_opts_off(fields[i], O_EDIT);
         if ((i != 3) && (i != 7) &&
             (i != 10) && (i != 11) && (i != 14) && (i != 15))
-            set_field_just(fields_main[i], JUSTIFY_CENTER);
-        field_opts_off(fields_main[i], O_AUTOSKIP);
+            set_field_just(fields[i], JUSTIFY_CENTER);
+        field_opts_off(fields[i], O_AUTOSKIP);
     }
     
-    set_field_back(fields_main[0], COLOR_PAIR(2));
-    set_field_back(fields_main[1], COLOR_PAIR(1));
-    set_field_back(fields_main[2], COLOR_PAIR(1));
-    set_field_back(fields_main[3], COLOR_PAIR(1));
-    set_field_back(fields_main[4], COLOR_PAIR(1));
-    set_field_back(fields_main[5], COLOR_PAIR(1));
-    set_field_back(fields_main[6], COLOR_PAIR(1));
-    set_field_back(fields_main[7], COLOR_PAIR(1));
-    set_field_back(fields_main[8], COLOR_PAIR(1));
-    set_field_back(fields_main[9], COLOR_PAIR(1));
-    set_field_back(fields_main[10], COLOR_PAIR(1));
-    set_field_back(fields_main[11], COLOR_PAIR(1));
-    set_field_back(fields_main[12], COLOR_PAIR(1));
-    set_field_back(fields_main[13], COLOR_PAIR(1));
-    set_field_back(fields_main[14], COLOR_PAIR(1));
-    set_field_back(fields_main[15], COLOR_PAIR(1));
+    set_field_back(fields[0], COLOR_PAIR(2));
+    set_field_back(fields[1], COLOR_PAIR(1));
+    set_field_back(fields[2], COLOR_PAIR(1));
+    set_field_back(fields[3], COLOR_PAIR(1));
+    set_field_back(fields[4], COLOR_PAIR(1));
+    set_field_back(fields[5], COLOR_PAIR(1));
+    set_field_back(fields[6], COLOR_PAIR(1));
+    set_field_back(fields[7], COLOR_PAIR(1));
+    set_field_back(fields[8], COLOR_PAIR(1));
+    set_field_back(fields[9], COLOR_PAIR(1));
+    set_field_back(fields[10], COLOR_PAIR(1));
+    set_field_back(fields[11], COLOR_PAIR(1));
+    set_field_back(fields[12], COLOR_PAIR(1));
+    set_field_back(fields[13], COLOR_PAIR(1));
+    set_field_back(fields[14], COLOR_PAIR(1));
+    set_field_back(fields[15], COLOR_PAIR(1));
     
-    set_field_buffer(fields_main[3], 0, fields_name[8].c_str());
-    set_field_buffer(fields_main[7], 0, fields_name[12].c_str());
-    set_field_buffer(fields_main[10], 0, fields_name[16].c_str());
-    set_field_buffer(fields_main[11], 0, fields_name[17].c_str());
-    set_field_buffer(fields_main[14], 0, fields_name[20].c_str());
-    set_field_buffer(fields_main[15], 0, fields_name[21].c_str());
+    set_field_buffer(fields[3], 0, fields_name[8].c_str());
+    set_field_buffer(fields[7], 0, fields_name[12].c_str());
+    set_field_buffer(fields[10], 0, fields_name[16].c_str());
+    set_field_buffer(fields[11], 0, fields_name[17].c_str());
+    set_field_buffer(fields[14], 0, fields_name[20].c_str());
+    set_field_buffer(fields[15], 0, fields_name[21].c_str());
     
-    form_main = new_form(fields_main);
-    scale_form(form_main, &rows, &cols);
-    post_form(form_main);
+    form = new_form(fields);
+    scale_form(form, &rows, &cols);
+    post_form(form);
 
     mvprintw(7, 18, fields_name[5].c_str());
     mvprintw(9, 17, fields_name[6].c_str());
@@ -166,19 +187,19 @@ void Ui::main()
     
     refresh();
 
-    form_driver(form_main, REQ_END_LINE);
+    form_driver(form, REQ_END_LINE);
 }
 
 int Ui::menu(std::vector<std::string> *values, std::size_t n)
 {
     int key;
     int row;
-    unsigned int c_item = 0;
+    int c_item = 0;
     
     n_values = ((values->size()) / n);
     
-    field_info(current_field(*p_form), NULL, NULL, &row, NULL, NULL, NULL);
-    if (field_index(current_field(form_main)) == 13)
+    field_info(current_field(form), NULL, NULL, &row, NULL, NULL, NULL);
+    if (field_index(current_field(form)) == 13)
         row -= 7;
     else
         --row;
@@ -229,8 +250,7 @@ int Ui::menu(std::vector<std::string> *values, std::size_t n)
     return -1;
 }
 
-void Ui::menu_data(std::vector<std::string> **values, unsigned int c_item,
-                               std::size_t n)
+void Ui::menu_data(std::vector<std::string> **values, int c_item, std::size_t n)
 {
     menu_data_lines = 36;
     long data_lines = 0;
@@ -322,9 +342,9 @@ int Ui::report(std::vector<std::string> *values, std::size_t n)
             mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
             wattroff(windows_arr[i], COLOR_PAIR(5));
         } else {
-            wattron(windows_arr[i], COLOR_PAIR(6));
+            wattron(windows_arr[i], COLOR_PAIR(2));
             mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
-            wattroff(windows_arr[i], COLOR_PAIR(6));
+            wattroff(windows_arr[i], COLOR_PAIR(2));
         }
     }
     
@@ -416,11 +436,11 @@ void Ui::progress(std::string p)
         for (int i = 0; i <= 45; i++)
             mvdelch(31, 23);
         if (p == "-1")
-            status(std::make_pair("TASK FINISHED", 7));
+            status("TASK FINISHED");
         else if (p == "-2")
-            status(std::make_pair("TASK STOPED", 5));
+            status("TASK STOPED");
         else
-            status(std::make_pair("TASK PAUSED", 5));
+            status("TASK PAUSED");
     } else {
         mvprintw(31, 23, " %s/100 ", p.c_str());
         mvhline(31, 33, ACS_VLINE, (stoi(p) / 3));
@@ -429,26 +449,20 @@ void Ui::progress(std::string p)
     refresh();
 }
 
-void Ui::status(std::pair<std::string, int> sts, bool is_login)
+void Ui::status(std::string sts)
 {
     int start_x = 0;
     int max_y;
     int max_x;
     WINDOW *window_status;
 
-    if (is_login) {
-        window_status = newwin(1, 63, 18, 55);
-        getmaxyx(window_status, max_y, max_x);
-        start_x = ((max_x - (sts.first.size() + 8)) / 2); 
-    } else {
-        window_status = newwin(35, 63, 7, 109);
-    }
+    window_status = newwin(1, COLS, (LINES - 1), 0);
+    wbkgd(window_status, COLOR_PAIR(1));
+    
+    getmaxyx(window_status, max_y, max_x);
+    start_x = ((max_x - sts.size()) / 2); 
     max_y = 0;
-
-    wattron(window_status, COLOR_PAIR(sts.second));
-    mvwprintw(window_status, max_y, start_x, "[STATUS]");
-    wattroff(window_status, COLOR_PAIR(sts.second));
-    mvwprintw(window_status, max_y, (start_x + 9), sts.first.c_str());
+    mvwprintw(window_status, max_y, start_x, sts.c_str());
     
     wrefresh(window_status);
     delwin(window_status);
@@ -460,7 +474,7 @@ void Ui::marker(bool is_menu, bool show)
     int col;
     int cols;
     
-    field_info(current_field(*p_form), NULL, &cols, &row, &col, NULL, NULL);
+    field_info(current_field(form), NULL, &cols, &row, &col, NULL, NULL);
 
     if (show) {
         if (is_menu) {
@@ -498,8 +512,8 @@ void Ui::delete_windows_arr()
 
 void Ui::cleanup()
 {
-    for (std::size_t i = 0; i <= n_fields; i++)
-        free_field(p_fields[i]);
-    unpost_form(*p_form);
-    free_form(*p_form);
+    for (int i = 0; i <= (field_count(form) - 1); i++)
+        free_field(fields[i]);
+    unpost_form(form);
+    free_form(form);
 }
