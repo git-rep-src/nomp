@@ -256,7 +256,7 @@ inline void Xml::replace(std::string &str, std::vector<std::string> &targets,
                          std::vector<std::string> &replaces)
 {
     for (std::size_t n = 0; n < targets.size(); n++) {
-        for (std::string::size_type i = 0; (i = str.find(targets[n], i)) != std::string::npos;) {
+        for (std::size_t i = 0; (i = str.find(targets[n], i)) != std::string::npos;) {
             str.replace(i, targets[n].length(), replaces[n]);
             i += replaces[n].length();
         }
