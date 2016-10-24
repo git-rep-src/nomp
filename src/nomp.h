@@ -14,7 +14,7 @@ public:
 private:
     Ui ui;
 
-    unsigned int c_field;
+    int c_field;
 
     bool is_login;
     bool is_task_running;
@@ -42,17 +42,18 @@ private:
     
     std::map<std::pair<int, bool>, std::pair<bool, int>> validators;
 
+    void init();
     void driver();
     bool get(const std::string &args, const std::string &attr = "id",
              const bool &get_data = true, const bool &is_report = false);
-    bool create(const bool &exec = true);
+    bool create(const bool &is_exec = true);
     void write();
     bool validate(std::vector<std::string> &v);
     std::string trim(const char *c);
     void fill(const bool &is_report);
     void auto_refresh();
     void auto_refresh_sleep();
-    bool omp(const std::string &args);
+    bool exec(const std::string &cmd, const std::string &args);
 };
 
 #endif

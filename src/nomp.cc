@@ -1,9 +1,10 @@
 #include <thread>
 #include <fstream>
 #include <algorithm>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>
-//#include <iostream>//
+#include <iostream>//
 
 #include "nomp.h"
 #include "xml.h"
@@ -16,11 +17,68 @@ Nomp::Nomp() :
     is_auto_refresh_blocked(false),
     ids(7)
 {
-    driver();
+    init();
 }
 
 Nomp::~Nomp()
 {
+}
+
+void Nomp::init()
+{
+    bool has_config = false;
+    passwd *pw = getpwuid(getuid());
+    std::string home_path = pw->pw_dir;
+    
+    struct stat st;
+    if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) &&
+          S_ISDIR(st.st_mode)))
+        exec("mkdir -p", (home_path + "/.nomp/reports"));
+    
+    std::ifstream file(home_path + "/.nomp/config");
+    if (file.is_open()) {
+        std::string line;
+        const std::vector<std::string> cfs = {"host=", "port=", "username=", "password="}; 
+        for (std::size_t i = 0; i < cfs.size(); i++) {
+            while (getline(file, line)) {
+                if (line.find(cfs[i]) != std::string::npos) {
+                    if ((line.erase(0, cfs[i].size())).size() != 0) {
+                        user_configs.push_back(line);
+                        has_config = true;
+                    }
+                    break;
+                }
+            }
+            if ((i < (cfs.size() - 1)) && has_config)
+                has_config = false;
+            else
+                break;
+        }
+        file.close();
+        if (has_config) {
+            if (exec("omp", "<get_version/>")) {
+                c_field = 0;
+                is_login = false;
+                ui.main();
+            } else {
+                has_config = false;
+            }
+        }
+    }
+    
+    if (!has_config) {
+        std::vector<std::string>().swap(user_configs);
+        user_configs.push_back("localhost");
+        user_configs.push_back("9390");
+        user_configs.push_back("");
+        user_configs.push_back("");
+        ui.login(&user_configs);
+        std::vector<std::string>().swap(user_configs);
+    }
+
+    std::string().swap(oret);
+
+    driver();
 }
 
 void Nomp::driver()
@@ -32,10 +90,10 @@ void Nomp::driver()
         switch(key)
 		{
             case KEY_LEFT:
-                form_driver(*ui.p_form, REQ_PREV_CHAR);
+                form_driver(ui.form, REQ_PREV_CHAR);
                 break;
             case KEY_RIGHT:
-                form_driver(*ui.p_form, REQ_NEXT_CHAR);
+                form_driver(ui.form, REQ_NEXT_CHAR);
                 break;
             case KEY_UP:
             case KEY_DOWN:
@@ -48,18 +106,18 @@ void Nomp::driver()
                     case 4:
                         if (is_login)
                             if (c_field == 3)
-                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                                set_field_back(ui.fields[c_field], COLOR_PAIR(3));
                             else if (c_field == 4)
                                 ui.marker(false, false);
                             else
-                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                                set_field_back(ui.fields[c_field], COLOR_PAIR(1));
                         else
                             if (c_field == 2)
                                 ui.marker(true, false);
                             else if (c_field == 3)
                                 ui.marker(false, false);
                             else
-                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(1));
+                                set_field_back(ui.fields[c_field], COLOR_PAIR(1));
                         break;
                     case 5:
                     case 6:
@@ -81,18 +139,18 @@ void Nomp::driver()
                 }
                 if (key == KEY_UP) {
                     if (c_field == 0)
-                        c_field = ui.n_fields;
+                        c_field = (field_count(ui.form) - 1);
                     else
                         --c_field;
-                    form_driver(*ui.p_form, REQ_PREV_FIELD);
-                    form_driver(*ui.p_form, REQ_END_LINE);
+                    form_driver(ui.form, REQ_PREV_FIELD);
+                    form_driver(ui.form, REQ_END_LINE);
                 } else {
-                    if (c_field == ui.n_fields)
+                    if (c_field == (field_count(ui.form) - 1))
                         c_field = 0;
                     else
                         ++c_field;
-                    form_driver(*ui.p_form, REQ_NEXT_FIELD);
-                    form_driver(*ui.p_form, REQ_END_LINE);
+                    form_driver(ui.form, REQ_NEXT_FIELD);
+                    form_driver(ui.form, REQ_END_LINE);
                 }
                 switch(c_field)
                 {
@@ -103,18 +161,18 @@ void Nomp::driver()
                     case 4:
                         if (is_login)
                             if (c_field == 3)
-                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(3));
+                                set_field_back(ui.fields[c_field], COLOR_PAIR(3));
                             else if (c_field == 4)
                                 ui.marker(false);
                             else
-                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
+                                set_field_back(ui.fields[c_field], COLOR_PAIR(2));
                         else
                             if (c_field == 2)
                                 ui.marker();
                             else if (c_field == 3)
                                 ui.marker(false);
                             else
-                                set_field_back(ui.p_fields[c_field], COLOR_PAIR(2));
+                                set_field_back(ui.fields[c_field], COLOR_PAIR(2));
                         break;
                     case 5:
                     case 6:
@@ -136,8 +194,8 @@ void Nomp::driver()
                 }
                 break;
             case KEY_BACKSPACE:
-                form_driver(*ui.p_form, REQ_LEFT_CHAR);
-                form_driver(*ui.p_form, REQ_DEL_CHAR);
+                form_driver(ui.form, REQ_LEFT_CHAR);
+                form_driver(ui.form, REQ_DEL_CHAR);
                 break;
             case KEY_RETURN:
                 if (is_login) {
@@ -146,13 +204,13 @@ void Nomp::driver()
                         for (int i = 0; i <= 3; i++)
                             validators.insert(std::make_pair(std::make_pair(i, true), std::make_pair(true, -1)));
                         if (validate(user_configs)) {
-                            if (omp("<get_version/>")) {
+                            if (exec("omp", "<get_version/>")) {
                                 is_login = false;
                                 c_field = 0;
                                 ui.cleanup();
                                 ui.main();
                             } else {
-                                ui.status(std::make_pair("LOGIN ERROR", 4), is_login);
+                                ui.status("LOGIN ERROR");
                             }
                         }
                     }
@@ -345,7 +403,7 @@ void Nomp::driver()
                 std::map<std::pair<int, bool>, std::pair<bool, int>>().swap(validators);
                 break;
             default:
-                form_driver(*ui.p_form, key);
+                form_driver(ui.form, key);
                 break;
         }
     } while (key != KEY_QUIT);
@@ -356,38 +414,38 @@ void Nomp::driver()
 bool Nomp::get(const std::string &args, const std::string &attr,
                const bool &get_data, const bool &is_report)
 {
-    if (omp(args)) {
+    if (exec("omp", args)) {
         Xml xml;
         if (xml.parse(&oret, &xpaths, &xret, attr, get_data, is_report)) {
             if (get_data)
                 fill(is_report);
         } else {
-            ui.status(std::make_pair("XML INTERNAL ERROR", 4));
+            ui.status("XML INTERNAL ERROR");
             return false;
         }
     } else {
-        ui.status(std::make_pair("GET RESOURCE ERROR", 4));
+        ui.status("GET RESOURCE ERROR");
         return false;
     }
 
     return true;
 }
 
-bool Nomp::create(const bool &exec)
+bool Nomp::create(const bool &is_exec)
 {
     if (validate(xvalues)) {
         Xml xml;
-        if (xml.create(&xnodes, &xvalues, &xret, !exec)) {
-            if (exec) {
-                if (omp(xret[0])) {
-                    ui.status(std::make_pair("RESOURCE CREATED", 7));
+        if (xml.create(&xnodes, &xvalues, &xret, !is_exec)) {
+            if (is_exec) {
+                if (exec("omp", xret[0])) {
+                    ui.status("RESOURCE CREATED");
                 } else {    
-                    ui.status(std::make_pair("CREATE RESOURCE ERROR", 4));
+                    ui.status("CREATE RESOURCE ERROR");
                     return false;
                 }
             }
         } else {
-            ui.status(std::make_pair("XML INTERNAL ERROR", 4));
+            ui.status("XML INTERNAL ERROR");
             return false;
         }
     } else {
@@ -400,16 +458,22 @@ bool Nomp::create(const bool &exec)
 void Nomp::write()
 {
     passwd *pw = getpwuid(getuid());
+    std::string home_path = pw->pw_dir;
     
-    std::ofstream file(std::string(pw->pw_dir) + "/.nomp/" + ids[5] + "." + xret[1]); 
+    struct stat st;
+    if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) &&
+          S_ISDIR(st.st_mode)))
+        exec("mkdir -p", (home_path + "/.nomp/reports"));
+    
+    std::ofstream file(home_path + "/.nomp/" + ids[5] + "." + xret[1]);
     if (file.is_open()) {
         std::vector<BYTE> data = base64_decode(xret[2]);
         for (std::size_t i = 0; i < data.size(); i++)
             file << data[i];
         file.close();
-        ui.status(std::make_pair("EXPORTED " + ids[5] + "." + xret[1], 7));
+        ui.status("EXPORTED " + ids[5] + "." + xret[1]);
     } else {
-        ui.status(std::make_pair("EXPORT ERROR", 4));
+        ui.status("EXPORT ERROR");
     }
 }
 
@@ -418,9 +482,9 @@ bool Nomp::validate(std::vector<std::string> &v)
     for (std::map<std::pair<int, bool>, std::pair<bool, int>>::iterator it = validators.begin();
          it != validators.end(); ++it) {
         if (it->first.second) {
-            if (!isblank(field_buffer(ui.p_fields[it->first.first], 0)[0])) {
+            if (!isblank(field_buffer(ui.fields[it->first.first], 0)[0])) {
                 if (it->second.first)
-                    v.push_back(trim(field_buffer(ui.p_fields[it->first.first], 0)));
+                    v.push_back(trim(field_buffer(ui.fields[it->first.first], 0)));
                 else if (it->second.second != -1)
                     v.push_back(ids[it->second.second] + "__attr__");
             } else {
@@ -431,11 +495,11 @@ bool Nomp::validate(std::vector<std::string> &v)
                    else   
                        n += 6;
                 }
-                ui.status(std::make_pair("THE " + ui.fields_name[n] + " FIELD CANNOT BE BLANK", 5), is_login);
+                ui.status("THE <" + ui.fields_name[n] + "> FIELD CANNOT BE BLANK");
                 return false;
             }
         } else if (it->second.first) {
-            v.push_back(trim(field_buffer(ui.p_fields[it->first.first], 0)));
+            v.push_back(trim(field_buffer(ui.fields[it->first.first], 0)));
         }
     }
     
@@ -491,7 +555,7 @@ void Nomp::fill(const bool &is_report)
             default:
                 break;
         }
-        set_field_buffer(ui.p_fields[c_field], 0, xret[((xret.size() / xpaths.size()) + c_item)].c_str());
+        set_field_buffer(ui.fields[c_field], 0, xret[((xret.size() / xpaths.size()) + c_item)].c_str());
     }
 
     is_auto_refresh_blocked = false;
@@ -538,17 +602,23 @@ void Nomp::auto_refresh_sleep()
     auto_refresh();
 }
 
-bool Nomp::omp(const std::string &args)
+bool Nomp::exec(const std::string &cmd, const std::string &args)
 {
     char buf[BUFSIZ];
-    const std::string cmd = "omp -h " + user_configs[0] +
-                            " -p "    + user_configs[1] +
-                            " -u "    + user_configs[2] + 
-                            " -w "    + user_configs[3] + 
-                            " -X '"   + args + "'"      +
-                            " 2>/dev/null";
+    std::string command;
 
-    FILE *fp = popen(cmd.c_str(), "r");
+    if (cmd == "omp") {
+        command = cmd + " -h "  + user_configs[0] +
+                        " -p "  + user_configs[1] +
+                        " -u "  + user_configs[2] + 
+                        " -w "  + user_configs[3] + 
+                        " -X '" + args + "'"      +
+                        " 2>/dev/null";
+    } else {
+        command = cmd + " " + args + " 2>/dev/null";
+    }
+
+    FILE *fp = popen(command.c_str(), "r");
     if (!fp)
         return false;
     
