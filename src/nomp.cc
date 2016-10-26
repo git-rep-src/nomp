@@ -1,14 +1,18 @@
+#include "nomp.h"
+#include "xml.h"
+#include "base64.h"
+
 #include <thread>
 #include <fstream>
 #include <algorithm>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>
-#include <iostream>//
+//#include <iostream>//
 
-#include "nomp.h"
-#include "xml.h"
-#include "base64.h"
+using std::ifstream;
+using std::ofstream;
+using std::make_pair;
 
 Nomp::Nomp() :
     c_field(2),
@@ -28,20 +32,20 @@ void Nomp::init()
 {
     bool has_config = false;
     passwd *pw = getpwuid(getuid());
-    std::string home_path = pw->pw_dir;
+    string home_path = pw->pw_dir;
     
     struct stat st;
     if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) &&
           S_ISDIR(st.st_mode)))
         exec("mkdir -p", (home_path + "/.nomp/reports"));
     
-    std::ifstream file(home_path + "/.nomp/config");
+    ifstream file(home_path + "/.nomp/config");
     if (file.is_open()) {
-        std::string line;
-        const std::vector<std::string> cfs = {"host=", "port=", "username=", "password="}; 
-        for (std::size_t i = 0; i < cfs.size(); i++) {
+        string line;
+        const vector<string> cfs = {"host=", "port=", "username=", "password="}; 
+        for (size_t i = 0; i < cfs.size(); i++) {
             while (getline(file, line)) {
-                if (line.find(cfs[i]) != std::string::npos) {
+                if (line.find(cfs[i]) != string::npos) {
                     if ((line.erase(0, cfs[i].size())).size() != 0) {
                         user_configs.push_back(line);
                         has_config = true;
@@ -67,16 +71,16 @@ void Nomp::init()
     }
     
     if (!has_config) {
-        std::vector<std::string>().swap(user_configs);
+        vector<string>().swap(user_configs);
         user_configs.push_back("localhost");
         user_configs.push_back("9390");
         user_configs.push_back("");
         user_configs.push_back("");
         ui.login(&user_configs);
-        std::vector<std::string>().swap(user_configs);
+        vector<string>().swap(user_configs);
     }
 
-    std::string().swap(oret);
+    string().swap(oret);
 
     driver();
 }
@@ -200,9 +204,9 @@ void Nomp::driver()
             case KEY_RETURN:
                 if (is_login) {
                     if (c_field == 4) {
-                        std::vector<std::string>().swap(user_configs);
+                        vector<string>().swap(user_configs);
                         for (int i = 0; i <= 3; i++)
-                            validators.insert(std::make_pair(std::make_pair(i, true), std::make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(i, true), make_pair(true, -1)));
                         if (validate(user_configs)) {
                             if (exec("omp", "<get_version/>")) {
                                 is_login = false;
@@ -222,9 +226,9 @@ void Nomp::driver()
                             xnodes.push_back("name");
                             xnodes.push_back("hosts");
                             xnodes.push_back("port_list");
-                            validators.insert(std::make_pair(std::make_pair(0, true), std::make_pair(true, -1)));
-                            validators.insert(std::make_pair(std::make_pair(1, true), std::make_pair(true, -1)));
-                            validators.insert(std::make_pair(std::make_pair(2, true), std::make_pair(false, 0)));
+                            validators.insert(make_pair(make_pair(0, true), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(1, true), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(2, true), make_pair(false, 0)));
                             create();
                             break;
                         case 7:
@@ -232,20 +236,24 @@ void Nomp::driver()
                             xnodes.push_back("name");
                             xnodes.push_back("config");
                             xnodes.push_back("target");
-                            validators.insert(std::make_pair(std::make_pair(4, true), std::make_pair(true, -1)));
-                            validators.insert(std::make_pair(std::make_pair(5, true), std::make_pair(false, 1)));
-                            validators.insert(std::make_pair(std::make_pair(6, true), std::make_pair(false, 2)));
+                            validators.insert(make_pair(make_pair(4, true), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(5, true), make_pair(false, 1)));
+                            validators.insert(make_pair(make_pair(6, true), make_pair(false, 2)));
                             create();
                             break;
                         case 10:
                             if (!is_task_running) {
-                                xnodes.push_back("start_task");
+                                if (string(field_buffer(ui.fields[10], 0)).find("START") != string::npos) 
+                                    xnodes.push_back("start_task");
+                                else
+                                    xnodes.push_back("resume_task"); // FIX: REVISAR PORQUE NO EJECUTA CORRECTAMENTE RESUME.
                                 xnodes.push_back("task_id");
-                                validators.insert(std::make_pair(std::make_pair(8, true), std::make_pair(false, 3)));
-                                validators.insert(std::make_pair(std::make_pair(9, true), std::make_pair(false, 4)));
+                                validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
+                                validators.insert(make_pair(make_pair(9, true), make_pair(false, 4)));
                                 if (create()) {
                                     is_task_running = true;
                                     auto_refresh();
+                                    ui.status("TASK STARTED");
                                 }
                             }
                             break;
@@ -253,7 +261,7 @@ void Nomp::driver()
                             if (is_task_running) {
                                 xnodes.push_back("stop_task");
                                 xnodes.push_back("task_id");
-                                validators.insert(std::make_pair(std::make_pair(8, true), std::make_pair(false, 3)));
+                                validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
                                 if (create()) {
                                     is_task_running = false;
                                     is_auto_refresh_blocked = false;
@@ -330,9 +338,22 @@ void Nomp::driver()
                                     }
                                     break;
                                 case 12:
-                                    xpaths.push_back("/get_tasks_response/task/first_report/report"); // TODO: CAMBIAR 
-                                    xpaths.push_back("/get_tasks_response/task/name");
-                                    get("<get_tasks/>");
+                                    xnodes.push_back("get_tasks");
+                                    xnodes.push_back("filter");
+                                    xvalues.push_back("status=Done__attr__");
+                                    if (create(false)) {
+                                        xpaths.push_back("/get_tasks_response/task/first_report/report"); 
+                                        xpaths.push_back("/get_tasks_response/task/name");
+                                        xpaths.push_back("/get_tasks_response/task/name");
+                                        xpaths.push_back("/get_tasks_response/task/comment");
+                                        xpaths.push_back("/get_tasks_response/task/creation_time");
+                                        xpaths.push_back("/get_tasks_response/task/modification_time");
+                                        xpaths.push_back("/get_tasks_response/task/scanner/name");
+                                        xpaths.push_back("/get_tasks_response/task/config/name");
+                                        xpaths.push_back("/get_tasks_response/task/target/name");
+                                        xpaths.push_back("/get_tasks_response/task/status");
+                                        get(xret[0]);
+                                    }
                                     break;
                                 case 13:
                                     xpaths.push_back("/get_report_formats_response/report_format"); 
@@ -348,7 +369,7 @@ void Nomp::driver()
                                     get("<get_report_formats/>");
                                     break;
                                 case 14:
-                                    validators.insert(std::make_pair(std::make_pair(12, true), std::make_pair(false, 5)));
+                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
                                     xnodes.push_back("get_reports");
                                     xnodes.push_back("filter");
                                     xnodes.push_back("report_id"); 
@@ -372,8 +393,8 @@ void Nomp::driver()
                                     }
                                     break;
                                 case 15:
-                                    validators.insert(std::make_pair(std::make_pair(12, true), std::make_pair(false, 5)));
-                                    validators.insert(std::make_pair(std::make_pair(13, true), std::make_pair(false, 6)));
+                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
+                                    validators.insert(make_pair(make_pair(13, true), make_pair(false, 6)));
                                     xnodes.push_back("get_reports");
                                     xnodes.push_back("filter");
                                     xnodes.push_back("report_id"); 
@@ -390,17 +411,12 @@ void Nomp::driver()
                                 default:
                                     break;
                             }
-                            std::vector<std::string>().swap(xpaths);
                             break;
                         default:
                             break;
                     }
-                    std::vector<std::string>().swap(xnodes);
-                    std::vector<std::string>().swap(xvalues);
                 }
-                std::string().swap(oret);
-                std::vector<std::string>().swap(xret);
-                std::map<std::pair<int, bool>, std::pair<bool, int>>().swap(validators);
+                clear_vectors();
                 break;
             default:
                 form_driver(ui.form, key);
@@ -411,10 +427,12 @@ void Nomp::driver()
     //quit();
 }
 
-bool Nomp::get(const std::string &args, const std::string &attr,
+bool Nomp::get(const string &args, const string &attr,
                const bool &get_data, const bool &is_report)
 {
     if (exec("omp", args)) {
+        if (!is_report)
+            vector<string>().swap(xret);
         Xml xml;
         if (xml.parse(&oret, &xpaths, &xret, attr, get_data, is_report)) {
             if (get_data)
@@ -438,7 +456,8 @@ bool Nomp::create(const bool &is_exec)
         if (xml.create(&xnodes, &xvalues, &xret, !is_exec)) {
             if (is_exec) {
                 if (exec("omp", xret[0])) {
-                    ui.status("RESOURCE CREATED");
+                    if ((xnodes[0] != "start_task") && (xnodes[0] != "stop_task"))
+                        ui.status("RESOURCE CREATED");
                 } else {    
                     ui.status("CREATE RESOURCE ERROR");
                     return false;
@@ -458,17 +477,17 @@ bool Nomp::create(const bool &is_exec)
 void Nomp::write()
 {
     passwd *pw = getpwuid(getuid());
-    std::string home_path = pw->pw_dir;
+    string home_path = pw->pw_dir;
     
     struct stat st;
     if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) &&
           S_ISDIR(st.st_mode)))
         exec("mkdir -p", (home_path + "/.nomp/reports"));
     
-    std::ofstream file(home_path + "/.nomp/" + ids[5] + "." + xret[1]);
+    ofstream file(home_path + "/.nomp/reports/" + ids[5] + "." + xret[1]);
     if (file.is_open()) {
-        std::vector<BYTE> data = base64_decode(xret[2]);
-        for (std::size_t i = 0; i < data.size(); i++)
+        vector<BYTE> data = base64_decode(xret[2]);
+        for (size_t i = 0; i < data.size(); i++)
             file << data[i];
         file.close();
         ui.status("EXPORTED " + ids[5] + "." + xret[1]);
@@ -477,9 +496,9 @@ void Nomp::write()
     }
 }
 
-bool Nomp::validate(std::vector<std::string> &v)
+bool Nomp::validate(vector<string> &v)
 {
-    for (std::map<std::pair<int, bool>, std::pair<bool, int>>::iterator it = validators.begin();
+    for (map<pair<int, bool>, pair<bool, int>>::iterator it = validators.begin();
          it != validators.end(); ++it) {
         if (it->first.second) {
             if (!isblank(field_buffer(ui.fields[it->first.first], 0)[0])) {
@@ -493,9 +512,9 @@ bool Nomp::validate(std::vector<std::string> &v)
                    if (n < 11)
                        n += 5;
                    else   
-                       n += 6;
+                       n += 7;
                 }
-                ui.status("THE <" + ui.fields_name[n] + "> FIELD CANNOT BE BLANK");
+                ui.status("THE " + ui.fields_name[n] + " FIELD CANNOT BE BLANK");
                 return false;
             }
         } else if (it->second.first) {
@@ -506,9 +525,9 @@ bool Nomp::validate(std::vector<std::string> &v)
     return true;
 }
 
-inline std::string Nomp::trim(const char *c)
+inline string Nomp::trim(const char *c)
 {
-    std::string str(c);
+    string str(c);
     
     str.erase(unique(str.begin(), str.end(), [] (char a, char b) {
         return isspace(a) && isspace(b);}), str.end());
@@ -555,26 +574,22 @@ void Nomp::fill(const bool &is_report)
             default:
                 break;
         }
-        set_field_buffer(ui.fields[c_field], 0, xret[((xret.size() / xpaths.size()) + c_item)].c_str());
+        set_field_buffer(ui.fields[c_field], 0,
+                         xret[((xret.size() / xpaths.size()) + c_item)].c_str());
     }
 
     is_auto_refresh_blocked = false;
 
-    ui.delete_windows_arr();
+    ui.clear_windows_arr();
     touchwin(stdscr);
 }
 
 void Nomp::auto_refresh()
 {
     if (is_task_running && !is_auto_refresh_blocked) {
-        std::map<std::pair<int, bool>, std::pair<bool, int>>().swap(validators);
-        std::vector<std::string>().swap(xnodes);
-        std::vector<std::string>().swap(xvalues);
-        std::vector<std::string>().swap(xpaths);
-        std::vector<std::string>().swap(xret);
-        std::string().swap(oret);
-    
-        validators.insert(std::make_pair(std::make_pair(8, true), std::make_pair(false, 3)));
+        clear_vectors();
+
+        validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
         xnodes.push_back("get_tasks");
         xnodes.push_back("id");
     
@@ -593,6 +608,7 @@ void Nomp::auto_refresh()
             std::thread t(&Nomp::auto_refresh_sleep, this);
             t.detach();
         }
+        clear_vectors();
     }
 }
 
@@ -602,10 +618,20 @@ void Nomp::auto_refresh_sleep()
     auto_refresh();
 }
 
-bool Nomp::exec(const std::string &cmd, const std::string &args)
+void Nomp::clear_vectors()
+{
+    map<pair<int, bool>, pair<bool, int>>().swap(validators);
+    vector<string>().swap(xnodes);
+    vector<string>().swap(xvalues);
+    vector<string>().swap(xpaths);
+    vector<string>().swap(xret);
+    string().swap(oret);
+}
+
+bool Nomp::exec(const string &cmd, const string &args)
 {
     char buf[BUFSIZ];
-    std::string command;
+    string command;
 
     if (cmd == "omp") {
         command = cmd + " -h "  + user_configs[0] +

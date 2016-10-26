@@ -3,8 +3,11 @@
 
 #include <form.h>
 
-#include <vector>
 #include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 const int KEY_RETURN = 10;
 const int KEY_TAB = 9;
@@ -20,7 +23,7 @@ public:
     FORM *form;
     FIELD *fields[17];
     
-    const std::vector<std::string> fields_name =
+    const vector<string> fields_name =
     {
         "HOST",
         "PORT",
@@ -39,6 +42,7 @@ public:
         "REFRESH",
         "PROGRESS",
         "       START",
+        "      RESUME",
         "       STOP",
         "TASK",
         "FORMAT",
@@ -46,27 +50,26 @@ public:
         "   EXPORT REPORT"
     };
     
-    void login(std::vector<std::string> *user_configs);
+    void login(vector<string> *user_configs);
     void main();
-    int menu(std::vector<std::string> *values, std::size_t n);
-    int report(std::vector<std::string> *values, std::size_t n);
-    void progress(std::string p);
-    void status(std::string sts);
+    int menu(vector<string> *values, size_t n);
+    int report(vector<string> *values, size_t n);
+    void progress(string p);
+    void status(string sts);
     void marker(bool is_menu = true, bool show = true);
-    void delete_windows_arr();
+    void clear_windows_arr();
     void cleanup();
 
 private:
-    std::size_t n_values;
+    size_t n_values;
     long menu_data_lines = 36;
 
     WINDOW **windows_arr = NULL;
     WINDOW *window_menu_data = NULL;
 
-    void menu_data(std::vector<std::string> **values, int c_item, std::size_t n);
+    void menu_data(vector<string> **values, int c_item, size_t n);
     void menu_data_scroll();
-    void report_data(std::vector<std::string> **values,
-                     unsigned int c_item, std::size_t n);
+    void report_data(vector<string> **values, unsigned int c_item, size_t n);
 };
 
 #endif

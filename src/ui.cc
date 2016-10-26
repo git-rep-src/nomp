@@ -1,14 +1,14 @@
-#include <sys/ioctl.h>
-#include <signal.h>
-#include <iostream>//
-
 #include "ui.h"
+
+#include <signal.h>
+#include <sys/ioctl.h>
+//#include <iostream>//
 
 void resize_terminal(int sig)
 {
     struct winsize w;
     ioctl(fileno(stdout), TIOCGWINSZ, &w);
-    std::cout << w.ws_row << "X" << w.ws_col << " ";
+    //cout << w.ws_row << "X" << w.ws_col << " ";
 
 endwin();
 initscr();
@@ -50,9 +50,6 @@ Ui::Ui() :
         init_pair(1, COLOR_BLACK, COLOR_WHITE);
         init_pair(2, COLOR_WHITE, COLOR_BLACK);
         init_pair(3, COLOR_WHITE, COLOR_WHITE);
-        init_pair(4, COLOR_RED, COLOR_BLACK);
-        init_pair(5, COLOR_YELLOW, COLOR_BLACK);
-        init_pair(6, COLOR_GREEN, COLOR_BLACK);
     }
     
     signal(SIGWINCH, resize_terminal);
@@ -64,7 +61,7 @@ Ui::~Ui()
     endwin();
 }
 
-void Ui::login(std::vector<std::string> *user_configs)
+void Ui::login(vector<string> *user_configs)
 {
     int rows;
     int cols;
@@ -76,13 +73,13 @@ void Ui::login(std::vector<std::string> *user_configs)
     fields[4] = new_field(1, 20, 28, 77, 0, 0);
     fields[5] = NULL;
     
-    for (int i = 0; i <= 4; i++) {
-        if (i == 4)
-            field_opts_off(fields[i], O_EDIT);
-        else
-            set_field_just(fields[i], JUSTIFY_CENTER);
+    set_field_just(fields[0], JUSTIFY_CENTER);
+    set_field_just(fields[1], JUSTIFY_CENTER);
+    set_field_just(fields[2], JUSTIFY_CENTER);
+    field_opts_off(fields[4], O_EDIT);
+    
+    for (int i = 0; i <= 4; i++)
         field_opts_off(fields[i], O_AUTOSKIP);
-    }
     
     set_field_back(fields[0], COLOR_PAIR(1));
     set_field_back(fields[1], COLOR_PAIR(1));
@@ -135,37 +132,24 @@ void Ui::main()
     fields[16] = NULL;
 
     for (int i = 0; i <= 15; i++) {
-        if ((i != 0) && (i != 1) && (i != 4))
-            field_opts_off(fields[i], O_EDIT);
         if ((i != 3) && (i != 7) &&
             (i != 10) && (i != 11) && (i != 14) && (i != 15))
             set_field_just(fields[i], JUSTIFY_CENTER);
+        if ((i != 0) && (i != 1) && (i != 4))
+            field_opts_off(fields[i], O_EDIT);
         field_opts_off(fields[i], O_AUTOSKIP);
+        if (i == 0)
+            set_field_back(fields[i], COLOR_PAIR(2));
+        else
+            set_field_back(fields[i], COLOR_PAIR(1));
     }
-    
-    set_field_back(fields[0], COLOR_PAIR(2));
-    set_field_back(fields[1], COLOR_PAIR(1));
-    set_field_back(fields[2], COLOR_PAIR(1));
-    set_field_back(fields[3], COLOR_PAIR(1));
-    set_field_back(fields[4], COLOR_PAIR(1));
-    set_field_back(fields[5], COLOR_PAIR(1));
-    set_field_back(fields[6], COLOR_PAIR(1));
-    set_field_back(fields[7], COLOR_PAIR(1));
-    set_field_back(fields[8], COLOR_PAIR(1));
-    set_field_back(fields[9], COLOR_PAIR(1));
-    set_field_back(fields[10], COLOR_PAIR(1));
-    set_field_back(fields[11], COLOR_PAIR(1));
-    set_field_back(fields[12], COLOR_PAIR(1));
-    set_field_back(fields[13], COLOR_PAIR(1));
-    set_field_back(fields[14], COLOR_PAIR(1));
-    set_field_back(fields[15], COLOR_PAIR(1));
     
     set_field_buffer(fields[3], 0, fields_name[8].c_str());
     set_field_buffer(fields[7], 0, fields_name[12].c_str());
     set_field_buffer(fields[10], 0, fields_name[16].c_str());
-    set_field_buffer(fields[11], 0, fields_name[17].c_str());
-    set_field_buffer(fields[14], 0, fields_name[20].c_str());
-    set_field_buffer(fields[15], 0, fields_name[21].c_str());
+    set_field_buffer(fields[11], 0, fields_name[18].c_str());
+    set_field_buffer(fields[14], 0, fields_name[21].c_str());
+    set_field_buffer(fields[15], 0, fields_name[22].c_str());
     
     form = new_form(fields);
     scale_form(form, &rows, &cols);
@@ -180,8 +164,8 @@ void Ui::main()
     mvprintw(27, 18, fields_name[13].c_str());
     mvprintw(29, 15, fields_name[14].c_str());
     mvprintw(31, 14, fields_name[15].c_str());
-    mvprintw(37, 18, fields_name[18].c_str());
-    mvprintw(39, 16, fields_name[19].c_str());
+    mvprintw(37, 18, fields_name[19].c_str());
+    mvprintw(39, 16, fields_name[20].c_str());
     
     curs_set(1);
     
@@ -190,7 +174,7 @@ void Ui::main()
     form_driver(form, REQ_END_LINE);
 }
 
-int Ui::menu(std::vector<std::string> *values, std::size_t n)
+int Ui::menu(vector<string> *values, size_t n)
 {
     int key;
     int row;
@@ -209,7 +193,7 @@ int Ui::menu(std::vector<std::string> *values, std::size_t n)
     windows_arr[0] = newwin((n_values + 2), 42, row, 23);
     box(windows_arr[0], 0, 0);
     
-    for (std::size_t i = 1; i <= n_values; i++) {
+    for (size_t i = 1; i <= n_values; i++) {
         windows_arr[i] = subwin(windows_arr[0], 1, 40, (i + row), 24);
         mvwprintw(windows_arr[i], 0, 1, "%s", (*values)[n_values + (i - 1)].c_str()); 
     }
@@ -241,6 +225,13 @@ int Ui::menu(std::vector<std::string> *values, std::size_t n)
                 menu_data(&values, c_item, n);
                 break;
             case KEY_RETURN:
+                if (field_index(current_field(form)) == 8) {
+                    if ((((*values)[(n_values * 9) + c_item]).find("New") != string::npos) ||
+                        (((*values)[(n_values * 9) + c_item]).find("Done") != string::npos))
+                        set_field_buffer(fields[10], 0, fields_name[16].c_str());
+                    else
+                        set_field_buffer(fields[10], 0, fields_name[17].c_str());
+                }
                 return c_item;
             default:
                 break;
@@ -250,13 +241,13 @@ int Ui::menu(std::vector<std::string> *values, std::size_t n)
     return -1;
 }
 
-void Ui::menu_data(std::vector<std::string> **values, int c_item, std::size_t n)
+void Ui::menu_data(vector<string> **values, int c_item, size_t n)
 {
     menu_data_lines = 36;
     long data_lines = 0;
 
-    for (std::size_t i = 2; i < n; i++)
-        for (std::size_t ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
+    for (size_t i = 2; i < n; i++)
+        for (size_t ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
             if ((**values)[(n_values * i) + c_item][ii] == '\n')
                 ++data_lines;
     
@@ -268,7 +259,7 @@ void Ui::menu_data(std::vector<std::string> **values, int c_item, std::size_t n)
     
     window_menu_data = newpad(menu_data_lines, 63);
     
-    for (std::size_t i = 2; i < n; i++)
+    for (size_t i = 2; i < n; i++)
         wprintw(window_menu_data, "%s", ((**values)[(n_values * i) + c_item]).c_str());
     
     prefresh(window_menu_data, 0, 0, 7, 109, 41, 171);
@@ -313,7 +304,7 @@ void Ui::menu_data_scroll()
     mvprintw(24, 106, " ");
 }
 
-int Ui::report(std::vector<std::string> *values, std::size_t n)
+int Ui::report(vector<string> *values, size_t n)
 {
     int key;
     unsigned int c_item = 0;
@@ -325,27 +316,12 @@ int Ui::report(std::vector<std::string> *values, std::size_t n)
     windows_arr[0] = newpad((n_values + 35), COLS);
     keypad(windows_arr[0], true);
     
-    for (std::size_t i = 1; i <= n_values; i++) {
+    for (size_t i = 1; i <= n_values; i++) {
         windows_arr[i] = subpad(windows_arr[0], 1, (COLS - 4), (i - 1), 0);
-        
         mvwprintw(windows_arr[i], 0, 0, "%s", (*values)[n_values + i].c_str());
         mvwprintw(windows_arr[i], 0, 129, "%s", (*values)[(n_values * 2) + i].c_str());
         mvwprintw(windows_arr[i], 0, 146, "%s", (*values)[(n_values * 3) + i].c_str());
-        
-        if ((stoi((*values)[(n_values * 4) + i])) >= 7) { 
-            wattron(windows_arr[i], COLOR_PAIR(4));
-            mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
-            wattroff(windows_arr[i], COLOR_PAIR(4));
-        } else if (((stoi((*values)[(n_values * 4) + i])) >= 4) &&
-                   ((stoi((*values)[(n_values * 4) + i])) < 7)) { 
-            wattron(windows_arr[i], COLOR_PAIR(5));
-            mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
-            wattroff(windows_arr[i], COLOR_PAIR(5));
-        } else {
-            wattron(windows_arr[i], COLOR_PAIR(2));
-            mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
-            wattroff(windows_arr[i], COLOR_PAIR(2));
-        }
+        mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
     }
     
     wbkgd(windows_arr[1], COLOR_PAIR(2));
@@ -382,16 +358,15 @@ int Ui::report(std::vector<std::string> *values, std::size_t n)
     return -1;
 }
 
-void Ui::report_data(std::vector<std::string> **values, unsigned int c_item,
-                     std::size_t n)
+void Ui::report_data(vector<string> **values, unsigned int c_item, size_t n)
 {
     int key;
     int c_line = 0;
     long report_data_lines = 36;
     long data_lines = 2;
 
-    for (std::size_t i = 5; i < n; i++)
-        for (std::size_t ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
+    for (size_t i = 5; i < n; i++)
+        for (size_t ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
             if ((**values)[(n_values * i) + c_item][ii] == '\n')
                 ++data_lines;
 
@@ -401,7 +376,7 @@ void Ui::report_data(std::vector<std::string> **values, unsigned int c_item,
     WINDOW *window_report_data = newpad(report_data_lines, (COLS - 4));
     keypad(window_report_data, true);
     
-    for (std::size_t i = 5; i < n; i++)
+    for (size_t i = 5; i < n; i++)
         wprintw(window_report_data, "%s", ((**values)[(n_values * i) + c_item]).c_str());
     
     do {
@@ -430,26 +405,26 @@ void Ui::report_data(std::vector<std::string> **values, unsigned int c_item,
     delwin(window_report_data);
 }
 
-void Ui::progress(std::string p)
+void Ui::progress(string p)
 {  
-    if ((p == "-1") || (p == "-2") || (p == "-3")) {
+    if ((p == "-1") || (p == "-2")) {
         for (int i = 0; i <= 45; i++)
             mvdelch(31, 23);
         if (p == "-1")
             status("TASK FINISHED");
-        else if (p == "-2")
-            status("TASK STOPED");
-        else
-            status("TASK PAUSED");
+        else    
+            status("TASK STOPPED");
     } else {
-        mvprintw(31, 23, " %s/100 ", p.c_str());
-        mvhline(31, 33, ACS_VLINE, (stoi(p) / 3));
+        if ((stoi(p) > 0) && (stoi(p) < 3))
+            mvhline(31, 23, ACS_VLINE, 1);
+        else
+            mvhline(31, 23, ACS_VLINE, (stoi(p) / 2.38));
     }
     
     refresh();
 }
 
-void Ui::status(std::string sts)
+void Ui::status(string sts)
 {
     int start_x = 0;
     int max_y;
@@ -457,7 +432,6 @@ void Ui::status(std::string sts)
     WINDOW *window_status;
 
     window_status = newwin(1, COLS, (LINES - 1), 0);
-    wbkgd(window_status, COLOR_PAIR(1));
     
     getmaxyx(window_status, max_y, max_x);
     start_x = ((max_x - sts.size()) / 2); 
@@ -497,9 +471,9 @@ void Ui::marker(bool is_menu, bool show)
     }
 }
 
-void Ui::delete_windows_arr()
+void Ui::clear_windows_arr()
 {
-    for (std::size_t i = 1; i < (n_values + 1); i++)
+    for (size_t i = 1; i < (n_values + 1); i++)
         delwin(windows_arr[i]);
     delwin(windows_arr[0]);
     free(windows_arr);
