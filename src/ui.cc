@@ -2,7 +2,7 @@
 
 #include <signal.h>
 #include <sys/ioctl.h>
-//#include <iostream>//
+#include <iostream>//
 
 void resize_terminal(int sig)
 {
@@ -403,6 +403,46 @@ void Ui::report_data(vector<string> **values, unsigned int c_item, size_t n)
     } while (key != KEY_ESCAPE);
     
     delwin(window_report_data);
+}
+
+int Ui::save_config()
+{
+    int key;
+    int curs_state = curs_set(0);
+    
+    WINDOW *window_save = newwin(11, 41, 17, 66);
+    wbkgd(window_save, COLOR_PAIR(1));
+    box(window_save, 0, 0);
+    keypad(window_save, TRUE);
+
+    mvwprintw(window_save, 5, 3, "SAVE THE RUNNING TASK CONFIG? (Y/N)");
+    
+    curs_set(0);
+    
+    wrefresh(window_save);
+    
+    do {
+        key = wgetch(window_save);
+        switch(key)
+        {
+            case KEY_Y:
+                return 1;
+                break;
+            case KEY_N:
+                return 0;
+                break;
+            default:
+                break;
+        }
+    } while (key != KEY_ESCAPE);
+
+    delwin(window_save);
+
+    curs_set(curs_state);
+
+    touchwin(stdscr);
+
+    return -1;
 }
 
 void Ui::progress(string p)

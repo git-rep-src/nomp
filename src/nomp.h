@@ -25,6 +25,7 @@ private:
 
     bool is_login;
     bool is_task_running;
+    bool is_task_resumed;
     bool is_auto_refresh_blocked;
     
     string oret;
@@ -36,32 +37,23 @@ private:
     vector<string> xpaths;
     vector<string> xret;
     const vector<string> auto_refresh_times =
-    {
-        "30",
-        "60",
-        "120",
-        "300",
-        " 30 sec",
-        " 60 sec",
-        "120 sec",
-        "300 sec"
-    };
+    {"30", "60", "120", "300", " 30 sec",
+     "  1 min", "  2 min", "  5 min"};
     
     map<pair<int, bool>, pair<bool, int>> validators;
 
-    void init();
     void driver();
     bool get(const string &args, const string &attr = "id",
              const bool &get_data = true, const bool &is_report = false);
     bool create(const bool &is_exec = true);
-    void write();
     bool validate(vector<string> &v);
-    string trim(const char *c);
     void fill(const bool &is_report);
+    void disk(const bool &is_config, const bool &is_read, const bool &is_write);
+    bool exec(const string &cmd, const string &args);
     void auto_refresh();
     void auto_refresh_sleep();
+    string clear_whitespace(const char *c);
     void clear_vectors();
-    bool exec(const string &cmd, const string &args);
 };
 
 #endif

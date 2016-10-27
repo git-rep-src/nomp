@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>
-//#include <iostream>//
+#include <iostream>//
 
 using std::ifstream;
 using std::ofstream;
@@ -18,71 +18,16 @@ Nomp::Nomp() :
     c_field(2),
     is_login(true),
     is_task_running(false),
+    is_task_resumed(false),
     is_auto_refresh_blocked(false),
     ids(7)
 {
-    init();
+    disk(true, true, false);
+    driver();
 }
 
 Nomp::~Nomp()
 {
-}
-
-void Nomp::init()
-{
-    bool has_config = false;
-    passwd *pw = getpwuid(getuid());
-    string home_path = pw->pw_dir;
-    
-    struct stat st;
-    if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) &&
-          S_ISDIR(st.st_mode)))
-        exec("mkdir -p", (home_path + "/.nomp/reports"));
-    
-    ifstream file(home_path + "/.nomp/config");
-    if (file.is_open()) {
-        string line;
-        const vector<string> cfs = {"host=", "port=", "username=", "password="}; 
-        for (size_t i = 0; i < cfs.size(); i++) {
-            while (getline(file, line)) {
-                if (line.find(cfs[i]) != string::npos) {
-                    if ((line.erase(0, cfs[i].size())).size() != 0) {
-                        user_configs.push_back(line);
-                        has_config = true;
-                    }
-                    break;
-                }
-            }
-            if ((i < (cfs.size() - 1)) && has_config)
-                has_config = false;
-            else
-                break;
-        }
-        file.close();
-        if (has_config) {
-            if (exec("omp", "<get_version/>")) {
-                c_field = 0;
-                is_login = false;
-                ui.main();
-            } else {
-                has_config = false;
-            }
-        }
-    }
-    
-    if (!has_config) {
-        vector<string>().swap(user_configs);
-        user_configs.push_back("localhost");
-        user_configs.push_back("9390");
-        user_configs.push_back("");
-        user_configs.push_back("");
-        ui.login(&user_configs);
-        vector<string>().swap(user_configs);
-    }
-
-    string().swap(oret);
-
-    driver();
 }
 
 void Nomp::driver()
@@ -246,7 +191,8 @@ void Nomp::driver()
                                 if (string(field_buffer(ui.fields[10], 0)).find("START") != string::npos) 
                                     xnodes.push_back("start_task");
                                 else
-                                    xnodes.push_back("resume_task"); // FIX: REVISAR PORQUE NO EJECUTA CORRECTAMENTE RESUME.
+                                    //xnodes.push_back("resume_task"); // FIX: REVISAR PORQUE NO EJECUTA CORRECTAMENTE RESUME.
+                                    xnodes.push_back("start_task");
                                 xnodes.push_back("task_id");
                                 validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
                                 validators.insert(make_pair(make_pair(9, true), make_pair(false, 4)));
@@ -265,6 +211,8 @@ void Nomp::driver()
                                 if (create()) {
                                     is_task_running = false;
                                     is_auto_refresh_blocked = false;
+                                    if (is_task_resumed)
+                                        disk(false, false, false);
                                     ui.progress("-2");
                                 }
                             }
@@ -405,7 +353,7 @@ void Nomp::driver()
                                     if (create(false)) {
                                         xpaths.push_back("/get_reports_response/report"); 
                                         if (get(xret[0], "extension", false, true))
-                                            write();
+                                            disk(false, false, true);
                                     }
                                     break;
                                 default:
@@ -423,8 +371,14 @@ void Nomp::driver()
                 break;
         }
     } while (key != KEY_QUIT);
-   
-    //quit();
+  
+    if (is_task_running && !is_task_resumed) {
+        int scret = ui.save_config();
+        if (scret == 1)
+            disk(true, false, true);
+        else if (scret == -1)
+            driver();
+    }
 }
 
 bool Nomp::get(const string &args, const string &attr,
@@ -474,28 +428,6 @@ bool Nomp::create(const bool &is_exec)
     return true;
 }
 
-void Nomp::write()
-{
-    passwd *pw = getpwuid(getuid());
-    string home_path = pw->pw_dir;
-    
-    struct stat st;
-    if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) &&
-          S_ISDIR(st.st_mode)))
-        exec("mkdir -p", (home_path + "/.nomp/reports"));
-    
-    ofstream file(home_path + "/.nomp/reports/" + ids[5] + "." + xret[1]);
-    if (file.is_open()) {
-        vector<BYTE> data = base64_decode(xret[2]);
-        for (size_t i = 0; i < data.size(); i++)
-            file << data[i];
-        file.close();
-        ui.status("EXPORTED " + ids[5] + "." + xret[1]);
-    } else {
-        ui.status("EXPORT ERROR");
-    }
-}
-
 bool Nomp::validate(vector<string> &v)
 {
     for (map<pair<int, bool>, pair<bool, int>>::iterator it = validators.begin();
@@ -503,7 +435,7 @@ bool Nomp::validate(vector<string> &v)
         if (it->first.second) {
             if (!isblank(field_buffer(ui.fields[it->first.first], 0)[0])) {
                 if (it->second.first)
-                    v.push_back(trim(field_buffer(ui.fields[it->first.first], 0)));
+                    v.push_back(clear_whitespace(field_buffer(ui.fields[it->first.first], 0)));
                 else if (it->second.second != -1)
                     v.push_back(ids[it->second.second] + "__attr__");
             } else {
@@ -518,22 +450,11 @@ bool Nomp::validate(vector<string> &v)
                 return false;
             }
         } else if (it->second.first) {
-            v.push_back(trim(field_buffer(ui.fields[it->first.first], 0)));
+            v.push_back(clear_whitespace(field_buffer(ui.fields[it->first.first], 0)));
         }
     }
     
     return true;
-}
-
-inline string Nomp::trim(const char *c)
-{
-    string str(c);
-    
-    str.erase(unique(str.begin(), str.end(), [] (char a, char b) {
-        return isspace(a) && isspace(b);}), str.end());
-    str.replace((str.size() - 1), 1, "");
-
-    return str;
 }
 
 void Nomp::fill(const bool &is_report)
@@ -584,48 +505,136 @@ void Nomp::fill(const bool &is_report)
     touchwin(stdscr);
 }
 
-void Nomp::auto_refresh()
+void Nomp::disk(const bool &is_config, const bool &is_read, const bool &is_write)
 {
-    if (is_task_running && !is_auto_refresh_blocked) {
-        clear_vectors();
-
-        validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
-        xnodes.push_back("get_tasks");
-        xnodes.push_back("id");
+    vector<string> cfs = {"host=", "port=", "username=", "password="};
     
-        if (create(false)) {
-            xpaths.push_back("/get_tasks_response/task/progress");
-            if (get(xret[0], "", false, true))
-                ui.progress(xret.back());
-        } 
-    }
+    passwd *pw = getpwuid(getuid());
+    string home_path = pw->pw_dir;
     
-    if (is_task_running) {
-        if (xret.back() == "-1") {
-            is_task_running = false;
-            is_auto_refresh_blocked = false;
+    struct stat st;
+    if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) && S_ISDIR(st.st_mode)))
+        exec("mkdir -p", (home_path + "/.nomp/reports"));
+    
+    if (is_read) {
+        bool is_user_config = false;
+        bool is_config_ok = false;
+        string line;
+        string task_name;
+        string refresh_name;
+        ifstream file;
+        file.open(home_path + "/.nomp/.task.tmp");
+        if (file.is_open()) {
+            cfs.push_back("task_name="); 
+            cfs.push_back("task_id="); 
+            cfs.push_back("refresh_name="); 
+            cfs.push_back("refresh_id="); 
         } else {
-            std::thread t(&Nomp::auto_refresh_sleep, this);
-            t.detach();
+            file.open(home_path + "/.nomp/config");
+            if (file.is_open())
+                is_user_config = true;
+        }
+        if (file.is_open()) {
+            for (size_t i = 0; i < cfs.size(); i++) {
+                while (getline(file, line)) {
+                    if (line.find(cfs[i]) != string::npos) {
+                        if ((line.erase(0, cfs[i].size())).size() != 0) {
+                            if (i == 4)
+                                task_name = line;
+                            else if (i == 5)
+                                ids[3] = line;
+                            else if (i == 6)
+                                refresh_name = line;
+                            else if (i == 7)
+                                ids[4] = line;
+                            else
+                                user_configs.push_back(line);
+                            is_config_ok = true;
+                        }
+                            break;
+                    }
+                }
+                if ((i < (cfs.size() - 1)) && is_config_ok)
+                    is_config_ok = false;
+                else
+                    break;
+            }
+            file.close();
+        }
+        if (is_config_ok) {
+            if (exec("omp", "<get_version/>")) {
+                if (is_user_config) {
+                    c_field = 0;
+                    is_login = false;
+                    ui.main();
+                } else {
+                    c_field = 0;
+                    is_login = false;
+                    is_task_running = true;
+                    is_task_resumed = true;
+                    ui.main();
+                    set_field_buffer(ui.fields[8], 0, task_name.c_str());
+                    set_field_buffer(ui.fields[9], 0, refresh_name.c_str());
+                    curs_set(0);
+                    auto_refresh();
+                }
+            } else {
+                is_config_ok = false;
+            }
+        }
+        if (!is_config_ok) {
+            vector<string>().swap(user_configs);
+            user_configs.push_back("localhost");
+            user_configs.push_back("9390");
+            user_configs.push_back("");
+            user_configs.push_back("");
+            ui.login(&user_configs);
+            vector<string>().swap(user_configs);
         }
         clear_vectors();
+    } else if (is_write){
+        ofstream file;
+        if (is_config) {
+            cfs.push_back("task_name="); 
+            cfs.push_back("task_id="); 
+            cfs.push_back("refresh_name="); 
+            cfs.push_back("refresh_id="); 
+            file.open(home_path + "/.nomp/.task.tmp");
+            if (file.is_open()) {
+                for (size_t i = 0; i < cfs.size(); i++) {
+                    if (i <= 3)
+                        file << cfs[i] << user_configs[i] << std::endl;
+                    else if (i == 4)
+                        file << cfs[i] << clear_whitespace(field_buffer(ui.fields[8], 0)) << std::endl;
+                    else if (i == 5)
+                        file << cfs[i] << ids[3] << std::endl;
+                    else if (i == 6)
+                        file << cfs[i] << clear_whitespace(field_buffer(ui.fields[9], 0)) << std::endl;
+                    else
+                        file << cfs[i] << ids[4] << std::endl;
+                }
+                file.close();
+            }
+        } else {
+            file.open(home_path + "/.nomp/reports/" + ids[5] + "." + xret[1]);
+            if (file.is_open()) {
+                vector<BYTE> data = base64_decode(xret[2]);
+                for (size_t i = 0; i < data.size(); i++)
+                    file << data[i];
+                file.close();
+                ui.status("EXPORTED " + ids[5] + "." + xret[1]);
+            } else {
+                ui.status("EXPORT ERROR");
+            }
+        }
+    } else {
+        ifstream file(home_path + "/.nomp/.task.tmp");
+        if (file.is_open()) {
+            file.close();
+            std::remove((home_path + "/.nomp/.task.tmp").c_str());
+            is_task_resumed = false;
+        }
     }
-}
-
-void Nomp::auto_refresh_sleep()
-{
-    std::this_thread::sleep_for(std::chrono::seconds(stoi(ids[4])));
-    auto_refresh();
-}
-
-void Nomp::clear_vectors()
-{
-    map<pair<int, bool>, pair<bool, int>>().swap(validators);
-    vector<string>().swap(xnodes);
-    vector<string>().swap(xvalues);
-    vector<string>().swap(xpaths);
-    vector<string>().swap(xret);
-    string().swap(oret);
 }
 
 bool Nomp::exec(const string &cmd, const string &args)
@@ -656,4 +665,59 @@ bool Nomp::exec(const string &cmd, const string &args)
         return false;
 
     return true;
+}
+
+void Nomp::auto_refresh()
+{
+    if (is_task_running && !is_auto_refresh_blocked) {
+        clear_vectors();
+        validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
+        xnodes.push_back("get_tasks");
+        xnodes.push_back("task_id");
+        if (create(false)) {
+            xpaths.push_back("/get_tasks_response/task/progress");
+            if (get(xret[0], "", false, true))
+                ui.progress(xret.back());
+        } 
+    }
+    
+    if (is_task_running) {
+        if (xret.back() == "-1") {
+            is_task_running = false;
+            is_auto_refresh_blocked = false;
+            if (is_task_resumed)
+                disk(false, false, false);
+        } else {
+            std::thread t(&Nomp::auto_refresh_sleep, this);
+            t.detach();
+        }
+        clear_vectors();
+    }
+}
+
+void Nomp::auto_refresh_sleep()
+{
+    std::this_thread::sleep_for(std::chrono::seconds(stoi(ids[4])));
+    auto_refresh();
+}
+
+inline string Nomp::clear_whitespace(const char *c)
+{
+    string str(c);
+    
+    str.erase(unique(str.begin(), str.end(), [] (char a, char b) {
+        return isspace(a) && isspace(b);}), str.end());
+    str.replace((str.size() - 1), 1, "");
+
+    return str;
+}
+
+void Nomp::clear_vectors()
+{
+    map<pair<int, bool>, pair<bool, int>>().swap(validators);
+    vector<string>().swap(xnodes);
+    vector<string>().swap(xvalues);
+    vector<string>().swap(xpaths);
+    vector<string>().swap(xret);
+    string().swap(oret);
 }

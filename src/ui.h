@@ -11,6 +11,8 @@ using std::vector;
 
 const int KEY_RETURN = 10;
 const int KEY_TAB = 9;
+const int KEY_Y = 121;
+const int KEY_N = 110;
 const int KEY_ESCAPE = 27;
 const int KEY_QUIT = 17;
 
@@ -24,36 +26,20 @@ public:
     FIELD *fields[17];
     
     const vector<string> fields_name =
-    {
-        "HOST",
-        "PORT",
-        "USERNAME",
-        "PASSWORD",
-        "       LOGIN",
-        "NAME",
-        "HOSTS",
-        "PORTS",
-        "   CREATE TARGET",
-        "NAME",
-        "SCAN",
-        "TARGET",
-        "    CREATE TASK",
-        "TASK",
-        "REFRESH",
-        "PROGRESS",
-        "       START",
-        "      RESUME",
-        "       STOP",
-        "TASK",
-        "FORMAT",
-        "    SHOW REPORT",
-        "   EXPORT REPORT"
-    };
+    {"HOST", "PORT", "USERNAME", "PASSWORD",
+     "       LOGIN", "NAME", "HOSTS", "PORTS",
+     "   CREATE TARGET", "NAME", "SCAN", "TARGET",
+     "    CREATE TASK", "TASK", "REFRESH", "PROGRESS",
+     "       START", "      RESUME", "       STOP",
+     "TASK", "FORMAT", "    SHOW REPORT", "   EXPORT REPORT",
+     "                   SAVE",
+     "                   EXIT"};
     
     void login(vector<string> *user_configs);
     void main();
     int menu(vector<string> *values, size_t n);
     int report(vector<string> *values, size_t n);
+    int save_config();
     void progress(string p);
     void status(string sts);
     void marker(bool is_menu = true, bool show = true);
