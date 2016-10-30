@@ -63,14 +63,16 @@ Ui::~Ui()
 
 void Ui::login(vector<string> *user_configs)
 {
+    // TODO: REVISAR LINES/COLS EN XML
+
     int rows;
     int cols;
     
-    fields[0] = new_field(1, 42, 20, (COLS / 2.63), 0, 0);
-    fields[1] = new_field(1, 42, 22, (COLS / 2.63), 0, 0);
-    fields[2] = new_field(1, 42, 24, (COLS / 2.63), 0, 0);
-    fields[3] = new_field(1, 42, 26, (COLS / 2.63), 0, 0);
-    fields[4] = new_field(1, 20, 28, 77, 0, 0);
+    fields[0] = new_field(1, (COLS / 4.1),  (LINES / 2.45), (COLS / 2.63), 0, 0);
+    fields[1] = new_field(1, (COLS / 4.1),  (LINES / 2.22), (COLS / 2.63), 0, 0);
+    fields[2] = new_field(1, (COLS / 4.1),  (LINES / 2.04), (COLS / 2.63), 0, 0);
+    fields[3] = new_field(1, (COLS / 4.1),  (LINES / 1.88), (COLS / 2.63), 0, 0);
+    fields[4] = new_field(1, (COLS / 8.75), (LINES / 1.75), (COLS / 2.27), 0, 0);
     fields[5] = NULL;
     
     set_field_just(fields[0], JUSTIFY_CENTER);
@@ -97,10 +99,10 @@ void Ui::login(vector<string> *user_configs)
     scale_form(form, &rows, &cols);
     post_form(form);
     
-    mvprintw(20, (COLS / 2.85), fields_name[0].c_str());
-    mvprintw(22, (COLS / 2.85), fields_name[1].c_str());
-    mvprintw(24, (COLS / 3.05), fields_name[2].c_str());
-    mvprintw(26, (COLS / 3.05), fields_name[3].c_str());
+    mvprintw((LINES / 2.45), (COLS / 2.85), fields_name[0].c_str());
+    mvprintw((LINES / 2.22), (COLS / 2.85), fields_name[1].c_str());
+    mvprintw((LINES / 2.04), (COLS / 3.05), fields_name[2].c_str());
+    mvprintw((LINES / 1.88), (COLS / 3.05), fields_name[3].c_str());
     
     refresh();
 
@@ -113,22 +115,22 @@ void Ui::main()
     int rows;
     int cols;
     
-    fields[0] = new_field(1, 42, 7, 23, 0, 0);
-    fields[1] = new_field(1, 42, 9, 23, 0, 0);
-    fields[2] = new_field(1, 42, 11, 23, 0, 0);
-    fields[3] = new_field(1, 20, 13, 34, 0, 0);
-    fields[4] = new_field(1, 42, 17, 23, 0, 0);
-    fields[5] = new_field(1, 42, 19, 23, 0, 0);
-    fields[6] = new_field(1, 42, 21, 23, 0, 0);
-    fields[7] = new_field(1, 20, 23, 34, 0, 0);
-    fields[8] = new_field(1, 42, 27, 23, 0, 0);
-    fields[9] = new_field(1, 42, 29, 23, 0, 0);
-    fields[10] = new_field(1, 20, 33, 23, 0, 0);
-    fields[11] = new_field(1, 20, 33, 45, 0, 0);
-    fields[12] = new_field(1, 42, 37, 23, 0, 0);
-    fields[13] = new_field(1, 42, 39, 23, 0, 0);
-    fields[14] = new_field(1, 20, 41, 23, 0, 0);
-    fields[15] = new_field(1, 20, 41, 45, 0, 0);
+    fields[0]  = new_field(1, (COLS / 4.1),  (LINES / 7),    (COLS / 7.6),  0, 0);
+    fields[1]  = new_field(1, (COLS / 4.1),  (LINES / 5.44), (COLS / 7.6),  0, 0);
+    fields[2]  = new_field(1, (COLS / 4.1),  (LINES / 4.45), (COLS / 7.6),  0, 0);
+    fields[3]  = new_field(1, (COLS / 8.75), (LINES / 3.76), (COLS / 5.14), 0, 0);
+    fields[4]  = new_field(1, (COLS / 4.1),  (LINES / 2.88), (COLS / 7.6),  0, 0);
+    fields[5]  = new_field(1, (COLS / 4.1),  (LINES / 2.57), (COLS / 7.6),  0, 0);
+    fields[6]  = new_field(1, (COLS / 4.1),  (LINES / 2.33), (COLS / 7.6),  0, 0);
+    fields[7]  = new_field(1, (COLS / 8.75), (LINES / 2.13), (COLS / 5.14), 0, 0);
+    fields[8]  = new_field(1, (COLS / 4.1),  (LINES / 1.81), (COLS / 7.6),  0, 0);
+    fields[9]  = new_field(1, (COLS / 4.1),  (LINES / 1.68), (COLS / 7.6),  0, 0);
+    fields[10] = new_field(1, (COLS / 8.75), (LINES / 1.48), (COLS / 7.6),  0, 0);
+    fields[11] = new_field(1, (COLS / 8.75), (LINES / 1.48), (COLS / 3.88), 0, 0);
+    fields[12] = new_field(1, (COLS / 4.1),  (LINES / 1.32), (COLS / 7.6),  0, 0);
+    fields[13] = new_field(1, (COLS / 4.1),  (LINES / 1.25), (COLS / 7.6),  0, 0);
+    fields[14] = new_field(1, (COLS / 8.75), (LINES / 1.19), (COLS / 7.6),  0, 0);
+    fields[15] = new_field(1, (COLS / 8.75), (LINES / 1.19), (COLS / 3.88), 0, 0);
     fields[16] = NULL;
 
     for (int i = 0; i <= 15; i++) {
@@ -144,8 +146,8 @@ void Ui::main()
             set_field_back(fields[i], COLOR_PAIR(1));
     }
     
-    set_field_buffer(fields[3], 0, fields_name[8].c_str());
-    set_field_buffer(fields[7], 0, fields_name[12].c_str());
+    set_field_buffer(fields[3],  0, fields_name[8].c_str());
+    set_field_buffer(fields[7],  0, fields_name[12].c_str());
     set_field_buffer(fields[10], 0, fields_name[16].c_str());
     set_field_buffer(fields[11], 0, fields_name[18].c_str());
     set_field_buffer(fields[14], 0, fields_name[21].c_str());
@@ -155,17 +157,17 @@ void Ui::main()
     scale_form(form, &rows, &cols);
     post_form(form);
 
-    mvprintw(7, 18, fields_name[5].c_str());
-    mvprintw(9, 17, fields_name[6].c_str());
-    mvprintw(11, 17, fields_name[7].c_str());
-    mvprintw(17, 18, fields_name[9].c_str());
-    mvprintw(19, 18, fields_name[10].c_str());
-    mvprintw(21, 16, fields_name[11].c_str());
-    mvprintw(27, 18, fields_name[13].c_str());
-    mvprintw(29, 15, fields_name[14].c_str());
-    mvprintw(31, 14, fields_name[15].c_str());
-    mvprintw(37, 18, fields_name[19].c_str());
-    mvprintw(39, 16, fields_name[20].c_str());
+    mvprintw((LINES / 7),    (COLS / 9.72),  fields_name[5].c_str());
+    mvprintw((LINES / 5.44), (COLS / 10.29), fields_name[6].c_str());
+    mvprintw((LINES / 4.45), (COLS / 10.29), fields_name[7].c_str());
+    mvprintw((LINES / 2.88), (COLS / 9.72),  fields_name[9].c_str());
+    mvprintw((LINES / 2.57), (COLS / 9.72),  fields_name[10].c_str());
+    mvprintw((LINES / 2.33), (COLS / 10.93), fields_name[11].c_str());
+    mvprintw((LINES / 1.81), (COLS / 9.72),  fields_name[13].c_str());
+    mvprintw((LINES / 1.68), (COLS / 11.66), fields_name[14].c_str());
+    mvprintw((LINES / 1.58), (COLS / 12.5),  fields_name[15].c_str());
+    mvprintw((LINES / 1.32), (COLS / 9.72),  fields_name[19].c_str());
+    mvprintw((LINES / 1.25), (COLS / 10.93), fields_name[20].c_str());
     
     curs_set(1);
     
@@ -190,11 +192,11 @@ int Ui::menu(vector<string> *values, size_t n)
     
     windows_arr = (WINDOW **) malloc ((n_values + 1) * sizeof(WINDOW *));
     
-    windows_arr[0] = newwin((n_values + 2), 42, row, 23);
+    windows_arr[0] = newwin((n_values + 2), (COLS / 4.1), row, (COLS / 7.6));
     box(windows_arr[0], 0, 0);
     
     for (size_t i = 1; i <= n_values; i++) {
-        windows_arr[i] = subwin(windows_arr[0], 1, 40, (i + row), 24);
+        windows_arr[i] = subwin(windows_arr[0], 1, (COLS / 4.37), (i + row), (COLS / 7.29));
         mvwprintw(windows_arr[i], 0, 1, "%s", (*values)[n_values + (i - 1)].c_str()); 
     }
     
@@ -209,7 +211,7 @@ int Ui::menu(vector<string> *values, size_t n)
         {
             case KEY_RIGHT:
             case KEY_TAB:
-                if (menu_data_lines > 36)
+                if (menu_data_lines > 36) // TODO: VER ALTURA LINES/COLS.
                     menu_data_scroll();
                 break;
             case KEY_UP:
@@ -257,12 +259,12 @@ void Ui::menu_data(vector<string> **values, int c_item, size_t n)
     if (window_menu_data != NULL) 
         delwin(window_menu_data);
     
-    window_menu_data = newpad(menu_data_lines, 63);
+    window_menu_data = newpad(menu_data_lines, (COLS / 2.77));
     
     for (size_t i = 2; i < n; i++)
         wprintw(window_menu_data, "%s", ((**values)[(n_values * i) + c_item]).c_str());
     
-    prefresh(window_menu_data, 0, 0, 7, 109, 41, 171);
+    prefresh(window_menu_data, 0, 0, (LINES / 7), (COLS / 1.60), (LINES / 1.19), (COLS / 1.02));
 }
 
 void Ui::menu_data_scroll()
@@ -270,14 +272,14 @@ void Ui::menu_data_scroll()
     int key;
     int c_line = 0;
     
-    mvaddch(23, 106, ACS_UARROW);
-    mvaddch(24, 106, ACS_DARROW);
+    mvaddch((LINES / 2.13), (COLS / 1.65), ACS_UARROW);
+    mvaddch((LINES / 2.04), (COLS / 1.65), ACS_DARROW);
     refresh();
     
     keypad(window_menu_data, true);
     
     do {
-        prefresh(window_menu_data, c_line, 0, 7, 109, 41, 171);
+        prefresh(window_menu_data, c_line, 0, (LINES / 7), (COLS / 1.60), (LINES / 1.19), (COLS / 1.02));
         key = wgetch(window_menu_data);
         switch(key)
         {
@@ -300,8 +302,8 @@ void Ui::menu_data_scroll()
         }
     } while (key != KEY_ESCAPE);
     
-    mvprintw(23, 106, " ");
-    mvprintw(24, 106, " ");
+    mvprintw((LINES / 2.13), (COLS / 1.65), " ");
+    mvprintw((LINES / 2.04), (COLS / 1.65), " ");
 }
 
 int Ui::report(vector<string> *values, size_t n)
@@ -319,18 +321,18 @@ int Ui::report(vector<string> *values, size_t n)
     for (size_t i = 1; i <= n_values; i++) {
         windows_arr[i] = subpad(windows_arr[0], 1, (COLS - 4), (i - 1), 0);
         mvwprintw(windows_arr[i], 0, 0, "%s", (*values)[n_values + i].c_str());
-        mvwprintw(windows_arr[i], 0, 129, "%s", (*values)[(n_values * 2) + i].c_str());
-        mvwprintw(windows_arr[i], 0, 146, "%s", (*values)[(n_values * 3) + i].c_str());
-        mvwprintw(windows_arr[i], 0, 165, "%s", (*values)[(n_values * 4) + i].c_str());
+        mvwprintw(windows_arr[i], 0, (COLS / 1.35), "%s", (*values)[(n_values * 2) + i].c_str());
+        mvwprintw(windows_arr[i], 0, (COLS / 1.19), "%s", (*values)[(n_values * 3) + i].c_str());
+        mvwprintw(windows_arr[i], 0, (COLS / 1.06), "%s", (*values)[(n_values * 4) + i].c_str());
     }
     
     wbkgd(windows_arr[1], COLOR_PAIR(2));
     wbkgd(windows_arr[1], A_REVERSE);
     
-    prefresh(windows_arr[0], 0, 0, 7, 3, 41, (COLS - 4));
+    prefresh(windows_arr[0], 0, 0, (LINES / 7), (COLS / 58.33), (LINES / 1.19), (COLS - 4));
 
     do {
-        prefresh(windows_arr[0], c_item, 0, 7, 3, 41, (COLS - 4));
+        prefresh(windows_arr[0], c_item, 0, (LINES / 7), (COLS / 58.33), (LINES / 1.19), (COLS - 4));
         key = wgetch(windows_arr[0]);
         switch(key)
         {
@@ -380,7 +382,7 @@ void Ui::report_data(vector<string> **values, unsigned int c_item, size_t n)
         wprintw(window_report_data, "%s", ((**values)[(n_values * i) + c_item]).c_str());
     
     do {
-        prefresh(window_report_data, c_line, 0, 7, 3, 41, (COLS - 4));
+        prefresh(window_report_data, c_line, 0, (LINES / 7), (COLS / 58.33), (LINES / 1.19), (COLS - 4));
         key = wgetch(window_report_data);
         switch(key)
         {
@@ -405,17 +407,53 @@ void Ui::report_data(vector<string> **values, unsigned int c_item, size_t n)
     delwin(window_report_data);
 }
 
+void Ui::progress(string p)
+{  
+    for (int i = 0; i <= 45; i++) // TODO: REVISAR LINE/COLS
+        mvdelch((LINES / 1.58), (COLS / 7.6));
+    
+    if (p == "-1") {
+        status("TASK FINISHED");
+    } else if (p == "-2") {    
+        status("TASK STOPPED");
+    } else {
+        if ((stoi(p) > 0) && (stoi(p) < 3))
+            mvhline((LINES / 1.58), (COLS / 7.6), ACS_VLINE, 1);
+        else
+            mvhline((LINES / 1.58), (COLS / 7.6), ACS_VLINE, (stoi(p) / 2.38));
+    }
+    
+    refresh();
+}
+
+void Ui::status(string sts)
+{
+    int start_x = 0;
+    int max_y;
+    int max_x;
+    
+    WINDOW *window_status = newwin(1, COLS, (LINES - 1), 0);
+    
+    getmaxyx(window_status, max_y, max_x);
+    start_x = ((max_x - sts.size()) / 2) + 1; 
+    max_y = 0;
+    mvwprintw(window_status, max_y, start_x, sts.c_str());
+    
+    wrefresh(window_status);
+    delwin(window_status);
+}
+
 int Ui::save_config()
 {
     int key;
     int curs_state = curs_set(0);
     
-    WINDOW *window_save = newwin(11, 41, 17, 66);
+    WINDOW *window_save = newwin((LINES / 4.45), (COLS / 4.26), (LINES / 2.88), (COLS / 2.65));
     wbkgd(window_save, COLOR_PAIR(1));
     box(window_save, 0, 0);
     keypad(window_save, TRUE);
 
-    mvwprintw(window_save, 5, 3, "SAVE THE RUNNING TASK CONFIG? (Y/N)");
+    mvwprintw(window_save, (LINES / 9.8), (COLS / 58.33), "SAVE THE RUNNING TASK CONFIG? (Y/N)");
     
     curs_set(0);
     
@@ -445,43 +483,6 @@ int Ui::save_config()
     return -1;
 }
 
-void Ui::progress(string p)
-{  
-    if ((p == "-1") || (p == "-2")) {
-        for (int i = 0; i <= 45; i++)
-            mvdelch(31, 23);
-        if (p == "-1")
-            status("TASK FINISHED");
-        else    
-            status("TASK STOPPED");
-    } else {
-        if ((stoi(p) > 0) && (stoi(p) < 3))
-            mvhline(31, 23, ACS_VLINE, 1);
-        else
-            mvhline(31, 23, ACS_VLINE, (stoi(p) / 2.38));
-    }
-    
-    refresh();
-}
-
-void Ui::status(string sts)
-{
-    int start_x = 0;
-    int max_y;
-    int max_x;
-    WINDOW *window_status;
-
-    window_status = newwin(1, COLS, (LINES - 1), 0);
-    
-    getmaxyx(window_status, max_y, max_x);
-    start_x = ((max_x - sts.size()) / 2); 
-    max_y = 0;
-    mvwprintw(window_status, max_y, start_x, sts.c_str());
-    
-    wrefresh(window_status);
-    delwin(window_status);
-}
-
 void Ui::marker(bool is_menu, bool show)
 {
     int row;
@@ -492,7 +493,7 @@ void Ui::marker(bool is_menu, bool show)
 
     if (show) {
         if (is_menu) {
-            mvprintw(row, 66, "+");
+            mvprintw(row, (COLS / 2.65), "+");
         } else {
             mvaddch(row, col, ACS_CKBOARD);
             mvaddch(row, (col + (cols - 1)), ACS_CKBOARD);
@@ -500,7 +501,7 @@ void Ui::marker(bool is_menu, bool show)
         curs_set(0);
     } else {
         if (is_menu) {
-            mvprintw(row, 66, " ");
+            mvprintw(row, (COLS / 2.65), " ");
         } else {
             attron(COLOR_PAIR(1));
             mvprintw(row, col, " ");
