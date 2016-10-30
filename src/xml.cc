@@ -3,15 +3,9 @@
 #include <sstream>
 #include <iomanip>
 #include <stdexcept>
-//#include <iostream>//
 
 using std::stringstream;
 using std::istringstream;
-using std::to_string;
-using std::setfill;
-using std::setw;
-using std::left;
-using std::endl;
 
 Xml::Xml()
 {
@@ -89,11 +83,11 @@ bool Xml::parse(const string *content, const vector<string> *paths, vector<strin
                             value = element->get_first_child_text()->get_content();
                             if (node.at(i - 1)->get_path() ==
                                 "/get_reports_response/report/report/results/result[" +
-                                 to_string(i) + "]/name")
+                                 std::to_string(i) + "]/name")
                                 wrap(value, 120, true);
                             else if (node.at(i - 1)->get_path() ==
                                      "/get_reports_response/report/report/results/result[" +
-                                      to_string(i) + "]/host")
+                                      std::to_string(i) + "]/host")
                                 wrap(value, 15, true);
                             xret->push_back(value);
                         }
@@ -127,21 +121,21 @@ void Xml::format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
     if ((node->at(i - 1)->get_path() ==
         "/get_tasks_response/task/scanner/name") ||
         (node->at(i - 1)->get_path() ==
-         "/get_tasks_response/task[" + to_string(i) + "]/scanner/name") ||
+         "/get_tasks_response/task[" + std::to_string(i) + "]/scanner/name") ||
         (node->at(i - 1)->get_path() ==
          "/get_targets_response/target/port_list/name" ) ||
         (node->at(i - 1)->get_path() ==
-         "/get_targets_response/target[" + to_string(i) + "]/port_list/name")) {
+         "/get_targets_response/target[" + std::to_string(i) + "]/port_list/name")) {
         name = "PORTS";
     } else if ((node->at(i - 1)->get_path() ==
                "/get_tasks_response/task/config/name") ||
                (node->at(i - 1)->get_path() ==
-               "/get_tasks_response/task[" + to_string(i) + "]/config/name")) {
+               "/get_tasks_response/task[" + std::to_string(i) + "]/config/name")) {
         name = "SCAN";
     } else if ((node->at(i - 1)->get_path() ==
                "/get_tasks_response/task/target/name") ||
                (node->at(i - 1)->get_path() ==
-               "/get_tasks_response/task[" + to_string(i) + "]/target/name")) {
+               "/get_tasks_response/task[" + std::to_string(i) + "]/target/name")) {
         name = "TARGET";
     } else {
         name = node->at(i - 1)->get_name();
@@ -198,7 +192,6 @@ void Xml::format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
         replaces.push_back("SOLUTION\n");
         replaces.push_back("\n\n");
         replace(value, targets, replaces);
-        value.insert(value.size(), "\n\n");
         wrap(value, 100); // TODO: ENVIAR COLS EN LUGAR DE 155.
     } else if ((name == "description") && (value != "-")) {
         if (max_width == 13)
@@ -210,7 +203,7 @@ void Xml::format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
     width(value, max_width);
     uppercase(name);
     
-    ss << left << setw(max_width) << setfill(' ') << name << value << endl;
+    ss << std::left << std::setw(max_width) << std::setfill(' ') << name << value << std::endl << std::endl;
     
     (*xret)->push_back(ss.str());
 }
@@ -236,7 +229,7 @@ void Xml::wrap(string &str, const size_t &p, const bool replace)
                 n = 1;
             }
         }
-        ss << line << endl;
+        ss << line << std::endl;
     }
     
     str = ss.str();
@@ -251,10 +244,10 @@ inline void Xml::width(string &str, const int &max_width)
     
     while (getline(f, line)) {
         if (is_first) {
-            ss << line << endl;
+            ss << line << std::endl;
             is_first = false;
         } else {
-            ss << setw(max_width) << setfill(' ') << " " << line << endl;
+            ss << std::setw(max_width) << std::setfill(' ') << " " << line << std::endl;
         }
     }
     
