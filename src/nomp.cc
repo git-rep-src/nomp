@@ -191,31 +191,43 @@ void Nomp::driver()
                                 if (string(field_buffer(ui.fields[10], 0)).find("START") != string::npos) 
                                     xnodes.push_back("start_task");
                                 else
-                                    //xnodes.push_back("resume_task"); // FIX: REVISAR PORQUE NO EJECUTA CORRECTAMENTE RESUME.
-                                    xnodes.push_back("start_task");
+                                    xnodes.push_back("resume_task");
                                 xnodes.push_back("task_id");
                                 validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
                                 validators.insert(make_pair(make_pair(9, true), make_pair(false, 4)));
                                 if (create()) {
                                     is_task_running = true;
                                     auto_refresh();
-                                    ui.status("TASK STARTED");
+                                    if (string(field_buffer(ui.fields[10], 0)).find("START") != string::npos) 
+                                        ui.status("TASK STARTED");
+                                    else    
+                                        ui.status("TASK RESUMED");
                                 }
                             }
                             break;
                         case 11:
-                            if (is_task_running) {
-                                xnodes.push_back("stop_task");
-                                xnodes.push_back("task_id");
-                                validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
-                                if (create()) {
-                                    is_task_running = false;
-                                    is_auto_refresh_blocked = false;
-                                    if (is_task_resumed)
-                                        disk(false, false, false);
-                                    ui.progress("-2");
+                            is_auto_refresh_blocked = true;
+                            xnodes.push_back("get_tasks");
+                            xnodes.push_back("task_id");
+                            validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
+                            if (create(false)) {
+                                xpaths.push_back("/get_tasks_response/task/status");
+                                if (get(xret[0], "", false, true)) {
+                                    if ((xret.back() == "Requested") || (xret.back() == "Running") || is_task_running) {
+                                        clear_vectors();
+                                        xnodes.push_back("stop_task");
+                                        xnodes.push_back("task_id");
+                                        validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
+                                        if (create()) {
+                                            is_task_running = false;
+                                            if (is_task_resumed)
+                                                disk(false, false, false);
+                                            ui.progress("-2");
+                                        }
+                                    }
                                 }
                             }
+                            is_auto_refresh_blocked = false;
                             break;
                         case 2:
                         case 5:
@@ -317,13 +329,13 @@ void Nomp::driver()
                                     get("<get_report_formats/>");
                                     break;
                                 case 14:
-                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
                                     xnodes.push_back("get_reports");
                                     xnodes.push_back("filter");
                                     xnodes.push_back("report_id"); 
                                     xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
                                                        notes=0 overrides=0 rows=10000 delta_states=gn \
                                                        result_hosts_only=1 ignore_pagination=1__attr__");
+                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
                                     if (create(false)) {
                                         xpaths.push_back("/get_reports_response/report/report/results/result"); 
                                         xpaths.push_back("/get_reports_response/report/report/results/result/name");
@@ -341,8 +353,6 @@ void Nomp::driver()
                                     }
                                     break;
                                 case 15:
-                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
-                                    validators.insert(make_pair(make_pair(13, true), make_pair(false, 6)));
                                     xnodes.push_back("get_reports");
                                     xnodes.push_back("filter");
                                     xnodes.push_back("report_id"); 
@@ -350,6 +360,8 @@ void Nomp::driver()
                                     xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
                                                        notes=0 overrides=0 rows=10000 delta_states=gn \
                                                        result_hosts_only=1 ignore_pagination=1__attr__");
+                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
+                                    validators.insert(make_pair(make_pair(13, true), make_pair(false, 6)));
                                     if (create(false)) {
                                         xpaths.push_back("/get_reports_response/report"); 
                                         if (get(xret[0], "extension", false, true))
@@ -388,7 +400,7 @@ bool Nomp::get(const string &args, const string &attr,
         if (!is_report)
             vector<string>().swap(xret);
         Xml xml;
-        if (xml.parse(&oret, &xpaths, &xret, attr, get_data, is_report)) {
+        if (xml.parse(&eret, &xpaths, &xret, attr, get_data, is_report)) {
             if (get_data)
                 fill(is_report);
         } else {
@@ -622,7 +634,7 @@ void Nomp::disk(const bool &is_config, const bool &is_read, const bool &is_write
                 for (size_t i = 0; i < data.size(); i++)
                     file << data[i];
                 file.close();
-                ui.status("EXPORTED " + ids[5] + "." + xret[1]);
+                ui.status("EXPORTED " + home_path + "/.nomp/reports/" + ids[5] + "." + xret[1]);
             } else {
                 ui.status("EXPORT ERROR");
             }
@@ -659,7 +671,7 @@ bool Nomp::exec(const string &cmd, const string &args)
     
     while (!feof(fp))
         if (fgets(buf, BUFSIZ, fp) != NULL)
-            oret += buf;
+            eret += buf;
 
     if (pclose(fp) != 0)
         return false;
@@ -671,18 +683,25 @@ void Nomp::auto_refresh()
 {
     if (is_task_running && !is_auto_refresh_blocked) {
         clear_vectors();
-        validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
         xnodes.push_back("get_tasks");
         xnodes.push_back("task_id");
+        validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
         if (create(false)) {
             xpaths.push_back("/get_tasks_response/task/progress");
-            if (get(xret[0], "", false, true))
-                ui.progress(xret.back());
+            xpaths.push_back("/get_tasks_response/task/status");
+            if (get(xret[0], "", false, true)) {
+                if ((xret.back() == "Requested") || (xret.back() == "Running"))
+                    ui.progress(xret[1]);
+                else if (xret.back() == "Stopped")
+                    ui.progress("-2");
+                else if (xret.back() == "Done")
+                    ui.progress("-1");
+            }
         } 
     }
     
     if (is_task_running) {
-        if (xret.back() == "-1") {
+        if ((xret.back() == "Stopped") || (xret.back() == "Done")) {
             is_task_running = false;
             is_auto_refresh_blocked = false;
             if (is_task_resumed)
@@ -691,7 +710,8 @@ void Nomp::auto_refresh()
             std::thread t(&Nomp::auto_refresh_sleep, this);
             t.detach();
         }
-        clear_vectors();
+        if (!is_auto_refresh_blocked)
+            clear_vectors();
     }
 }
 
@@ -719,5 +739,5 @@ void Nomp::clear_vectors()
     vector<string>().swap(xvalues);
     vector<string>().swap(xpaths);
     vector<string>().swap(xret);
-    string().swap(oret);
+    string().swap(eret);
 }

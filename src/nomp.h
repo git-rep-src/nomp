@@ -22,13 +22,12 @@ private:
     Ui ui;
 
     int c_field;
-
     bool is_login;
     bool is_task_running;
     bool is_task_resumed;
     bool is_auto_refresh_blocked;
     
-    string oret;
+    string eret;
 
     vector<string> ids;
     vector<string> user_configs;
@@ -37,8 +36,10 @@ private:
     vector<string> xpaths;
     vector<string> xret;
     const vector<string> auto_refresh_times =
-    {"30", "60", "120", "300", " 30 sec",
-     "  1 min", "  2 min", "  5 min"};
+    {
+        "30", "60", "120", "300",
+        "30 sec", "1 min", "2 min", "5 min"
+    };
     
     map<pair<int, bool>, pair<bool, int>> validators;
 
