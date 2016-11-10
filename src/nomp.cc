@@ -20,7 +20,7 @@ Nomp::Nomp() :
     is_task_running(false),
     is_task_resumed(false),
     is_auto_refresh_blocked(false),
-    ids(7)
+    ids(8)
 {
     disk(true, true, false);
     driver();
@@ -53,6 +53,8 @@ void Nomp::driver()
                     case 2:
                     case 3:
                     case 4:
+                    case 5:
+                    case 6:
                         if (is_login)
                             if (c_field == 3)
                                 set_field_back(ui.fields[c_field], COLOR_PAIR(3));
@@ -61,26 +63,27 @@ void Nomp::driver()
                             else
                                 set_field_back(ui.fields[c_field], COLOR_PAIR(1));
                         else
-                            if (c_field == 2)
+                            if (c_field == 3)
                                 ui.marker(true, false);
-                            else if (c_field == 3)
+                            else if (c_field == 4)
                                 ui.marker(false, false);
                             else
                                 set_field_back(ui.fields[c_field], COLOR_PAIR(1));
                         break;
-                    case 5:
-                    case 6:
-                    case 8:
-                    case 9:
-                    case 12:
-                    case 13:
-                        ui.marker(true, false);
-                        break;
                     case 7:
+                    case 8:
                     case 10:
                     case 11:
                     case 14:
                     case 15:
+                    case 16:
+                        ui.marker(true, false);
+                        break;
+                    case 9:
+                    case 12:
+                    case 13:
+                    case 17:
+                    case 18:
                         ui.marker(false, false);
                         break;
                     default:
@@ -108,6 +111,8 @@ void Nomp::driver()
                     case 2:
                     case 3:
                     case 4:
+                    case 5:
+                    case 6:
                         if (is_login)
                             if (c_field == 3)
                                 set_field_back(ui.fields[c_field], COLOR_PAIR(3));
@@ -116,26 +121,27 @@ void Nomp::driver()
                             else
                                 set_field_back(ui.fields[c_field], COLOR_PAIR(2));
                         else
-                            if (c_field == 2)
+                            if (c_field == 3)
                                 ui.marker();
-                            else if (c_field == 3)
+                            else if (c_field == 4)
                                 ui.marker(false);
                             else
                                 set_field_back(ui.fields[c_field], COLOR_PAIR(2));
                         break;
-                    case 5:
-                    case 6:
-                    case 8:
-                    case 9:
-                    case 12:
-                    case 13:
-                        ui.marker();
-                        break;
                     case 7:
+                    case 8:
                     case 10:
                     case 11:
                     case 14:
                     case 15:
+                    case 16:
+                        ui.marker();
+                        break;
+                    case 9:
+                    case 12:
+                    case 13:
+                    case 17:
+                    case 18:
                         ui.marker(false);
                         break;
                     default:
@@ -156,7 +162,7 @@ void Nomp::driver()
                             if (exec("omp", "<get_version/>")) {
                                 is_login = false;
                                 c_field = 0;
-                                ui.cleanup();
+                                ui.clear_form();
                                 ui.main();
                             } else {
                                 ui.status("LOGIN ERROR");
@@ -167,49 +173,110 @@ void Nomp::driver()
                     switch(c_field)
 		            {
                         case 3:
+                            xpaths.push_back("/get_port_lists_response/port_list"); 
+                            xpaths.push_back("/get_port_lists_response/port_list/name");
+                            xpaths.push_back("/get_port_lists_response/port_list/name");
+                            xpaths.push_back("/get_port_lists_response/port_list/comment");
+                            xpaths.push_back("/get_port_lists_response/port_list/creation_time");
+                            xpaths.push_back("/get_port_lists_response/port_list/modification_time");
+                            xpaths.push_back("/get_port_lists_response/port_list/port_count/all"); 
+                            xpaths.push_back("/get_port_lists_response/port_list/port_count/tcp"); 
+                            xpaths.push_back("/get_port_lists_response/port_list/port_count/udp"); 
+                            get("<get_port_lists/>");
+                            break;
+                        case 4:
                             xnodes.push_back("create_target");
                             xnodes.push_back("name");
+                            xnodes.push_back("comment");
                             xnodes.push_back("hosts");
                             xnodes.push_back("port_list");
                             validators.insert(make_pair(make_pair(0, true), make_pair(true, -1)));
-                            validators.insert(make_pair(make_pair(1, true), make_pair(true, -1)));
-                            validators.insert(make_pair(make_pair(2, true), make_pair(false, 0)));
+                            validators.insert(make_pair(make_pair(1, false), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(2, true), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(3, true), make_pair(false, 0)));
                             create();
                             break;
                         case 7:
+                            xpaths.push_back("/get_configs_response/config"); 
+                            xpaths.push_back("/get_configs_response/config/name");
+                            xpaths.push_back("/get_configs_response/config/name");
+                            xpaths.push_back("/get_configs_response/config/comment");
+                            xpaths.push_back("/get_configs_response/config/creation_time");
+                            xpaths.push_back("/get_configs_response/config/modification_time");
+                            xpaths.push_back("/get_configs_response/config/family_count");
+                            xpaths.push_back("/get_configs_response/config/nvt_count");
+                            get("<get_configs/>");
+                            break;
+                        case 8:
+                            xpaths.push_back("/get_targets_response/target"); 
+                            xpaths.push_back("/get_targets_response/target/name");
+                            xpaths.push_back("/get_targets_response/target/name");
+                            xpaths.push_back("/get_targets_response/target/comment");
+                            xpaths.push_back("/get_targets_response/target/creation_time");
+                            xpaths.push_back("/get_targets_response/target/modification_time");
+                            xpaths.push_back("/get_targets_response/target/hosts");
+                            xpaths.push_back("/get_targets_response/target/port_list/name");
+                            get("<get_targets/>");
+                            break;
+                        case 9:
                             xnodes.push_back("create_task");
                             xnodes.push_back("name");
+                            xnodes.push_back("comment");
                             xnodes.push_back("config");
                             xnodes.push_back("target");
-                            validators.insert(make_pair(make_pair(4, true), make_pair(true, -1)));
-                            validators.insert(make_pair(make_pair(5, true), make_pair(false, 1)));
-                            validators.insert(make_pair(make_pair(6, true), make_pair(false, 2)));
+                            validators.insert(make_pair(make_pair(5, true), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(6, false), make_pair(true, -1)));
+                            validators.insert(make_pair(make_pair(7, true), make_pair(false, 1)));
+                            validators.insert(make_pair(make_pair(8, true), make_pair(false, 2)));
                             create();
                             break;
                         case 10:
                             if (!is_task_running) {
-                                if (string(field_buffer(ui.fields[10], 0)).find("START") != string::npos) 
+                                xpaths.push_back("/get_tasks_response/task"); 
+                                xpaths.push_back("/get_tasks_response/task/name");
+                                xpaths.push_back("/get_tasks_response/task/name");
+                                xpaths.push_back("/get_tasks_response/task/comment");
+                                xpaths.push_back("/get_tasks_response/task/creation_time");
+                                xpaths.push_back("/get_tasks_response/task/modification_time");
+                                xpaths.push_back("/get_tasks_response/task/scanner/name");
+                                xpaths.push_back("/get_tasks_response/task/config/name");
+                                xpaths.push_back("/get_tasks_response/task/target/name");
+                                xpaths.push_back("/get_tasks_response/task/status");
+                                get("<get_tasks/>");
+                            }
+                            break;
+                        case 11:
+                            if (!is_task_running) {
+                                xpaths.push_back("");
+                                xpaths.push_back("");
+                                xret = auto_refresh_times;
+                                fill(false);
+                            }
+                            break;
+                        case 12:
+                            if (!is_task_running) {
+                                if (string(field_buffer(ui.fields[12], 0)).find("START") != string::npos) 
                                     xnodes.push_back("start_task");
                                 else
                                     xnodes.push_back("resume_task");
                                 xnodes.push_back("task_id");
-                                validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
-                                validators.insert(make_pair(make_pair(9, true), make_pair(false, 4)));
+                                validators.insert(make_pair(make_pair(10, true), make_pair(false, 3)));
+                                validators.insert(make_pair(make_pair(11, true), make_pair(false, 4)));
                                 if (create()) {
                                     is_task_running = true;
                                     auto_refresh();
-                                    if (string(field_buffer(ui.fields[10], 0)).find("START") != string::npos) 
+                                    if (string(field_buffer(ui.fields[12], 0)).find("START") != string::npos) 
                                         ui.status("TASK STARTED");
                                     else    
                                         ui.status("TASK RESUMED");
                                 }
                             }
                             break;
-                        case 11:
+                        case 13:
                             is_auto_refresh_blocked = true;
                             xnodes.push_back("get_tasks");
                             xnodes.push_back("task_id");
-                            validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
+                            validators.insert(make_pair(make_pair(10, true), make_pair(false, 3)));
                             if (create(false)) {
                                 xpaths.push_back("/get_tasks_response/task/status");
                                 if (get(xret[0], "", false, true)) {
@@ -217,7 +284,7 @@ void Nomp::driver()
                                         clear_vectors();
                                         xnodes.push_back("stop_task");
                                         xnodes.push_back("task_id");
-                                        validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
+                                        validators.insert(make_pair(make_pair(10, true), make_pair(false, 3)));
                                         if (create()) {
                                             is_task_running = false;
                                             if (is_task_resumed)
@@ -229,147 +296,92 @@ void Nomp::driver()
                             }
                             is_auto_refresh_blocked = false;
                             break;
-                        case 2:
-                        case 5:
-                        case 6:
-                        case 8:
-                        case 9:
-                        case 12:
-                        case 13:
                         case 14:
+                            xnodes.push_back("get_tasks");
+                            xnodes.push_back("filter");
+                            xvalues.push_back("status=Done not last=__attr__");
+                            if (create(false)) {
+                                //xpaths.push_back("/get_tasks_response/task/first_report/report"); 
+                                xpaths.push_back("/get_tasks_response/task"); 
+                                xpaths.push_back("/get_tasks_response/task/name");
+                                xpaths.push_back("/get_tasks_response/task/name");
+                                xpaths.push_back("/get_tasks_response/task/comment");
+                                xpaths.push_back("/get_tasks_response/task/creation_time");
+                                xpaths.push_back("/get_tasks_response/task/modification_time");
+                                xpaths.push_back("/get_tasks_response/task/scanner/name");
+                                xpaths.push_back("/get_tasks_response/task/config/name");
+                                xpaths.push_back("/get_tasks_response/task/target/name");
+                                xpaths.push_back("/get_tasks_response/task/status");
+                                xpaths.push_back("/get_tasks_response/task/report_count");
+                                get(xret[0]);
+                            }
+                            break;
                         case 15:
-                            switch(c_field)
-                            {
-                                case 2:
-                                    xpaths.push_back("/get_port_lists_response/port_list"); 
-                                    xpaths.push_back("/get_port_lists_response/port_list/name");
-                                    xpaths.push_back("/get_port_lists_response/port_list/name");
-                                    xpaths.push_back("/get_port_lists_response/port_list/comment");
-                                    xpaths.push_back("/get_port_lists_response/port_list/creation_time");
-                                    xpaths.push_back("/get_port_lists_response/port_list/modification_time");
-                                    xpaths.push_back("/get_port_lists_response/port_list/port_count/all"); 
-                                    xpaths.push_back("/get_port_lists_response/port_list/port_count/tcp"); 
-                                    xpaths.push_back("/get_port_lists_response/port_list/port_count/udp"); 
-                                    get("<get_port_lists/>");
-                                    break;
-                                case 5:
-                                    xpaths.push_back("/get_configs_response/config"); 
-                                    xpaths.push_back("/get_configs_response/config/name");
-                                    xpaths.push_back("/get_configs_response/config/name");
-                                    xpaths.push_back("/get_configs_response/config/comment");
-                                    xpaths.push_back("/get_configs_response/config/creation_time");
-                                    xpaths.push_back("/get_configs_response/config/modification_time");
-                                    xpaths.push_back("/get_configs_response/config/family_count");
-                                    xpaths.push_back("/get_configs_response/config/nvt_count");
-                                    get("<get_configs/>");
-                                    break;
-                                case 6:
-                                    xpaths.push_back("/get_targets_response/target"); 
-                                    xpaths.push_back("/get_targets_response/target/name");
-                                    xpaths.push_back("/get_targets_response/target/name");
-                                    xpaths.push_back("/get_targets_response/target/comment");
-                                    xpaths.push_back("/get_targets_response/target/creation_time");
-                                    xpaths.push_back("/get_targets_response/target/modification_time");
-                                    xpaths.push_back("/get_targets_response/target/hosts");
-                                    xpaths.push_back("/get_targets_response/target/port_list/name");
-                                    get("<get_targets/>");
-                                    break;
-                                case 8:
-                                    if (!is_task_running) {
-                                        xpaths.push_back("/get_tasks_response/task"); 
-                                        xpaths.push_back("/get_tasks_response/task/name");
-                                        xpaths.push_back("/get_tasks_response/task/name");
-                                        xpaths.push_back("/get_tasks_response/task/comment");
-                                        xpaths.push_back("/get_tasks_response/task/creation_time");
-                                        xpaths.push_back("/get_tasks_response/task/modification_time");
-                                        xpaths.push_back("/get_tasks_response/task/scanner/name");
-                                        xpaths.push_back("/get_tasks_response/task/config/name");
-                                        xpaths.push_back("/get_tasks_response/task/target/name");
-                                        xpaths.push_back("/get_tasks_response/task/status");
-                                        get("<get_tasks/>");
-                                    }
-                                    break;
-                                case 9:
-                                    if (!is_task_running) {
-                                        xpaths.push_back("");
-                                        xpaths.push_back("");
-                                        xret = auto_refresh_times;
-                                        fill(false);
-                                    }
-                                    break;
-                                case 12:
-                                    xnodes.push_back("get_tasks");
-                                    xnodes.push_back("filter");
-                                    xvalues.push_back("status=Done__attr__");
-                                    if (create(false)) {
-                                        xpaths.push_back("/get_tasks_response/task/first_report/report"); 
-                                        xpaths.push_back("/get_tasks_response/task/name");
-                                        xpaths.push_back("/get_tasks_response/task/name");
-                                        xpaths.push_back("/get_tasks_response/task/comment");
-                                        xpaths.push_back("/get_tasks_response/task/creation_time");
-                                        xpaths.push_back("/get_tasks_response/task/modification_time");
-                                        xpaths.push_back("/get_tasks_response/task/scanner/name");
-                                        xpaths.push_back("/get_tasks_response/task/config/name");
-                                        xpaths.push_back("/get_tasks_response/task/target/name");
-                                        xpaths.push_back("/get_tasks_response/task/status");
-                                        get(xret[0]);
-                                    }
-                                    break;
-                                case 13:
-                                    xpaths.push_back("/get_report_formats_response/report_format"); 
-                                    xpaths.push_back("/get_report_formats_response/report_format/name");
-                                    xpaths.push_back("/get_report_formats_response/report_format/name");
-                                    xpaths.push_back("/get_report_formats_response/report_format/comment");
-                                    xpaths.push_back("/get_report_formats_response/report_format/creation_time");
-                                    xpaths.push_back("/get_report_formats_response/report_format/modification_time");
-                                    xpaths.push_back("/get_report_formats_response/report_format/extension");
-                                    xpaths.push_back("/get_report_formats_response/report_format/content_type");
-                                    xpaths.push_back("/get_report_formats_response/report_format/summary");
-                                    xpaths.push_back("/get_report_formats_response/report_format/description");
-                                    get("<get_report_formats/>");
-                                    break;
-                                case 14:
-                                    xnodes.push_back("get_reports");
-                                    xnodes.push_back("filter");
-                                    xnodes.push_back("report_id"); 
-                                    xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
-                                                       notes=0 overrides=0 rows=10000 delta_states=gn \
-                                                       result_hosts_only=1 ignore_pagination=1__attr__");
-                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
-                                    if (create(false)) {
-                                        xpaths.push_back("/get_reports_response/report/report/results/result"); 
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/name");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/host");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/port");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/severity");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/name");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/family");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/bid");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/cve");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/xref");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/nvt/tags");
-                                        xpaths.push_back("/get_reports_response/report/report/results/result/description");
-                                        get(xret[0], "id", true, true);
-                                    }
-                                    break;
-                                case 15:
-                                    xnodes.push_back("get_reports");
-                                    xnodes.push_back("filter");
-                                    xnodes.push_back("report_id"); 
-                                    xnodes.push_back("format_id"); 
-                                    xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
-                                                       notes=0 overrides=0 rows=10000 delta_states=gn \
-                                                       result_hosts_only=1 ignore_pagination=1__attr__");
-                                    validators.insert(make_pair(make_pair(12, true), make_pair(false, 5)));
-                                    validators.insert(make_pair(make_pair(13, true), make_pair(false, 6)));
-                                    if (create(false)) {
-                                        xpaths.push_back("/get_reports_response/report"); 
-                                        if (get(xret[0], "extension", false, true))
-                                            disk(false, false, true);
-                                    }
-                                    break;
-                                default:
-                                    break;
+                            xnodes.push_back("get_reports");
+                            xnodes.push_back("filter");
+                            //xnodes.push_back("task_id"); 
+                            xvalues.push_back("task_id=506f7600-674c-4158-85c9-de2fce1a1827__attr__");
+                            //validators.insert(make_pair(make_pair(14, true), make_pair(false, 5)));
+                            // TODO: VALIDAR EL FIELD 14 
+                            if (create(false)) {
+                                xpaths.push_back("/get_reports_response/report"); 
+                                xpaths.push_back("/get_reports_response/report/creation_time");
+                                get(xret[0]);
+                            }
+                            break;
+                        case 16:
+                            xpaths.push_back("/get_report_formats_response/report_format"); 
+                            xpaths.push_back("/get_report_formats_response/report_format/name");
+                            xpaths.push_back("/get_report_formats_response/report_format/name");
+                            xpaths.push_back("/get_report_formats_response/report_format/comment");
+                            xpaths.push_back("/get_report_formats_response/report_format/creation_time");
+                            xpaths.push_back("/get_report_formats_response/report_format/modification_time");
+                            xpaths.push_back("/get_report_formats_response/report_format/extension");
+                            xpaths.push_back("/get_report_formats_response/report_format/content_type");
+                            xpaths.push_back("/get_report_formats_response/report_format/summary");
+                            xpaths.push_back("/get_report_formats_response/report_format/description");
+                            get("<get_report_formats/>");
+                            break;
+                        case 17:
+                            xnodes.push_back("get_reports");
+                            xnodes.push_back("filter");
+                            xnodes.push_back("report_id"); 
+                            xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
+                                               notes=0 overrides=0 rows=10000 delta_states=gn \
+                                               result_hosts_only=1 ignore_pagination=1__attr__");
+                            validators.insert(make_pair(make_pair(14, true), make_pair(false, 5)));
+                            validators.insert(make_pair(make_pair(15, true), make_pair(false, 6)));
+                            if (create(false)) {
+                                xpaths.push_back("/get_reports_response/report/report/results/result"); 
+                                xpaths.push_back("/get_reports_response/report/report/results/result/name");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/host");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/port");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/severity");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/name");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/family");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/bid");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/cve");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/xref");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/tags");
+                                xpaths.push_back("/get_reports_response/report/report/results/result/description");
+                                get(xret[0], "id", true, true);
+                            }
+                            break;
+                        case 18:
+                            xnodes.push_back("get_reports");
+                            xnodes.push_back("filter");
+                            xnodes.push_back("report_id"); 
+                            xnodes.push_back("format_id"); 
+                            xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
+                                               notes=0 overrides=0 rows=10000 delta_states=gn \
+                                               result_hosts_only=1 ignore_pagination=1__attr__");
+                            validators.insert(make_pair(make_pair(14, true), make_pair(false, 5)));
+                            validators.insert(make_pair(make_pair(15, true), make_pair(false, 6)));
+                            validators.insert(make_pair(make_pair(16, true), make_pair(false, 7)));
+                            if (create(false)) {
+                                xpaths.push_back("/get_reports_response/report"); 
+                                if (get(xret[0], "extension", false, true))
+                                    disk(false, false, true);
                             }
                             break;
                         default:
@@ -385,7 +397,7 @@ void Nomp::driver()
     } while (key != KEY_QUIT);
   
     if (is_task_running && !is_task_resumed) {
-        int scret = ui.save_config();
+        int scret = ui.save();
         if (scret == 1)
             disk(true, false, true);
         else if (scret == -1)
@@ -453,12 +465,12 @@ bool Nomp::validate(vector<string> &v)
             } else {
                 int n = it->first.first;
                 if (!is_login) {
-                   if (n < 11)
+                   if (n < 13)
                        n += 5;
                    else   
                        n += 7;
                 }
-                ui.status("THE " + ui.fields_name[n] + " FIELD CANNOT BE BLANK");
+                ui.status("THE " + ui.field_names[n] + " FIELD CANNOT BE BLANK");
                 return false;
             }
         } else if (it->second.first) {
@@ -483,26 +495,29 @@ void Nomp::fill(const bool &is_report)
     if (c_item >= 0) {
         switch(c_field)
         {
-            case 2:
+            case 3:
                 ids[0] = xret[c_item];
                 break;
-            case 5:
+            case 7:
                 ids[1] = xret[c_item];
                 break;
-            case 6:
+            case 8:
                 ids[2] = xret[c_item];
                 break;
-            case 8:
+            case 10:
                 ids[3] = xret[c_item];
                 break;
-            case 9:
+            case 11:
                 ids[4] = xret[c_item];
                 break;
-            case 12:
+            case 14:
                 ids[5] = xret[c_item];
                 break;
-            case 13:
+            case 15:
                 ids[6] = xret[c_item];
+                break;
+            case 16:
+                ids[7] = xret[c_item];
                 break;
             default:
                 break;
@@ -513,16 +528,15 @@ void Nomp::fill(const bool &is_report)
 
     is_auto_refresh_blocked = false;
 
-    ui.clear_windows_arr();
+    ui.clear_items();
     touchwin(stdscr);
 }
 
 void Nomp::disk(const bool &is_config, const bool &is_read, const bool &is_write)
 {
-    vector<string> cfs = {"host=", "port=", "username=", "password="};
-    
     passwd *pw = getpwuid(getuid());
     string home_path = pw->pw_dir;
+    vector<string> cfs = {"host=", "port=", "username=", "password="};
     
     struct stat st;
     if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) && S_ISDIR(st.st_mode)))
@@ -585,8 +599,8 @@ void Nomp::disk(const bool &is_config, const bool &is_read, const bool &is_write
                     is_task_running = true;
                     is_task_resumed = true;
                     ui.main();
-                    set_field_buffer(ui.fields[8], 0, task_name.c_str());
-                    set_field_buffer(ui.fields[9], 0, refresh_name.c_str());
+                    set_field_buffer(ui.fields[10], 0, task_name.c_str());
+                    set_field_buffer(ui.fields[11], 0, refresh_name.c_str());
                     curs_set(0);
                     auto_refresh();
                 }
@@ -617,11 +631,11 @@ void Nomp::disk(const bool &is_config, const bool &is_read, const bool &is_write
                     if (i <= 3)
                         file << cfs[i] << user_configs[i] << std::endl;
                     else if (i == 4)
-                        file << cfs[i] << clear_whitespace(field_buffer(ui.fields[8], 0)) << std::endl;
+                        file << cfs[i] << clear_whitespace(field_buffer(ui.fields[10], 0)) << std::endl;
                     else if (i == 5)
                         file << cfs[i] << ids[3] << std::endl;
                     else if (i == 6)
-                        file << cfs[i] << clear_whitespace(field_buffer(ui.fields[9], 0)) << std::endl;
+                        file << cfs[i] << clear_whitespace(field_buffer(ui.fields[11], 0)) << std::endl;
                     else
                         file << cfs[i] << ids[4] << std::endl;
                 }
@@ -685,7 +699,7 @@ void Nomp::auto_refresh()
         clear_vectors();
         xnodes.push_back("get_tasks");
         xnodes.push_back("task_id");
-        validators.insert(make_pair(make_pair(8, true), make_pair(false, 3)));
+        validators.insert(make_pair(make_pair(10, true), make_pair(false, 3)));
         if (create(false)) {
             xpaths.push_back("/get_tasks_response/task/progress");
             xpaths.push_back("/get_tasks_response/task/status");
