@@ -22,20 +22,10 @@ public:
     Ui();
     ~Ui();
     
-    const vector<string> fields_name =
-    {
-        "HOST", "PORT", "USERNAME", "PASSWORD",
-        "       LOGIN", "NAME", "HOSTS", "PORTS",
-        "   CREATE TARGET", "NAME", "SCAN", "TARGET",
-        "    CREATE TASK", "TASK", "REFRESH", "PROGRESS",
-        "       START", "      RESUME", "       STOP",
-        "TASK", "FORMAT", "    SHOW REPORT",
-        "   EXPORT REPORT", "                   SAVE",
-        "                   EXIT"
-    };
+    vector<string> field_names;
     
     FORM *form;
-    FIELD *fields[17];
+    FIELD *fields[20];
     
     void login(vector<string> *user_configs);
     void main();
@@ -43,20 +33,22 @@ public:
     int report(vector<string> *values, size_t n);
     void progress(string p);
     void status(string sts);
-    int save_config();
     void marker(bool is_menu = true, bool show = true);
-    void clear_windows_arr();
-    void cleanup();
+    int save();
+    void clear_items();
+    void clear_form();
 
 private:
-    size_t n_values;
-    long menu_data_lines = 36;
+    int start_x;
+    int start_y;
+    int field_width;
+    int button_width;
 
-    WINDOW **windows_arr = NULL;
-    WINDOW *window_menu_data = NULL;
+    size_t n_values;
+
+    WINDOW **items = NULL;
 
     void menu_data(vector<string> **values, int c_item, size_t n);
-    void menu_data_scroll();
     void report_data(vector<string> **values, unsigned int c_item, size_t n);
 };
 
