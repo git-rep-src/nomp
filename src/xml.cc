@@ -55,10 +55,10 @@ bool Xml::parse(const string *content, const vector<string> *paths, vector<strin
 
     if (is_report) {
         offset = 5;
-        max_width = 13;
+        max_width = 14;
     } else {    
         offset = 2;
-        max_width = 19;
+        max_width = 20;
     }
 
     try {
@@ -156,7 +156,7 @@ void Xml::format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
     replace(value, targets, replaces);
     
     if ((name == "comment") && (value != "-")) {
-        wrap(value, 43); // TODO: ENVIAR COLS EN LUGAR DE 40.
+        wrap(value, 50); // TODO: ENVIAR COLS EN LUGAR DE 40.
     } else if (name == "cve") {
         targets.push_back(", ");
         replaces.push_back("\n");
@@ -192,12 +192,12 @@ void Xml::format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
         replaces.push_back("SOLUTION\n");
         replaces.push_back("\n\n");
         replace(value, targets, replaces);
-        wrap(value, 100); // TODO: ENVIAR COLS EN LUGAR DE 155.
+        wrap(value, 99); // TODO: ENVIAR COLS EN LUGAR DE 155.
     } else if ((name == "description") && (value != "-")) {
         if (max_width == 13)
-            wrap(value, 100); // TODO: ENVIAR COLS EN LUGAR DE 155.
+            wrap(value, 99); // TODO: ENVIAR COLS EN LUGAR DE 155.
         else
-            wrap(value, 43); // TODO: ENVIAR COLS EN LUGAR DE 40.
+            wrap(value, 50); // TODO: ENVIAR COLS EN LUGAR DE 40.
     }
 
     width(value, max_width);
