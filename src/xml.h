@@ -16,17 +16,17 @@ public:
     ~Xml();
 
     bool create(const vector<string> *nodes, vector<string> *values,
-                vector<string> *xret, const bool &is_root = false);
+                vector<string> *xret, bool only_root = false);
     bool parse(const string *content, const vector<string> *paths,
                vector<string> *xret, const string &attr = "id",
-               const bool &get_data = true, const bool &is_report = false);
+               bool get_details = true, bool is_report = false);
 
 private:
-    void format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
-                vector<string> **xret, const size_t &i, const int &max_width);
-    void wrap(string &str, const size_t &p, const bool replace = false);
-    void width(string &str, const int &max_width);
-    void uppercase(string &str);
+    void set_format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
+                    vector<string> **xret, size_t i, int max_width);
+    void set_wrap(string &str, size_t p, bool replace = false);
+    void set_width(string &str, int max_width);
+    void to_uppercase(string &str);
     void replace(string &str, vector<string> &targets, vector<string> &replaces);
 };
 

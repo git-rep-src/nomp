@@ -16,18 +16,25 @@ Xml::~Xml()
 }
 
 bool Xml::create(const vector<string> *nodes, vector<string> *values,
-                 vector<string> *xret, const bool &is_root)
+                 vector<string> *xret, bool only_root)
 {
     size_t n = (nodes->size() - 1);
-    
+
     try {
         xmlpp::Document doc;
         xmlpp::Element *root = doc.create_root_node((*nodes)[0]);
-        
-        if ((nodes->size() > 2) && !is_root) {
+
+        if ((nodes->size() > 2) && !only_root) {
             xmlpp::Element *childs[n]; 
             for (size_t i = 0; i < n; i++) {
-                childs[i] = root->add_child_element((*nodes)[i + 1]);
+                if ((*nodes)[0] == "authenticate") {
+                    if (i == 0)
+                        childs[0] = root->add_child_element((*nodes)[i + 1]);
+                    else
+                        childs[i] = childs[0]->add_child_element((*nodes)[i + 1]);
+                } else {
+                    childs[i] = root->add_child_element((*nodes)[i + 1]);
+                }
                 if ((*values)[i].find("__attr__") != string::npos)
                     childs[i]->set_attribute("id", (*values)[i].erase((*values)[i].size() - 8));
                 else
@@ -37,7 +44,7 @@ bool Xml::create(const vector<string> *nodes, vector<string> *values,
             for (size_t i = 0; i < n; i++)
                 root->set_attribute((*nodes)[i + 1], (*values)[i].erase((*values)[i].size() - 8));
         }
-
+        
         xret->push_back(doc.write_to_string());
     } catch (...) {
         return false;
@@ -47,7 +54,7 @@ bool Xml::create(const vector<string> *nodes, vector<string> *values,
 }
 
 bool Xml::parse(const string *content, const vector<string> *paths, vector<string> *xret,
-                const string &attr, const bool &get_data, const bool &is_report)
+                const string &attr, bool get_details, bool is_report)
 {   
     size_t offset;
     int max_width;
@@ -60,35 +67,45 @@ bool Xml::parse(const string *content, const vector<string> *paths, vector<strin
         offset = 2;
         max_width = 20;
     }
-
+    
     try {
         xmlpp::DomParser parser;
         parser.parse_memory(*content);
-        
         xmlpp::Node *root = parser.get_document()->get_root_node();
-        xmlpp::Node::NodeSet node = root->find((*paths)[0]);
-    
+        
+        xmlpp::Node::NodeSet node;
+        xmlpp::Element *element;
+        xmlpp::Attribute *attribute;
+
         for (size_t n = 0; n < paths->size(); n++) {
             node = root->find((*paths)[n]);
             for (size_t i = 1; i <= node.size(); i++) {
-                xmlpp::Element *element = (xmlpp::Element *)node.at(i - 1);
-                const xmlpp::Attribute *attribute = element->get_attribute(attr);
-                if (get_data) {
-                    if (attribute && (n < offset)) {
+                element = (xmlpp::Element *)node.at(i - 1);
+                if (n == 0) {
+                    attribute = element->get_attribute("status_text");
+                    if ((attribute->get_value()).find("OK") == string::npos)
+                        return false;
+                    else
+                        break;
+                } else {
+                    attribute = element->get_attribute(attr);
+                }
+                if (get_details) {
+                    if (attribute && ((n - 1) < offset)) {
                         xret->push_back(attribute->get_value());
                     } else {
-                        if (n >= offset) {
-                            format(&node, &element, &xret, i, max_width);
+                        if ((n - 1) >= offset) {
+                            set_format(&node, &element, &xret, i, max_width);
                         } else {
                             value = element->get_first_child_text()->get_content();
                             if (node.at(i - 1)->get_path() ==
                                 "/get_reports_response/report/report/results/result[" +
                                  std::to_string(i) + "]/name")
-                                wrap(value, 120, true);
+                                set_wrap(value, 119, true);
                             else if (node.at(i - 1)->get_path() ==
                                      "/get_reports_response/report/report/results/result[" +
                                       std::to_string(i) + "]/host")
-                                wrap(value, 15, true);
+                                set_wrap(value, 15, true);
                             xret->push_back(value);
                         }
                     }
@@ -109,8 +126,8 @@ bool Xml::parse(const string *content, const vector<string> *paths, vector<strin
     return true;
 }
 
-void Xml::format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
-                 vector<string> **xret, const size_t &i, const int &max_width)
+void Xml::set_format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
+                     vector<string> **xret, size_t i, int max_width)
 {
     string name;
     string value = "-";
@@ -156,7 +173,7 @@ void Xml::format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
     replace(value, targets, replaces);
     
     if ((name == "comment") && (value != "-")) {
-        wrap(value, 50); // TODO: ENVIAR COLS EN LUGAR DE 40.
+        set_wrap(value, 50); // TODO: ENVIAR COLS EN LUGAR DE 40.
     } else if (name == "cve") {
         targets.push_back(", ");
         replaces.push_back("\n");
@@ -192,23 +209,23 @@ void Xml::format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
         replaces.push_back("SOLUTION\n");
         replaces.push_back("\n\n");
         replace(value, targets, replaces);
-        wrap(value, 99); // TODO: ENVIAR COLS EN LUGAR DE 155.
+        set_wrap(value, 99); // TODO: ENVIAR COLS EN LUGAR DE 155.
     } else if ((name == "description") && (value != "-")) {
         if (max_width == 13)
-            wrap(value, 99); // TODO: ENVIAR COLS EN LUGAR DE 155.
+            set_wrap(value, 99); // TODO: ENVIAR COLS EN LUGAR DE 155.
         else
-            wrap(value, 50); // TODO: ENVIAR COLS EN LUGAR DE 40.
+            set_wrap(value, 50); // TODO: ENVIAR COLS EN LUGAR DE 40.
     }
 
-    width(value, max_width);
-    uppercase(name);
+    set_width(value, max_width);
+    to_uppercase(name);
     
     ss << std::left << std::setw(max_width) << std::setfill(' ') << name << value << std::endl << std::endl;
     
     (*xret)->push_back(ss.str());
 }
 
-void Xml::wrap(string &str, const size_t &p, const bool replace)
+void Xml::set_wrap(string &str, size_t p, bool replace)
 {
     size_t n = 1;
     string line;
@@ -235,7 +252,7 @@ void Xml::wrap(string &str, const size_t &p, const bool replace)
     str = ss.str();
 }
 
-inline void Xml::width(string &str, const int &max_width)
+inline void Xml::set_width(string &str, int max_width)
 {
     bool is_first = true; 
     string line;
@@ -254,7 +271,7 @@ inline void Xml::width(string &str, const int &max_width)
     str = ss.str().replace((ss.str().size() - 1), 1, "");
 }
 
-inline void Xml::uppercase(string &str)
+inline void Xml::to_uppercase(string &str)
 {
     string uppercase;
 
