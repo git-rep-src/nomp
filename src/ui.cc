@@ -2,7 +2,6 @@
 
 #include <sstream>
 #include <iomanip>
-#include <iostream>//
 
 using std::stringstream;
 
@@ -24,8 +23,6 @@ Ui::Ui() :
         init_pair(3, COLOR_WHITE, COLOR_WHITE);
     }
     
-    //48x174
-
     field_width = (COLS / 4.1);
     button_width = (COLS / 8.6);
 
@@ -82,7 +79,7 @@ Ui::~Ui()
     endwin();
 }
 
-void Ui::login(vector<string> *user_configs)
+void Ui::authenticate(const vector<string> *user_configs)
 {
     int rows;
     int cols;
@@ -207,7 +204,7 @@ void Ui::main()
     form_driver(form, REQ_END_LINE);
 }
 
-int Ui::menu(vector<string> *values, size_t n)
+int Ui::menu(const vector<string> *values, size_t n)
 {
     int key;
     int row;
@@ -233,7 +230,7 @@ int Ui::menu(vector<string> *values, size_t n)
     wbkgd(items[1], A_REVERSE);
     wrefresh(items[0]);
     
-    menu_data(&values, c_item, n);
+    menu_details(&values, c_item, n);
     
     do {
         key = getch();
@@ -249,7 +246,7 @@ int Ui::menu(vector<string> *values, size_t n)
                     c_item = (((c_item + n_values) - 1) % n_values);
                 wbkgd(items[c_item + 1], A_REVERSE);
                 wrefresh(items[c_item + 1]);
-                menu_data(&values, c_item, n);
+                menu_details(&values, c_item, n);
                 break;
             case KEY_RETURN:
                 if (field_index(current_field(form)) == 10) {
@@ -268,7 +265,7 @@ int Ui::menu(vector<string> *values, size_t n)
     return -1;
 }
 
-void Ui::menu_data(vector<string> **values, int c_item, size_t n)
+void Ui::menu_details(const vector<string> **values, int c_item, size_t n)
 {
     WINDOW *w = newwin((start_y + 37), (COLS / 2.40), start_y, (COLS / 1.77));
 
@@ -279,7 +276,7 @@ void Ui::menu_data(vector<string> **values, int c_item, size_t n)
     delwin(w);
 }
 
-int Ui::report(vector<string> *values, size_t n)
+int Ui::report(const vector<string> *values, size_t n)
 {
     int key;
     unsigned int c_item = 0;
@@ -293,8 +290,8 @@ int Ui::report(vector<string> *values, size_t n)
     for (size_t i = 1; i <= n_values; i++) {
         items[i] = subpad(items[0], 1, (COLS - 5), (i - 1), 0);
         mvwprintw(items[i], 0, 0, "%s", (*values)[n_values + i].c_str());
-        mvwprintw(items[i], 0, (COLS / 1.38), "%s", (*values)[(n_values * 2) + i].c_str());
-        mvwprintw(items[i], 0, (COLS / 1.22), "%s", (*values)[(n_values * 3) + i].c_str());
+        mvwprintw(items[i], 0, (COLS / 1.39), "%s", (*values)[(n_values * 2) + i].c_str());
+        mvwprintw(items[i], 0, (COLS / 1.23), "%s", (*values)[(n_values * 3) + i].c_str());
         mvwprintw(items[i], 0, (COLS / 1.09), "%s", (*values)[(n_values * 4) + i].c_str());
     }
     
@@ -308,6 +305,9 @@ int Ui::report(vector<string> *values, size_t n)
         key = wgetch(items[0]);
         switch(key)
         {
+            case KEY_LEFT:
+                key = KEY_ESCAPE;
+                break;
             case KEY_UP:
                 if (c_item > 0) {
                     wbkgd(items[c_item + 1], COLOR_PAIR(2));
@@ -322,7 +322,7 @@ int Ui::report(vector<string> *values, size_t n)
                 break;
             case KEY_RIGHT:
             case KEY_RETURN:
-                report_data(&values, (c_item + 1), n);
+                report_details(&values, (c_item + 1), n);
                 break;
             default:
                 break;
@@ -332,20 +332,20 @@ int Ui::report(vector<string> *values, size_t n)
     return -1;
 }
 
-void Ui::report_data(vector<string> **values, unsigned int c_item, size_t n)
+void Ui::report_details(const vector<string> **values, unsigned int c_item, size_t n)
 {
     int key;
     int c_line = 0;
-    int data_lines = 2;
+    int details_lines = 2;
     int height = (start_y + 40);
 
     for (size_t i = 5; i < n; i++)
         for (size_t ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
             if ((**values)[(n_values * i) + c_item][ii] == '\n')
-                ++data_lines;
+                ++details_lines;
 
-    if (data_lines > height)
-        height = data_lines;
+    if (details_lines > height)
+        height = details_lines;
     
     WINDOW *w = newpad(height, (COLS - 5));
     keypad(w, true);
@@ -379,7 +379,7 @@ void Ui::report_data(vector<string> **values, unsigned int c_item, size_t n)
     delwin(w);
 }
 
-void Ui::progress(string p)
+void Ui::progress(const string &p)
 {  
     for (int i = 0; i <= field_width; i++)
         mvdelch((start_y + 28), start_x);
@@ -398,7 +398,7 @@ void Ui::progress(string p)
     refresh();
 }
 
-void Ui::status(string sts)
+void Ui::status(const string &sts)
 {
     int sts_x = 0;
     int max_y;

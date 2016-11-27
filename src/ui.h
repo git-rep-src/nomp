@@ -27,12 +27,12 @@ public:
     FORM *form;
     FIELD *fields[20];
     
-    void login(vector<string> *user_configs);
+    void authenticate(const vector<string> *user_configs);
     void main();
-    int menu(vector<string> *values, size_t n);
-    int report(vector<string> *values, size_t n);
-    void progress(string p);
-    void status(string sts);
+    int menu(const vector<string> *values, size_t n);
+    int report(const vector<string> *values, size_t n);
+    void progress(const string &p);
+    void status(const string &sts);
     void marker(bool is_menu = true, bool show = true);
     int save();
     void clear_items();
@@ -48,8 +48,8 @@ private:
 
     WINDOW **items = NULL;
 
-    void menu_data(vector<string> **values, int c_item, size_t n);
-    void report_data(vector<string> **values, unsigned int c_item, size_t n);
+    void menu_details(const vector<string> **values, int c_item, size_t n);
+    void report_details(const vector<string> **values, unsigned int c_item, size_t n);
 };
 
 #endif
