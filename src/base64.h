@@ -9,6 +9,6 @@ using std::vector;
 
 typedef unsigned char BYTE;
 
-vector<BYTE> base64_decode(string const &);
+vector<BYTE> base64_decode(string const &str);
 
 #endif
