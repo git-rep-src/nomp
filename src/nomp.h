@@ -1,6 +1,7 @@
 #ifndef NOMP_H
 #define NOMP_H
 
+#include "ssl_socket.h"
 #include "ui.h"
 
 #include <string>
@@ -19,15 +20,17 @@ public:
     ~Nomp();
 
 private:
+    SSL_socket socket;
     Ui ui;
 
     int c_field;
-    bool is_login;
+
+    bool is_authentication;
     bool is_task_running;
     bool is_task_resumed;
     bool is_auto_refresh_blocked;
     
-    string eret;
+    string ret;
 
     vector<string> ids;
     vector<string> user_configs;
@@ -41,13 +44,15 @@ private:
     map<pair<int, bool>, pair<bool, int>> validators;
 
     void driver();
-    bool get(const string &args, const string &attr = "id",
-             const bool &get_data = true, const bool &is_report = false);
-    bool create(const bool &is_exec = true);
-    bool validate(vector<string> &v);
-    void fill(const bool &is_report);
-    void disk(const bool &is_config, const bool &is_read, const bool &is_write);
-    bool exec(const string &cmd, const string &args);
+    bool authenticate(bool has_user_configs = false);
+    bool get_resource(const string &cmd, const string &attr = "id",
+                      bool get_details = true, bool is_report = false);
+    bool create_resource(bool only_cmd = false);//
+    bool validate_fields(vector<string> &v);
+    void fill_items(bool is_report);
+    void disk(bool read, bool write, bool is_report);
+    bool cli(const string &cmd, const string &args);
+    bool omp(const string &cmd);
     void auto_refresh();
     void auto_refresh_sleep();
     string clear_whitespace(const char *c);
