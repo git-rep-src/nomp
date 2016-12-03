@@ -16,6 +16,7 @@ using std::make_pair;
 
 Nomp::Nomp() :
     c_field(2),
+    n_tabs(0),
     is_authentication(true),
     is_task_running(false),
     is_task_resumed(false),
@@ -35,7 +36,8 @@ void Nomp::driver()
     int key;
 
     do {
-        key = getch();
+        prefresh(ui.window, n_tabs, 0, 0, 0, (LINES - 1), (COLS - 1));
+        key = wgetch(ui.window);
         switch(key)
 		{
             case KEY_LEFT:
@@ -46,6 +48,11 @@ void Nomp::driver()
                 break;
             case KEY_UP:
             case KEY_DOWN:
+                if (ui.has_status) {
+                    for (int i = 0; i < COLS; i++)
+                        mvwdelch(ui.window, (0 + n_tabs), 0);
+                    ui.has_status = false;
+                }
                 switch(c_field)
                 {
                     case 0:
@@ -147,6 +154,25 @@ void Nomp::driver()
                     default:
                         break;
                 }
+                break;
+            case KEY_UP_SCREEN:
+                if (ui.has_status) {
+                    for (int i = 0; i < COLS; i++)
+                        mvwdelch(ui.window, (0 + n_tabs), 0);
+                    ui.has_status = false;
+                }
+                if (n_tabs > 0)
+                    --n_tabs;
+                break;
+            case KEY_DOWN_SCREEN:
+                if (ui.has_status) {
+                    for (int i = 0; i < COLS; i++)
+                        mvwdelch(ui.window, (0 + n_tabs), 0);
+                    ui.has_status = false;
+                }
+                if ((is_authentication && ((LINES + n_tabs) < 15)) ||
+                    (!is_authentication && ((LINES + n_tabs) < 45)))
+                    ++n_tabs;
                 break;
             case KEY_BACKSPACE:
                 form_driver(ui.form, REQ_LEFT_CHAR);
@@ -266,9 +292,9 @@ void Nomp::driver()
                                     is_task_running = true;
                                     auto_refresh();
                                     if (string(field_buffer(ui.fields[12], 0)).find("START") != string::npos) 
-                                        ui.status("TASK STARTED");
+                                        ui.status("TASK STARTED", n_tabs);
                                     else    
-                                        ui.status("TASK RESUMED");
+                                        ui.status("TASK RESUMED", n_tabs);
                                 }
                             }
                             break;
@@ -290,7 +316,7 @@ void Nomp::driver()
                                             is_task_running = false;
                                             if (is_task_resumed)
                                                 disk(false, false, false);
-                                            ui.progress("-2");
+                                            ui.progress("-2", n_tabs);
                                         }
                                     }
                                 }
@@ -442,17 +468,17 @@ bool Nomp::authenticate(bool has_user_configs)
     if (xml.create(&xnodes, &xvalues, &xret, false)) {
         if (!socket.is_started) {
             if (!socket.start(user_configs[0], user_configs[1])) {
-                ui.status("SOCKET ERROR");
+                ui.status("SOCKET ERROR", n_tabs);
                 return false;
             }
         }
         xpaths.push_back("/authenticate_response"); 
         if (!omp(xret[0]) || !(xml.parse(&ret, &xpaths, &xret, "id", false, false))) {
-            ui.status("AUTHENTICATION ERROR");
+            ui.status("AUTHENTICATION ERROR", n_tabs);
             return false;
         }
     } else {
-        ui.status("XML INTERNAL ERROR");
+        ui.status("XML INTERNAL ERROR", n_tabs);
         return false;
     }
 
@@ -462,17 +488,6 @@ bool Nomp::authenticate(bool has_user_configs)
 bool Nomp::get_resource(const string &cmd, const string &attr, bool get_details, bool is_report)
 {
     if (omp(cmd)) {
-        //
-        if (is_report) {
-            ofstream file;
-            file.open("/home/user/report.xml");
-            if (file.is_open()) {
-                file << ret << std::endl;
-            }
-            file.close();
-        }
-        //std::cout << ret;
-        //
         if (!is_report)
             vector<string>().swap(xret);
         Xml xml;
@@ -480,11 +495,11 @@ bool Nomp::get_resource(const string &cmd, const string &attr, bool get_details,
             if (get_details)
                 fill_items(is_report);
         } else {
-            ui.status("XML INTERNAL ERROR");
+            ui.status("XML INTERNAL ERROR", n_tabs);
             return false;
         }
     } else {
-        ui.status("GET RESOURCE ERROR");
+        ui.status("GET RESOURCE ERROR", n_tabs);
         return false;
     }
 
@@ -499,14 +514,14 @@ bool Nomp::create_resource(bool only_cmd)
             if (!only_cmd) {
                 if (omp(xret[0])) {
                     if ((xnodes[0] != "start_task") && (xnodes[0] != "stop_task"))
-                        ui.status("RESOURCE CREATED");
+                        ui.status("RESOURCE CREATED", n_tabs);
                 } else {    
-                    ui.status("CREATE RESOURCE ERROR");
+                    ui.status("CREATE RESOURCE ERROR", n_tabs);
                     return false;
                 }
             }
         } else {
-            ui.status("XML INTERNAL ERROR");
+            ui.status("XML INTERNAL ERROR", n_tabs);
             return false;
         }
     } else {
@@ -534,7 +549,7 @@ bool Nomp::validate_fields(vector<string> &v)
                    else   
                        n += 7;
                 }
-                ui.status("THE " + ui.field_names[n] + " FIELD CANNOT BE BLANK");
+                ui.status("THE " + ui.field_names[n] + " FIELD CANNOT BE BLANK", n_tabs);
                 return false;
             }
         } else if (it->second.first) {
@@ -554,7 +569,7 @@ void Nomp::fill_items(bool is_report)
     if (is_report)
         c_item = ui.report(&xret, (xpaths.size() - 1));
     else
-        c_item = ui.menu(&xret, (xpaths.size() - 1));
+        c_item = ui.menu(&xret, (xpaths.size() - 1), n_tabs);
                             
     if (c_item >= 0) {
         switch(c_field)
@@ -594,7 +609,6 @@ void Nomp::fill_items(bool is_report)
     is_auto_refresh_blocked = false;
 
     ui.clear_items();
-    touchwin(stdscr);
 }
 
 void Nomp::disk(bool read, bool write, bool is_report)
@@ -604,7 +618,8 @@ void Nomp::disk(bool read, bool write, bool is_report)
     vector<string> configs = {"host=", "port=", "username=", "password="};
     
     struct stat st;
-    if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) && S_ISDIR(st.st_mode)))
+    if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) &&
+        S_ISDIR(st.st_mode)))
         cli("mkdir -p", (home_path + "/.nomp/reports"));
     
     if (read) {
@@ -691,9 +706,9 @@ void Nomp::disk(bool read, bool write, bool is_report)
                 for (size_t i = 0; i < data.size(); i++)
                     file << data[i];
                 file.close();
-                ui.status("EXPORTED " + home_path + "/.nomp/reports/" + ids[5] + "." + xret[1]);
+                ui.status("EXPORTED " + home_path + "/.nomp/reports/" + ids[5] + "." + xret[1], n_tabs);
             } else {
-                ui.status("EXPORT ERROR");
+                ui.status("EXPORT ERROR", n_tabs);
             }
         } else {
             configs.push_back("task_name="); 
@@ -767,11 +782,11 @@ void Nomp::auto_refresh()
             xpaths.push_back("/get_tasks_response/task/status");
             if (get_resource(xret[0], "", false, true)) {
                 if ((xret.back() == "Requested") || (xret.back() == "Running"))
-                    ui.progress(xret[1]);
+                    ui.progress(xret[1], n_tabs);
                 else if (xret.back() == "Stopped")
-                    ui.progress("-2");
+                    ui.progress("-2", n_tabs);
                 else if (xret.back() == "Done")
-                    ui.progress("-1");
+                    ui.progress("-1", n_tabs);
             }
         } 
     }

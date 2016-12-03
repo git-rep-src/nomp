@@ -24,6 +24,7 @@ private:
     Ui ui;
 
     int c_field;
+    int n_tabs;
 
     bool is_authentication;
     bool is_task_running;

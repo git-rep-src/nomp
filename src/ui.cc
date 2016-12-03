@@ -3,9 +3,12 @@
 #include <sstream>
 #include <iomanip>
 
+#include <iostream>//
+
 using std::stringstream;
 
 Ui::Ui() :
+    has_status(false),
     n_values(0)
 {
     initscr();
@@ -23,59 +26,21 @@ Ui::Ui() :
         init_pair(3, COLOR_WHITE, COLOR_WHITE);
     }
     
-    field_width = (COLS / 4.1);
-    button_width = (COLS / 8.6);
+    window = newpad(49, 175);
+    keypad(window, TRUE);
 
-    // TODO: REVISAR LINES/COLS EN XML.
-    // CALCULAR MINIMO PARA LINES Y COLS.
-    
-    stringstream ss;
-    field_names.push_back("HOST");
-    field_names.push_back("PORT");
-    field_names.push_back("USERNAME");
-    field_names.push_back("PASSWORD");
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "LOGIN";
-    field_names.push_back(ss.str());
-    field_names.push_back("NAME");
-    field_names.push_back("COMMENT");
-    field_names.push_back("HOSTS");
-    field_names.push_back("PORTS");
-    stringstream().swap(ss);
-    ss << std::setw(button_width / 4) << std::setfill(' ') << "" << "NEW TARGET";
-    field_names.push_back(ss.str());
-    field_names.push_back("NAME");
-    field_names.push_back("COMMENT");
-    field_names.push_back("SCAN");
-    field_names.push_back("TARGET");
-    stringstream().swap(ss);
-    ss << std::setw(button_width / 3.3) << std::setfill(' ') << "" << "NEW TASK";
-    field_names.push_back(ss.str());
-    field_names.push_back("TASK");
-    field_names.push_back("REFRESH");
-    field_names.push_back("PROGRESS");
-    stringstream().swap(ss);
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "START";
-    field_names.push_back(ss.str());
-    stringstream().swap(ss);
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "RESUME";
-    field_names.push_back(ss.str());
-    stringstream().swap(ss);
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "STOP";
-    field_names.push_back(ss.str());
-    field_names.push_back("TASK");
-    field_names.push_back("REPORT");
-    field_names.push_back("FORMAT");
-    stringstream().swap(ss);
-    ss << std::setw(button_width / 2.5) << std::setfill(' ') << "" << "SHOW";
-    field_names.push_back(ss.str());
-    stringstream().swap(ss);
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "EXPORT";
-    field_names.push_back(ss.str());
+    field_width = (175 / 4.1);
+    button_width = (175 / 8.6);
+
+    fill_field_names();
+   
+    refresh();
 }
 
 Ui::~Ui()
 {
     clear_form();
+    delwin(window);
     endwin();
 }
 
@@ -116,15 +81,17 @@ void Ui::authenticate(const vector<string> *user_configs)
     
     form = new_form(fields);
     scale_form(form, &rows, &cols);
+    set_form_win(form, window);
+    set_form_sub(form, derwin(window, rows, cols, 0, 0));
     post_form(form);
     
-    mvprintw(start_y,       (start_x - 5), field_names[0].c_str());
-    mvprintw((start_y + 2), (start_x - 5), field_names[1].c_str());
-    mvprintw((start_y + 4), (start_x - 9), field_names[2].c_str());
-    mvprintw((start_y + 6), (start_x - 9), field_names[3].c_str());
-    
-    refresh();
+    mvwprintw(window, start_y,       (start_x - 5), field_names[0].c_str());
+    mvwprintw(window, (start_y + 2), (start_x - 5), field_names[1].c_str());
+    mvwprintw(window, (start_y + 4), (start_x - 9), field_names[2].c_str());
+    mvwprintw(window, (start_y + 6), (start_x - 9), field_names[3].c_str());
 
+    prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
+    
     set_current_field(form, fields[2]);
     form_driver(form, REQ_END_LINE);
 }
@@ -180,31 +147,36 @@ void Ui::main()
     
     form = new_form(fields);
     scale_form(form, &rows, &cols);
+    set_form_win(form, window);
+    set_form_sub(form, derwin(window, rows, cols, 0, 0));
     post_form(form);
 
-    mvprintw(start_y,        (start_x - 5), field_names[5].c_str());
-    mvprintw((start_y + 2),  (start_x - 8), field_names[6].c_str());
-    mvprintw((start_y + 4),  (start_x - 6), field_names[7].c_str());
-    mvprintw((start_y + 6),  (start_x - 6), field_names[8].c_str());
-    mvprintw((start_y + 12), (start_x - 5), field_names[10].c_str());
-    mvprintw((start_y + 14), (start_x - 8), field_names[11].c_str());
-    mvprintw((start_y + 16), (start_x - 5), field_names[12].c_str());
-    mvprintw((start_y + 18), (start_x - 7), field_names[13].c_str());
-    mvprintw((start_y + 24), (start_x - 5), field_names[15].c_str());
-    mvprintw((start_y + 26), (start_x - 8), field_names[16].c_str());
-    mvprintw((start_y + 28), (start_x - 9), field_names[17].c_str());
-    mvprintw((start_y + 34), (start_x - 5), field_names[21].c_str());
-    mvprintw((start_y + 36), (start_x - 7), field_names[22].c_str());
-    mvprintw((start_y + 38), (start_x - 7), field_names[23].c_str());
+    mvwprintw(window, start_y,        (start_x - 5), field_names[5].c_str());
+    mvwprintw(window, (start_y + 2),  (start_x - 8), field_names[6].c_str());
+    mvwprintw(window, (start_y + 4),  (start_x - 6), field_names[7].c_str());
+    mvwprintw(window, (start_y + 6),  (start_x - 6), field_names[8].c_str());
+    mvwprintw(window, (start_y + 12), (start_x - 5), field_names[10].c_str());
+    mvwprintw(window, (start_y + 14), (start_x - 8), field_names[11].c_str());
+    mvwprintw(window, (start_y + 16), (start_x - 5), field_names[12].c_str());
+    mvwprintw(window, (start_y + 18), (start_x - 7), field_names[13].c_str());
+    mvwprintw(window, (start_y + 24), (start_x - 5), field_names[15].c_str());
+    mvwprintw(window, (start_y + 26), (start_x - 8), field_names[16].c_str());
+    mvwprintw(window, (start_y + 28), (start_x - 9), field_names[17].c_str());
+    mvwprintw(window, (start_y + 34), (start_x - 5), field_names[21].c_str());
+    mvwprintw(window, (start_y + 36), (start_x - 7), field_names[22].c_str());
+    mvwprintw(window, (start_y + 38), (start_x - 7), field_names[23].c_str());
     
     curs_set(1);
-    
-    refresh();
+
+    prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
+
+    if (LINES < 49)
+        status("USE (CTRL + U) AND (CTRL + D) TO UP AND DOWN SCREEN", 0);
 
     form_driver(form, REQ_END_LINE);
 }
 
-int Ui::menu(const vector<string> *values, size_t n)
+int Ui::menu(const vector<string> *values, size_t n, int n_tabs)
 {
     int key;
     int row;
@@ -214,9 +186,9 @@ int Ui::menu(const vector<string> *values, size_t n)
     
     field_info(current_field(form), NULL, NULL, &row, NULL, NULL, NULL);
     if (field_index(current_field(form)) == 16)
-        row -= 11;
+        row = row - (n_tabs + 11);
     else
-        --row;
+        row = row - (n_tabs + 1);
     
     items = (WINDOW **) malloc ((n_values + 1) * sizeof(WINDOW *));
     items[0] = newwin((n_values + 2), field_width, row, start_x);
@@ -267,7 +239,12 @@ int Ui::menu(const vector<string> *values, size_t n)
 
 void Ui::menu_details(const vector<string> **values, int c_item, size_t n)
 {
-    WINDOW *w = newwin((start_y + 37), (COLS / 2.40), start_y, (COLS / 1.77));
+    int md_start_x = (COLS / 1.76);
+    
+    if (md_start_x < (start_x + field_width + 8))
+        md_start_x = (start_x + field_width + 8);
+
+    WINDOW *w = newwin((start_y + 37), (175 / 2.40), start_y, md_start_x);
 
     for (size_t i = 2; i < n; i++)
         wprintw(w, "%s", ((**values)[(n_values * i) + c_item]).c_str());
@@ -283,6 +260,9 @@ int Ui::report(const vector<string> *values, size_t n)
 
     n_values = ((values->size()) / n);
     
+    WINDOW *w = newwin(LINES, COLS, 0, 0); 
+    wrefresh(w);
+
     items = (WINDOW **) malloc ((n_values + 1) * sizeof(WINDOW *));
     items[0] = newpad((n_values + (start_y + 40)), COLS);
     keypad(items[0], true);
@@ -290,18 +270,18 @@ int Ui::report(const vector<string> *values, size_t n)
     for (size_t i = 1; i <= n_values; i++) {
         items[i] = subpad(items[0], 1, (COLS - 5), (i - 1), 0);
         mvwprintw(items[i], 0, 0, "%s", (*values)[n_values + i].c_str());
-        mvwprintw(items[i], 0, (COLS / 1.39), "%s", (*values)[(n_values * 2) + i].c_str());
-        mvwprintw(items[i], 0, (COLS / 1.23), "%s", (*values)[(n_values * 3) + i].c_str());
-        mvwprintw(items[i], 0, (COLS / 1.09), "%s", (*values)[(n_values * 4) + i].c_str());
+        mvwprintw(items[i], 0, (COLS - 50), "%s", (*values)[(n_values * 2) + i].c_str());
+        mvwprintw(items[i], 0, (COLS - 33), "%s", (*values)[(n_values * 3) + i].c_str());
+        mvwprintw(items[i], 0, (COLS - 15), "%s", (*values)[(n_values * 4) + i].c_str());
     }
     
     wbkgd(items[1], COLOR_PAIR(2));
     wbkgd(items[1], A_REVERSE);
     
-    prefresh(items[0], 0, 0, start_y, (COLS / 34.8), (start_y + 40), (COLS - 5));
+    prefresh(items[0], 0, 0, start_y, 5, (LINES - start_y), (COLS - 5));
 
     do {
-        prefresh(items[0], c_item, 0, start_y, (COLS / 34.8), (start_y + 40), (COLS - 5));
+        prefresh(items[0], c_item, 0, start_y, 5, (LINES - start_y), (COLS - 5));
         key = wgetch(items[0]);
         switch(key)
         {
@@ -329,6 +309,8 @@ int Ui::report(const vector<string> *values, size_t n)
         }
     } while (key != KEY_ESCAPE);
     
+    delwin(w);
+
     return -1;
 }
 
@@ -337,7 +319,7 @@ void Ui::report_details(const vector<string> **values, unsigned int c_item, size
     int key;
     int c_line = 0;
     int details_lines = 2;
-    int height = (start_y + 40);
+    int height = (LINES - (start_y * 2));
 
     for (size_t i = 5; i < n; i++)
         for (size_t ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
@@ -354,7 +336,7 @@ void Ui::report_details(const vector<string> **values, unsigned int c_item, size
         wprintw(w, "%s", ((**values)[(n_values * i) + c_item]).c_str());
     
     do {
-        prefresh(w, c_line, 0, start_y, (COLS / 34.8), (start_y + 40), (COLS - 5));
+        prefresh(w, c_line, 0, start_y, 5, (LINES - start_y), (COLS - 5));
         key = wgetch(w);
         switch(key)
         {
@@ -367,7 +349,7 @@ void Ui::report_details(const vector<string> **values, unsigned int c_item, size
                 c_line--;
                 break;
             case KEY_DOWN:
-                if (((start_y + 40) + c_line) >= height)
+                if (((LINES - ((start_y * 2) - 4)) + c_line) >= height)
                     continue;
                 c_line++;
                 break;
@@ -376,42 +358,6 @@ void Ui::report_details(const vector<string> **values, unsigned int c_item, size
         }
     } while (key != KEY_ESCAPE);
     
-    delwin(w);
-}
-
-void Ui::progress(const string &p)
-{  
-    for (int i = 0; i <= field_width; i++)
-        mvdelch((start_y + 28), start_x);
-    
-    if (p == "-1") {
-        status("TASK FINISHED");
-    } else if (p == "-2") {    
-        status("TASK STOPPED");
-    } else {
-        if ((stoi(p) > 0) && (stoi(p) < 3))
-            mvhline((start_y + 28), start_x, ACS_VLINE, 1);
-        else
-            mvhline((start_y + 28), start_x, ACS_VLINE, (stoi(p) / 2.38));
-    }
-    
-    refresh();
-}
-
-void Ui::status(const string &sts)
-{
-    int sts_x = 0;
-    int max_y;
-    int max_x;
-    
-    WINDOW *w = newwin(1, COLS, (LINES - 1), 0);
-    
-    getmaxyx(w, max_y, max_x);
-    sts_x = ((max_x - sts.size()) / 2) + 1; 
-    max_y = 0;
-    mvwprintw(w, max_y, sts_x, sts.c_str());
-    
-    wrefresh(w);
     delwin(w);
 }
 
@@ -425,23 +371,53 @@ void Ui::marker(bool is_menu, bool show)
 
     if (show) {
         if (is_menu) {
-            mvprintw(row, ((start_x + field_width) + 1), "+");
+            mvwprintw(window, row, ((start_x + field_width) + 1), "+");
         } else {
-            mvaddch(row, col, ACS_CKBOARD);
-            mvaddch(row, (col + (cols - 1)), ACS_CKBOARD);
+            mvwaddch(window, row, col, ACS_CKBOARD);
+            mvwaddch(window, row, (col + (cols - 1)), ACS_CKBOARD);
         }
         curs_set(0);
     } else {
         if (is_menu) {
-            mvprintw(row, ((start_x + field_width) + 1), " ");
+            mvwprintw(window, row, ((start_x + field_width) + 1), " ");
         } else {
-            attron(COLOR_PAIR(1));
-            mvprintw(row, col, " ");
-            mvprintw(row, (col + (cols - 1)), " ");
-            attroff(COLOR_PAIR(1));
+            wattron(window, COLOR_PAIR(1));
+            mvwprintw(window ,row, col, " ");
+            mvwprintw(window ,row, (col + (cols - 1)), " ");
+            wattroff(window, COLOR_PAIR(1));
         }
         curs_set(1);
     }
+}
+
+void Ui::status(const string &sts, int n_tabs)
+{
+    int sts_x = (COLS - sts.size()) / 2; 
+    
+    mvwprintw(window, (0 + n_tabs), sts_x, sts.c_str());
+    
+    prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
+    
+    has_status = true;
+}
+
+void Ui::progress(const string &p, int n_tabs)
+{  
+    for (int i = 0; i <= field_width; i++)
+        mvwdelch(window, (start_y + 28), start_x);
+    
+    if (p == "-1") {
+        status("TASK FINISHED", n_tabs);
+    } else if (p == "-2") {    
+        status("TASK STOPPED", n_tabs);
+    } else {
+        if ((stoi(p) > 0) && (stoi(p) < 3))
+            mvwhline(window, (start_y + 28), start_x, ACS_VLINE, 1);
+        else
+            mvwhline(window, (start_y + 28), start_x, ACS_VLINE, (stoi(p) / 2.38));
+    }
+    
+    prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
 }
 
 int Ui::save()
@@ -449,12 +425,12 @@ int Ui::save()
     int key;
     int curs_state = curs_set(0);
     
-    WINDOW *w = newwin((LINES / 4.45), (COLS / 4.26), (LINES / 2.88), (COLS / 2.65));
+    WINDOW *w = newwin(11, 41, ((LINES / 2) - 6), ((COLS / 2) - 21));
     wbkgd(w, COLOR_PAIR(1));
     box(w, 0, 0);
     keypad(w, TRUE);
 
-    mvwprintw(w, (LINES / 9.8), (COLS / 58.33), "SAVE THE RUNNING TASK CONFIG? (Y/N)");
+    mvwprintw(w, 5, 3, "SAVE THE RUNNING TASK CONFIG? (Y/N)");
     
     curs_set(0);
     
@@ -479,9 +455,66 @@ int Ui::save()
 
     curs_set(curs_state);
 
-    touchwin(stdscr);
-
     return -1;
+}
+
+void Ui::fill_field_names()
+{
+    stringstream ss;
+    
+    field_names.push_back("HOST");
+    field_names.push_back("PORT");
+    field_names.push_back("USERNAME");
+    field_names.push_back("PASSWORD");
+    
+    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "LOGIN";
+    field_names.push_back(ss.str());
+
+    field_names.push_back("NAME");
+    field_names.push_back("COMMENT");
+    field_names.push_back("HOSTS");
+    field_names.push_back("PORTS");
+    
+    stringstream().swap(ss);
+    ss << std::setw(button_width / 4) << std::setfill(' ') << "" << "NEW TARGET";
+    field_names.push_back(ss.str());
+    
+    field_names.push_back("NAME");
+    field_names.push_back("COMMENT");
+    field_names.push_back("SCAN");
+    field_names.push_back("TARGET");
+    
+    stringstream().swap(ss);
+    ss << std::setw(button_width / 3.3) << std::setfill(' ') << "" << "NEW TASK";
+    field_names.push_back(ss.str());
+
+    field_names.push_back("TASK");
+    field_names.push_back("REFRESH");
+    field_names.push_back("PROGRESS");
+    
+    stringstream().swap(ss);
+    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "START";
+    field_names.push_back(ss.str());
+    
+    stringstream().swap(ss);
+    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "RESUME";
+    field_names.push_back(ss.str());
+    
+    stringstream().swap(ss);
+    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "STOP";
+    field_names.push_back(ss.str());
+
+    field_names.push_back("TASK");
+    field_names.push_back("REPORT");
+    field_names.push_back("FORMAT");
+    
+    stringstream().swap(ss);
+    ss << std::setw(button_width / 2.5) << std::setfill(' ') << "" << "SHOW";
+    field_names.push_back(ss.str());
+    
+    stringstream().swap(ss);
+    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "EXPORT";
+    field_names.push_back(ss.str());
 }
 
 void Ui::clear_items()
