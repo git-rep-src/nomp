@@ -1,5 +1,7 @@
 #include "xml.h"
 
+#include <form.h>
+
 #include <sstream>
 #include <iomanip>
 #include <stdexcept>
@@ -100,12 +102,13 @@ bool Xml::parse(const string *content, const vector<string> *paths, vector<strin
                             value = element->get_first_child_text()->get_content();
                             if (node.at(i - 1)->get_path() ==
                                 "/get_reports_response/report/report/results/result[" +
-                                 std::to_string(i) + "]/name")
-                                set_wrap(value, 119, true);
-                            else if (node.at(i - 1)->get_path() ==
+                                 std::to_string(i) + "]/name") {
+                                set_wrap(value, (COLS - 55), true);
+                            } else if (node.at(i - 1)->get_path() ==
                                      "/get_reports_response/report/report/results/result[" +
-                                      std::to_string(i) + "]/host")
+                                      std::to_string(i) + "]/host") {
                                 set_wrap(value, 15, true);
+                            }
                             xret->push_back(value);
                         }
                     }
@@ -173,7 +176,7 @@ void Xml::set_format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
     replace(value, targets, replaces);
     
     if ((name == "comment") && (value != "-")) {
-        set_wrap(value, 50); // TODO: ENVIAR COLS EN LUGAR DE 40.
+        set_wrap(value, 50);
     } else if (name == "cve") {
         targets.push_back(", ");
         replaces.push_back("\n");
@@ -209,12 +212,12 @@ void Xml::set_format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
         replaces.push_back("SOLUTION\n");
         replaces.push_back("\n\n");
         replace(value, targets, replaces);
-        set_wrap(value, 99); // TODO: ENVIAR COLS EN LUGAR DE 155.
+        set_wrap(value, (COLS / 1.4));
     } else if ((name == "description") && (value != "-")) {
-        if (max_width == 13)
-            set_wrap(value, 99); // TODO: ENVIAR COLS EN LUGAR DE 155.
+        if (max_width == 14)
+            set_wrap(value, (COLS / 1.4));
         else
-            set_wrap(value, 50); // TODO: ENVIAR COLS EN LUGAR DE 40.
+            set_wrap(value, 50);
     }
 
     set_width(value, max_width);
