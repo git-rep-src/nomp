@@ -11,6 +11,7 @@ using std::vector;
 
 const int KEY_Y = 121;
 const int KEY_N = 110;
+const int KEY_DELCHAR = 127;
 const int KEY_RETURN = 10;
 const int KEY_UP_SCREEN = 21;
 const int KEY_DOWN_SCREEN = 4;

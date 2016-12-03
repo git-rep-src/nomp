@@ -175,6 +175,8 @@ void Nomp::driver()
                     ++n_tabs;
                 break;
             case KEY_BACKSPACE:
+            case KEY_DELCHAR:
+            case KEY_DC:
                 form_driver(ui.form, REQ_LEFT_CHAR);
                 form_driver(ui.form, REQ_DEL_CHAR);
                 break;
