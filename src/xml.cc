@@ -157,6 +157,11 @@ void Xml::set_format(const xmlpp::Node::NodeSet *node, xmlpp::Element **element,
                (node->at(i - 1)->get_path() ==
                "/get_tasks_response/task[" + std::to_string(i) + "]/target/name")) {
         name = "TARGET";
+    } else if ((node->at(i - 1)->get_path() ==
+               "/get_tasks_response/task/first_report/report/timestamp") ||
+               (node->at(i - 1)->get_path() ==
+               "/get_tasks_response/task/last_report/report/timestamp")) {
+        name = "SCAN START";
     } else {
         name = node->at(i - 1)->get_name();
     }

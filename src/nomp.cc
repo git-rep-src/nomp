@@ -343,6 +343,7 @@ void Nomp::driver()
                                 xpaths.push_back("/get_tasks_response/task/status");
                                 xpaths.push_back("/get_tasks_response/task/report_count");
                                 get_resource(xret[0]);
+                                set_field_buffer(ui.fields[15], 0, "");
                             }
                             break;
                         case 15:
@@ -351,28 +352,31 @@ void Nomp::driver()
                             validators.insert(make_pair(make_pair(14, true), make_pair(false, 5)));
                             if (create_resource(true)) {
                                 xpaths.push_back("/get_tasks_response"); 
-                                xpaths.push_back("/get_tasks_response/task/last_report/report"); 
-                                xpaths.push_back("/get_tasks_response/task/last_report/report/timestamp");
-                                xpaths.push_back("/get_tasks_response/task/last_report/report/severity");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report"); 
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/timestamp");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/timestamp");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/scan_end");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/result_count/debug");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/result_count/hole");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/result_count/info");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/result_count/log");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/result_count/warning");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/result_count/false_positive");
+                                xpaths.push_back("/get_tasks_response/task/*[(name() = 'first_report') or \
+                                                 (name() = 'last_report')]/report/severity");
                                 get_resource(xret[0]);
                             }
                             break;
-                            /*
-                            xnodes.push_back("get_reports");
-                            xnodes.push_back("filter");
-                            xvalues.push_back("task_id=506f7600-674c-4158-85c9-de2fce1a1827 and status=Done min_qod="); // FIX: FILTRAR TASK_ID
-                            validators.insert(make_pair(make_pair(14, true), make_pair(false, -1))); // FIX: FILTRAR TASK_ID
-                            if (create_resource(true)) {
-                                xpaths.push_back("/get_reports_response");  
-                                xpaths.push_back("/get_reports_response/report/report");  
-                                xpaths.push_back("/get_reports_response/report/report/timestamp");  
-                                xpaths.push_back("/get_reports_response/report/report/timestamp");  
-                                xpaths.push_back("/get_reports_response/report/report/scan_start");  
-                                xpaths.push_back("/get_reports_response/report/report/result_count");  
-                                get_resource(xret[0]);
-                            }
-                            break;
-                            */
                         case 16:
                             xpaths.push_back("/get_report_formats_response"); 
                             xpaths.push_back("/get_report_formats_response/report_format"); 
