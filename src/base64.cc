@@ -23,14 +23,15 @@ vector<BYTE> base64_decode(string const &str)
     vector<BYTE> ret;
 
     while (size-- && (str[in] != '=') && is_base64(str[in])) {
-        char_array_4[i++] = str[in]; in++;
+        char_array_4[i++] = str[in];
+        in++;
         if (i == 4) {
             for (i = 0; i < 4; i++)
                 char_array_4[i] = base64_chars.find(char_array_4[i]);
             char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
             char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
             char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-            for (i = 0; (i < 3); i++)
+            for (i = 0; i < 3; i++)
                 ret.push_back(char_array_3[i]);
             i = 0;
         }
