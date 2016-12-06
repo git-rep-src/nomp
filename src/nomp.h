@@ -41,8 +41,7 @@ private:
     vector<string> xret;
     
     const vector<string> auto_refresh_times =
-          {"30", "60", "120", "300",
-           "30 sec", "1 min", "2 min","5 min"};
+    {"30", "60", "120", "300","30 sec", "1 min", "2 min","5 min"};
     
     map<pair<int, bool>, pair<bool, int>> validators;
 
