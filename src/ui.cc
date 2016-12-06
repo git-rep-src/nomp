@@ -3,8 +3,6 @@
 #include <sstream>
 #include <iomanip>
 
-#include <iostream>//
-
 using std::stringstream;
 
 Ui::Ui() :
@@ -126,10 +124,11 @@ void Ui::main()
     fields[19] = NULL;
 
     for (int i = 0; i <= 18; i++) {
-        if ((i != 4) && (i != 9) &&
-            (i != 12) && (i != 13) && (i != 17) && (i != 18))
+        if ((i != 4) && (i != 9) && (i != 12) &&
+            (i != 13) && (i != 17) && (i != 18))
             set_field_just(fields[i], JUSTIFY_CENTER);
-        if ((i != 0) && (i != 1) && (i != 2) && (i != 5) && (i != 6))
+        if ((i != 0) && (i != 1) && (i != 2) &&
+            (i != 5) && (i != 6))
             field_opts_off(fields[i], O_EDIT);
         field_opts_off(fields[i], O_AUTOSKIP);
         if (i == 0)
@@ -382,19 +381,19 @@ void Ui::marker(bool is_menu, bool show)
             mvwprintw(window, row, ((start_x + field_width) + 1), " ");
         } else {
             wattron(window, COLOR_PAIR(1));
-            mvwprintw(window ,row, col, " ");
-            mvwprintw(window ,row, (col + (cols - 1)), " ");
+            mvwprintw(window, row, col, " ");
+            mvwprintw(window, row, (col + (cols - 1)), " ");
             wattroff(window, COLOR_PAIR(1));
         }
         curs_set(1);
     }
 }
 
-void Ui::status(const string &sts, int n_tabs)
+void Ui::status(const string &s, int n_tabs)
 {
-    int sts_x = (COLS - sts.size()) / 2; 
+    int s_x = (COLS - s.size()) / 2; 
     
-    mvwprintw(window, (0 + n_tabs), sts_x, sts.c_str());
+    mvwprintw(window, (0 + n_tabs), s_x, s.c_str());
     
     prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
     

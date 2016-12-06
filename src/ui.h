@@ -36,7 +36,7 @@ public:
     int menu(const vector<string> *values, size_t n, int n_tabs);
     int report(const vector<string> *values, size_t n);
     void marker(bool is_menu = true, bool show = true);
-    void status(const string &sts, int n_tabs);
+    void status(const string &s, int n_tabs);
     void progress(const string &p, int n_tabs);
     int save();
     void clear_items();
