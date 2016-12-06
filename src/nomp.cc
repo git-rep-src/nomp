@@ -8,7 +8,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>
-#include <iostream>//
 
 using std::ifstream;
 using std::ofstream;
@@ -544,7 +543,7 @@ bool Nomp::validate_fields(vector<string> &v)
         if (it->first.second) {
             if (!isblank(field_buffer(ui.fields[it->first.first], 0)[0])) {
                 if (it->second.first)
-                    v.push_back(clear_whitespace(field_buffer(ui.fields[it->first.first], 0)));
+                    v.push_back(clear_whitespaces(field_buffer(ui.fields[it->first.first], 0)));
                 else if (it->second.second != -1)
                     v.push_back(ids[it->second.second] + "__attr__");
             } else {
@@ -559,7 +558,7 @@ bool Nomp::validate_fields(vector<string> &v)
                 return false;
             }
         } else if (it->second.first) {
-            v.push_back(clear_whitespace(field_buffer(ui.fields[it->first.first], 0)));
+            v.push_back(clear_whitespaces(field_buffer(ui.fields[it->first.first], 0)));
         }
     }
     
@@ -613,7 +612,6 @@ void Nomp::fill_items(bool is_report)
     }
 
     is_auto_refresh_blocked = false;
-
     ui.clear_items();
 }
 
@@ -727,11 +725,11 @@ void Nomp::disk(bool read, bool write, bool is_report)
                     if (i <= 3)
                         file << configs[i] << user_configs[i] << std::endl;
                     else if (i == 4)
-                        file << configs[i] << clear_whitespace(field_buffer(ui.fields[10], 0)) << std::endl;
+                        file << configs[i] << clear_whitespaces(field_buffer(ui.fields[10], 0)) << std::endl;
                     else if (i == 5)
                         file << configs[i] << ids[3] << std::endl;
                     else if (i == 6)
-                        file << configs[i] << clear_whitespace(field_buffer(ui.fields[11], 0)) << std::endl;
+                        file << configs[i] << clear_whitespaces(field_buffer(ui.fields[11], 0)) << std::endl;
                     else
                         file << configs[i] << ids[4] << std::endl;
                 }
@@ -818,12 +816,12 @@ void Nomp::auto_refresh_sleep()
     auto_refresh();
 }
 
-inline string Nomp::clear_whitespace(const char *c)
+inline string Nomp::clear_whitespaces(const char *c)
 {
     string str(c);
     
     str.erase(unique(str.begin(), str.end(), [] (char a, char b) {
-        return isspace(a) && isspace(b);}), str.end());
+                     return isspace(a) && isspace(b);}), str.end());
     str.replace((str.size() - 1), 1, "");
 
     return str;

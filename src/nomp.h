@@ -10,8 +10,8 @@
 
 using std::string;
 using std::vector;
-using std::pair;
 using std::map;
+using std::pair;
 
 class Nomp
 {
@@ -39,8 +39,10 @@ private:
     vector<string> xvalues;
     vector<string> xpaths;
     vector<string> xret;
+    
     const vector<string> auto_refresh_times =
-    {"30", "60", "120", "300", "30 sec", "1 min", "2 min", "5 min"};
+          {"30", "60", "120", "300",
+           "30 sec", "1 min", "2 min","5 min"};
     
     map<pair<int, bool>, pair<bool, int>> validators;
 
@@ -48,7 +50,7 @@ private:
     bool authenticate(bool has_user_configs = false);
     bool get_resource(const string &cmd, const string &attr = "id",
                       bool get_details = true, bool is_report = false);
-    bool create_resource(bool only_cmd = false);//
+    bool create_resource(bool only_cmd = false);
     bool validate_fields(vector<string> &v);
     void fill_items(bool is_report);
     void disk(bool read, bool write, bool is_report);
@@ -56,7 +58,7 @@ private:
     bool omp(const string &cmd);
     void auto_refresh();
     void auto_refresh_sleep();
-    string clear_whitespace(const char *c);
+    string clear_whitespaces(const char *c);
     void clear_vectors();
 };
 
