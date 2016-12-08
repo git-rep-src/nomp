@@ -22,23 +22,19 @@ bool SSL_socket::start(string host, string port)
     
     if (SSL_library_init() < 0)
         return false;
-    
     if ((ctx = SSL_CTX_new(TLSv1_2_client_method())) == NULL)
         return false;
 
     bio = BIO_new_ssl_connect(ctx);
-    
     BIO_get_ssl(bio, &ssl);
     if (ssl == NULL)
         return false;
     
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
-   
-    BIO_set_conn_hostname(bio, (host + ":" + port).c_str()); // TODO: look up.
+    BIO_set_conn_hostname(bio, (host + ":" + port).c_str());
 
     if (BIO_do_connect(bio) <= 0)
         return false;
-    
     if (BIO_do_handshake(bio) <= 0)
         return false;
     
