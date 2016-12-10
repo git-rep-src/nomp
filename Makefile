@@ -27,8 +27,8 @@ $(OBJECTS): $(BUILDDIR)/%.o : $(SOURCEDIR)/%.cc
 clean:
 	rm -f $(BUILDDIR)/*
 
-install: $(TARGET)
-	install -D $(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
+install:
+	install -D $(BUILDDIR)/$(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
 
-uninstall: $(TARGET)
+uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/$(TARGET)
