@@ -526,8 +526,11 @@ void Ui::clear_items()
 
 void Ui::clear_form()
 {
-    for (int i = 0; i <= (field_count(form) - 1); i++)
-        free_field(fields[i]);
+    size_t n = field_count(form);
+
     unpost_form(form);
     free_form(form);
+    
+    for (size_t i = 0; i < n; i++)
+        free_field(fields[i]);
 }
