@@ -2,13 +2,11 @@
 
 A simple Ncurses OpenVAS client.
 
-
 ## INSTALLATION
  
-REQUIREMENTS
- * ncurses  >= 6.0
- * openssl  >= 1.0.2
- * libxml++ >= 3.0
+* ncurses  >= 6.0
+* openssl  >= 1.0.2
+* libxml++ >= 3.0
 
 ```shell
 make
