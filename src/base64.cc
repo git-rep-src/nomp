@@ -12,10 +12,11 @@ static inline bool is_base64(BYTE c)
 
 vector<BYTE> base64_decode(string const &str)
 {
-    size_t size = str.size();
     int i = 0;
     int n = 0;
     int in = 0;
+    
+    size_t size = str.size();
     
     BYTE char_array_3[3];
     BYTE char_array_4[4];
