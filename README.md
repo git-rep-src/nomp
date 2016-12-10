@@ -4,7 +4,7 @@ A simple Ncurses OpenVAS client.
 
 ## INSTALLATION
 
-```javascript
+```shell
 ncurses  >= 6.0
 openssl  >= 1.0.2
 libxml++ >= 3.0
