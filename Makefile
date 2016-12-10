@@ -6,6 +6,7 @@ BUILDDIR = .build
 SOURCES = $(wildcard src/*.cc)
 OBJECTS = $(patsubst $(SOURCEDIR)/%.cc,$(BUILDDIR)/%.o,$(SOURCES))
 DEPS := $(OBJECTS:.o=.d)
+PREFIX = /usr/local
 TARGET = nomp
 
 .SILENT:
@@ -25,3 +26,9 @@ $(OBJECTS): $(BUILDDIR)/%.o : $(SOURCEDIR)/%.cc
 
 clean:
 	rm -f $(BUILDDIR)/*
+
+install: $(TARGET)
+	install -D $(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
+
+uninstall: $(TARGET)
+	rm -f $(DESTDIR)$(PREFIX)/bin/$(TARGET)
