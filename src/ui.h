@@ -25,6 +25,7 @@ public:
     ~Ui();
    
     bool has_status;
+    
     vector<string> field_names;
     
     WINDOW *window;

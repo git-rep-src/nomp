@@ -7,6 +7,8 @@ using std::stringstream;
 
 Ui::Ui() :
     has_status(false),
+    field_width(43),
+    button_width(20),
     n_values(0)
 {
     initscr();
@@ -26,12 +28,9 @@ Ui::Ui() :
     
     window = newpad(49, 175);
     keypad(window, TRUE);
-
-    field_width = (175 / 4.1);
-    button_width = (175 / 8.6);
-
-    fill_field_names();
    
+    fill_field_names();
+    
     refresh();
 }
 
@@ -124,11 +123,9 @@ void Ui::main()
     fields[19] = NULL;
 
     for (int i = 0; i <= 18; i++) {
-        if ((i != 4) && (i != 9) && (i != 12) &&
-            (i != 13) && (i != 17) && (i != 18))
+        if ((i != 4) && (i != 9) && (i != 12) && (i != 13) && (i != 17) && (i != 18))
             set_field_just(fields[i], JUSTIFY_CENTER);
-        if ((i != 0) && (i != 1) && (i != 2) &&
-            (i != 5) && (i != 6))
+        if ((i != 0) && (i != 1) && (i != 2) && (i != 5) && (i != 6))
             field_opts_off(fields[i], O_EDIT);
         field_opts_off(fields[i], O_AUTOSKIP);
         if (i == 0)
@@ -243,7 +240,7 @@ void Ui::menu_details(const vector<string> **values, int c_item, size_t n)
     if (md_start_x < (start_x + field_width + 8))
         md_start_x = (start_x + field_width + 8);
 
-    WINDOW *w = newwin((start_y + 37), (175 / 2.40), start_y, md_start_x);
+    WINDOW *w = newwin((start_y + 37), 73, start_y, md_start_x);
 
     for (size_t i = 2; i < n; i++)
         wprintw(w, "%s", ((**values)[(n_values * i) + c_item]).c_str());
@@ -405,16 +402,15 @@ void Ui::progress(const string &p, int n_tabs)
     for (int i = 0; i <= field_width; i++)
         mvwdelch(window, (start_y + 28), start_x);
     
-    if (p == "-1") {
+    if (p == "-1")
         status("TASK FINISHED", n_tabs);
-    } else if (p == "-2") {    
+    else if (p == "-2")
         status("TASK STOPPED", n_tabs);
-    } else {
+    else
         if ((stoi(p) > 0) && (stoi(p) < 3))
             mvwhline(window, (start_y + 28), start_x, ACS_VLINE, 1);
         else
             mvwhline(window, (start_y + 28), start_x, ACS_VLINE, (stoi(p) / 2.38));
-    }
     
     prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
 }
@@ -530,7 +526,6 @@ void Ui::clear_form()
 
     unpost_form(form);
     free_form(form);
-    
     for (size_t i = 0; i < n; i++)
         free_field(fields[i]);
 }

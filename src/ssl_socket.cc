@@ -29,7 +29,6 @@ bool SSL_socket::start(string host, string port)
     BIO_get_ssl(bio, &ssl);
     if (ssl == NULL)
         return false;
-    
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
     BIO_set_conn_hostname(bio, (host + ":" + port).c_str());
 
@@ -66,7 +65,6 @@ void SSL_socket::cleanup()
 {
     SSL_CTX_free(ctx);
     BIO_free_all(bio);
-    
     ctx = NULL;
     bio = NULL;
     ssl = NULL;

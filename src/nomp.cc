@@ -38,7 +38,7 @@ void Nomp::driver()
         prefresh(ui.window, n_tabs, 0, 0, 0, (LINES - 1), (COLS - 1));
         key = wgetch(ui.window);
         switch(key)
-		{
+        {
             case KEY_LEFT:
                 form_driver(ui.form, REQ_PREV_CHAR);
                 break;
@@ -194,7 +194,7 @@ void Nomp::driver()
                     }
                 } else {
                     switch(c_field)
-		            {
+                    {
                         case 3:
                             xpaths.push_back("/get_port_lists_response");
                             xpaths.push_back("/get_port_lists_response/port_list"); 
@@ -606,9 +606,7 @@ void Nomp::fill_items(bool is_report)
             default:
                 break;
         }
-        set_field_buffer(ui.fields[c_field], 0,
-                         xret[((xret.size() / (xpaths.size() - 1)) +
-                              c_item)].c_str());
+        set_field_buffer(ui.fields[c_field], 0, xret[((xret.size() / (xpaths.size() - 1)) + c_item)].c_str());
     }
 
     is_auto_refresh_blocked = false;
@@ -622,8 +620,7 @@ void Nomp::disk(bool read, bool write, bool is_report)
     vector<string> configs = {"host=", "port=", "username=", "password="};
     
     struct stat st;
-    if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) &&
-        S_ISDIR(st.st_mode)))
+    if (!((stat((home_path + "/.nomp/reports").c_str(), &st) == 0) && S_ISDIR(st.st_mode)))
         cli("mkdir -p", (home_path + "/.nomp/reports"));
     
     if (read) {
