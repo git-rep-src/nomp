@@ -1,13 +1,13 @@
-CC = g++
-CFLAGS = $(shell pkg-config libxml++-3.0 --cflags) -std=c++11 -Wall
-LIBS = $(shell pkg-config libxml++-3.0 --libs) -pthread -lcrypto -lssl -lform -lncurses
+CC        = g++
+CFLAGS    = $(shell pkg-config libxml++-3.0 --cflags) -std=c++11 -Wall
+LIBS      = $(shell pkg-config libxml++-3.0 --libs) -pthread -lcrypto -lssl -lform -lncurses
 SOURCEDIR = src
-BUILDDIR = .build
-SOURCES = $(wildcard src/*.cc)
-OBJECTS = $(patsubst $(SOURCEDIR)/%.cc,$(BUILDDIR)/%.o,$(SOURCES))
-DEPS := $(OBJECTS:.o=.d)
-PREFIX = /usr/local
-TARGET = nomp
+BUILDDIR  = .build
+SOURCES   = $(wildcard src/*.cc)
+OBJECTS   = $(patsubst $(SOURCEDIR)/%.cc,$(BUILDDIR)/%.o,$(SOURCES))
+DEPS     := $(OBJECTS:.o=.d)
+PREFIX    = /usr/local
+TARGET    = nomp
 
 .SILENT:
 
