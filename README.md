@@ -1,6 +1,7 @@
 # NOMP - Ncurses OpenVAS Manager Protocol
 
-A simple Ncurses OpenVAS client.
+A simple Ncurses OpenVAS client (0.1)
+
 
 ## INSTALLATION
 
@@ -13,6 +14,18 @@ libxml++ >= 3.0
 make
 make install
 ```
+
+## CONFIGURATION
+
+~/.nomp/config
+
+```shell
+host=localhost
+port=9390
+username=username
+password=password
+```
+
 ## LICENSE
 
 Free Software under GPL 2.
