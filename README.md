@@ -18,8 +18,8 @@ make install
 ~/.nomp/config
 
 ```shell
-host=localhost
-port=9390
+host=host
+port=port
 username=username
 password=password
 ```
