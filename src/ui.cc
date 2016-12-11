@@ -8,7 +8,7 @@ using std::stringstream;
 Ui::Ui() :
     has_status(false),
     field_width(43),
-    button_width(20),
+    button_width(21),
     n_values(0)
 {
     initscr();
@@ -462,7 +462,7 @@ void Ui::fill_field_names()
     field_names.push_back("USERNAME");
     field_names.push_back("PASSWORD");
     
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "LOGIN";
+    ss << std::setw(button_width / 2.6) << std::setfill(' ') << "" << "LOGIN";
     field_names.push_back(ss.str());
 
     field_names.push_back("NAME");
@@ -471,7 +471,7 @@ void Ui::fill_field_names()
     field_names.push_back("PORTS");
     
     stringstream().swap(ss);
-    ss << std::setw(button_width / 4) << std::setfill(' ') << "" << "NEW TARGET";
+    ss << std::setw(button_width / 3.5) << std::setfill(' ') << "" << "NEW TARGET";
     field_names.push_back(ss.str());
     
     field_names.push_back("NAME");
@@ -480,7 +480,7 @@ void Ui::fill_field_names()
     field_names.push_back("TARGET");
     
     stringstream().swap(ss);
-    ss << std::setw(button_width / 3.3) << std::setfill(' ') << "" << "NEW TASK";
+    ss << std::setw(button_width / 3.1) << std::setfill(' ') << "" << "NEW TASK";
     field_names.push_back(ss.str());
 
     field_names.push_back("TASK");
@@ -488,15 +488,15 @@ void Ui::fill_field_names()
     field_names.push_back("PROGRESS");
     
     stringstream().swap(ss);
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "START";
+    ss << std::setw(button_width / 2.6) << std::setfill(' ') << "" << "START";
     field_names.push_back(ss.str());
     
     stringstream().swap(ss);
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "RESUME";
+    ss << std::setw(button_width / 2.6) << std::setfill(' ') << "" << "RESUME";
     field_names.push_back(ss.str());
     
     stringstream().swap(ss);
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "STOP";
+    ss << std::setw(button_width / 2.6) << std::setfill(' ') << "" << "STOP";
     field_names.push_back(ss.str());
 
     field_names.push_back("TASK");
@@ -504,11 +504,11 @@ void Ui::fill_field_names()
     field_names.push_back("FORMAT");
     
     stringstream().swap(ss);
-    ss << std::setw(button_width / 2.5) << std::setfill(' ') << "" << "SHOW";
+    ss << std::setw(button_width / 2.4) << std::setfill(' ') << "" << "SHOW";
     field_names.push_back(ss.str());
     
     stringstream().swap(ss);
-    ss << std::setw(button_width / 2.8) << std::setfill(' ') << "" << "EXPORT";
+    ss << std::setw(button_width / 2.7) << std::setfill(' ') << "" << "EXPORT";
     field_names.push_back(ss.str());
 }
 
