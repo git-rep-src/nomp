@@ -81,44 +81,48 @@ bool Xml::parse(const string *content, const vector<string> *paths, vector<strin
 
         for (size_t n = 0; n < paths->size(); n++) {
             node = root->find((*paths)[n]);
-            for (size_t i = 1; i <= node.size(); i++) {
-                element = (xmlpp::Element *)node.at(i - 1);
-                if (n == 0) {
-                    attribute = element->get_attribute("status_text");
-                    if ((attribute->get_value()).find("OK") == string::npos)
-                        return false;
-                    else
-                        break;
-                } else {
-                    attribute = element->get_attribute(attr);
-                }
-                if (get_details) {
-                    if (attribute && ((n - 1) < offset)) {
-                        xret->push_back(attribute->get_value());
+            if (node.size() == 0) {
+                break;
+            } else {
+                for (size_t i = 1; i <= node.size(); i++) {
+                    element = (xmlpp::Element *)node.at(i - 1);
+                    if (n == 0) {
+                        attribute = element->get_attribute("status_text");
+                        if ((attribute->get_value()).find("OK") == string::npos)
+                            return false;
+                        else
+                            break;
                     } else {
-                        if ((n - 1) >= offset) {
-                            set_format(&node, &element, &xret, i, max_width);
-                        } else {
-                            value = element->get_first_child_text()->get_content();
-                            if (node.at(i - 1)->get_path() ==
-                                "/get_reports_response/report/report/results/result[" +
-                                 std::to_string(i) + "]/name") {
-                                set_wrap(value, (COLS - 55), true);
-                            } else if (node.at(i - 1)->get_path() ==
-                                     "/get_reports_response/report/report/results/result[" +
-                                      std::to_string(i) + "]/host") {
-                                set_wrap(value, 15, true);
-                            }
-                            xret->push_back(value);
-                        }
+                        attribute = element->get_attribute(attr);
                     }
-                } else {
-                    if (attribute) 
-                        xret->push_back(attribute->get_value());
-                    if (element->has_child_text())
-                        xret->push_back(element->get_first_child_text()->get_content());
-                    else
-                        xret->push_back("");
+                    if (get_details) {
+                        if (attribute && ((n - 1) < offset)) {
+                            xret->push_back(attribute->get_value());
+                        } else {
+                            if ((n - 1) >= offset) {
+                                set_format(&node, &element, &xret, i, max_width);
+                            } else {
+                                value = element->get_first_child_text()->get_content();
+                                if (node.at(i - 1)->get_path() ==
+                                    "/get_reports_response/report/report/results/result[" +
+                                    std::to_string(i) + "]/name") {
+                                    set_wrap(value, (COLS - 55), true);
+                                } else if (node.at(i - 1)->get_path() ==
+                                           "/get_reports_response/report/report/results/result[" +
+                                           std::to_string(i) + "]/host") {
+                                    set_wrap(value, 15, true);
+                                }
+                                xret->push_back(value);
+                            }
+                        }
+                    } else {
+                        if (attribute) 
+                            xret->push_back(attribute->get_value());
+                        if (element->has_child_text())
+                            xret->push_back(element->get_first_child_text()->get_content());
+                        else
+                            xret->push_back("");
+                    }
                 }
             }
         }

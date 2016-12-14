@@ -497,7 +497,7 @@ bool Nomp::get_resource(const string &cmd, const string &attr, bool get_details,
             vector<string>().swap(xret);
         Xml xml;
         if (xml.parse(&ret, &xpaths, &xret, attr, get_details, is_report)) {
-            if (get_details)
+            if (get_details && (xret.size() > 0))
                 fill_items(is_report);
         } else {
             ui.status("XML INTERNAL ERROR", n_tabs);
