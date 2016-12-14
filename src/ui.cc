@@ -315,7 +315,7 @@ void Ui::report_details(const vector<string> **values, unsigned int c_item, size
     int key;
     int c_line = 0;
     int details_lines = 2;
-    int height = (LINES - (start_y * 2));
+    int height = (LINES - ((start_y * 2) - 1));
 
     for (size_t i = 5; i < n; i++)
         for (size_t ii = 0; ii < (**values)[(n_values * i) + c_item].size(); ii++)
