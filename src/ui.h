@@ -25,6 +25,7 @@ public:
     ~Ui();
    
     bool has_status;
+    bool is_empty_report;
     
     vector<string> field_names;
     

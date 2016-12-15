@@ -392,29 +392,33 @@ void Nomp::driver()
                             get_resource("<get_report_formats/>");
                             break;
                         case 17:
-                            xnodes.push_back("get_reports");
-                            xnodes.push_back("filter");
-                            xnodes.push_back("report_id"); 
-                            xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
-                                               notes=0 overrides=0 rows=10000 delta_states=gn \
-                                               result_hosts_only=1 ignore_pagination=1__attr__");
-                            validators.insert(make_pair(make_pair(14, true), make_pair(false, -1)));
-                            validators.insert(make_pair(make_pair(15, true), make_pair(false, 6)));
-                            if (create_resource(true)) {
-                                xpaths.push_back("/get_reports_response"); 
-                                xpaths.push_back("/get_reports_response/report/report/results/result"); 
-                                xpaths.push_back("/get_reports_response/report/report/results/result/name");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/host");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/port");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/severity");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/name");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/family");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/bid");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/cve");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/xref");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/nvt/tags");
-                                xpaths.push_back("/get_reports_response/report/report/results/result/description");
-                                get_resource(xret[0], "id", true, true);
+                            if (!ui.is_empty_report) {
+                                xnodes.push_back("get_reports");
+                                xnodes.push_back("filter");
+                                xnodes.push_back("report_id"); 
+                                xvalues.push_back("sort-reverse=severity first=1 levels=hmlg autofp=0 \
+                                                   notes=0 overrides=0 rows=10000 delta_states=gn \
+                                                   result_hosts_only=1 ignore_pagination=1__attr__");
+                                validators.insert(make_pair(make_pair(14, true), make_pair(false, -1)));
+                                validators.insert(make_pair(make_pair(15, true), make_pair(false, 6)));
+                                if (create_resource(true)) {
+                                    xpaths.push_back("/get_reports_response"); 
+                                    xpaths.push_back("/get_reports_response/report/report/results/result"); 
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/name");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/host");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/port");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/severity");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/name");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/family");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/bid");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/cve");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/xref");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/nvt/tags");
+                                    xpaths.push_back("/get_reports_response/report/report/results/result/description");
+                                    get_resource(xret[0], "id", true, true);
+                                }
+                            } else {
+                                ui.status("REPORT IS EMPTY", n_tabs);
                             }
                             break;
                         case 18:

@@ -7,6 +7,7 @@ using std::stringstream;
 
 Ui::Ui() :
     has_status(false),
+    is_empty_report(false),
     field_width(43),
     button_width(21),
     n_values(0)
@@ -177,6 +178,8 @@ int Ui::menu(const vector<string> *values, size_t n, int n_tabs)
     int key;
     int row;
     int c_item = 0;
+    
+    is_empty_report = false;
 
     n_values = ((values->size()) / n);
     
@@ -223,6 +226,9 @@ int Ui::menu(const vector<string> *values, size_t n, int n_tabs)
                         set_field_buffer(fields[12], 0, field_names[18].c_str());
                     else
                         set_field_buffer(fields[12], 0, field_names[19].c_str());
+                } else if ((field_index(current_field(form)) == 15) &&
+                           (((*values)[(n_values * 10) + c_item]).find("-99.0") != string::npos)) {
+                    is_empty_report = true;
                 }
                 return c_item;
             default:
