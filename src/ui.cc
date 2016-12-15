@@ -167,7 +167,7 @@ void Ui::main()
     prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
 
     if (LINES < 49)
-        status("USE (CTRL + U) AND (CTRL + D) TO UP AND DOWN SCREEN", 0);
+        status("USE CTRL+U AND CTRL+D TO UP AND DOWN SCREEN", 0);
 
     form_driver(form, REQ_END_LINE);
 }
@@ -299,6 +299,7 @@ int Ui::report(const vector<string> *values, size_t n)
             case KEY_RIGHT:
             case KEY_RETURN:
                 report_details(&values, (c_item + 1), n);
+                wrefresh(w);
                 break;
             default:
                 break;
@@ -348,6 +349,7 @@ void Ui::report_details(const vector<string> **values, unsigned int c_item, size
                 if (((LINES - ((start_y * 2) - 4)) + c_line) >= height)
                     continue;
                 c_line++;
+                prefresh(window, 0, 0, 0, 0, (LINES - start_y), (COLS - 1));
                 break;
             default:
                 break;

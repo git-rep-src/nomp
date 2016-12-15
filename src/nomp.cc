@@ -172,6 +172,7 @@ void Nomp::driver()
                 if ((is_authentication && ((LINES + n_tabs) < 15)) ||
                     (!is_authentication && ((LINES + n_tabs) < 45)))
                     ++n_tabs;
+                prefresh(ui.window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
                 break;
             case KEY_BACKSPACE:
             case KEY_DELCHAR:
