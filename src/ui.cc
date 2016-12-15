@@ -12,6 +12,9 @@ Ui::Ui() :
     button_width(21),
     n_values(0)
 {
+    int rows;
+    int cols;
+
     initscr();
     cbreak();
     noecho();
@@ -27,7 +30,17 @@ Ui::Ui() :
         init_pair(3, COLOR_WHITE, COLOR_WHITE);
     }
     
-    window = newpad(49, 175);
+    if (LINES < 49)
+        rows = 49;
+    else
+        rows = LINES;
+    
+    if (COLS < 175)
+        cols = 175;
+    else
+        cols = COLS;
+
+    window = newpad(rows, cols);
     keypad(window, TRUE);
    
     fill_field_names();
