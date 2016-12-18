@@ -110,7 +110,7 @@ bool Xml::parse(const string *content, const vector<string> *paths, vector<strin
                                 } else if (node.at(i - 1)->get_path() ==
                                            "/get_reports_response/report/report/results/result[" +
                                            std::to_string(i) + "]/host") {
-                                    set_wrap(value, 15, true);
+                                    set_wrap(value, 16, true);
                                 }
                                 xret->push_back(value);
                             }
