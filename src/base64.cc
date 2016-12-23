@@ -40,7 +40,7 @@ vector<BYTE> base64_decode(string const &str)
 
     if (i) {
         for (n = i; n < 4; n++)
-          char_array_4[n] = 0;
+            char_array_4[n] = 0;
         for (n = 0; n < 4; n++)
             char_array_4[n] = base64_chars.find(char_array_4[n]);
         char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
