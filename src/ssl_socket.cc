@@ -47,7 +47,7 @@ bool SSL_socket::write_read(const string *cmd, string *ret)
     char buf[1024];
     
     if (BIO_write(bio, (*cmd).c_str(), strlen((*cmd).c_str())) > 0) {
-        for(;;) {
+        for (;;) {
             int bytes = BIO_read(bio, buf, 1024);
             buf[bytes] = 0;
             *ret += buf;
