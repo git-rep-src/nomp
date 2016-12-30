@@ -1,5 +1,7 @@
 #include "ssl_socket.h"
 
+#include <string.h>
+
 SSL_socket::SSL_socket() :
     is_started(false),
     ctx(NULL),
