@@ -16,7 +16,7 @@ const int KEY_RETURN = 10;
 const int KEY_UP_SCREEN = 21;
 const int KEY_DOWN_SCREEN = 4;
 const int KEY_ESCAPE = 27;
-const int KEY_QUIT = 17;
+const int KEY_QUIT = 5;
 
 class Ui
 {
