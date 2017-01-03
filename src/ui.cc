@@ -413,6 +413,12 @@ void Ui::marker(bool is_menu, bool show)
 
 void Ui::status(const string &s, int n_tabs)
 {
+    if (has_status) {
+        for (int i = 0; i < COLS; i++)
+            mvwdelch(window, (0 + n_tabs), 0);
+        prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
+    }
+
     int s_x = (COLS - s.size()) / 2; 
     
     mvwprintw(window, (0 + n_tabs), s_x, s.c_str());
