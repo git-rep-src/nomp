@@ -22,7 +22,3 @@ host=host
 port=port
 username=username
 password=password
-```
-## LICENSE
-
-Free Software under GPL 2.
