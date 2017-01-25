@@ -103,7 +103,7 @@ void Ui::authenticate(const vector<string> *user_configs)
 
     prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
     
-    status("CTRL+E EXIT", 0);
+    status("<CE> EXIT", 0);
     
     set_current_field(form, fields[2]);
     form_driver(form, REQ_END_LINE);
@@ -183,9 +183,9 @@ void Ui::main()
     prefresh(window, 0, 0, 0, 0, (LINES - 1), (COLS - 1));
 
     if (LINES < 49)
-        status("CTRL+U/CTRL+D UP/DOWN SCREEN - CTRL+E EXIT", 0);
+        status("<CU>/<CD> UP/DOWN SCREEN - <CE> EXIT", 0);
     else
-        status("CTRL+E EXIT", 0);
+        status("<CE> EXIT", 0);
 
     form_driver(form, REQ_END_LINE);
 }

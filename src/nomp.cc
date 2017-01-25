@@ -294,9 +294,9 @@ void Nomp::driver()
                                     is_task_running = true;
                                     auto_refresh();
                                     if (string(field_buffer(ui.fields[12], 0)).find("START") != string::npos) 
-                                        ui.status("TASK STARTED - CTRL+E EXIT (KEEPING THE TASK RUNNING IN BACKGROUND)", n_tabs);
+                                        ui.status("TASK STARTED - <CE> EXIT (KEEPING THE TASK RUNNING IN BACKGROUND)", n_tabs);
                                     else    
-                                        ui.status("TASK RESUMED - CTRL+E EXIT (KEEPING THE TASK RUNNING IN BACKGROUND)", n_tabs);
+                                        ui.status("TASK RESUMED - <CE> EXIT (KEEPING THE TASK RUNNING IN BACKGROUND)", n_tabs);
                                 }
                             }
                             break;
