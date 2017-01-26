@@ -1,6 +1,6 @@
 # NOMP - Ncurses OpenVAS Manager Protocol
 
-A simple Ncurses OpenVAS client.
+A simple Ncurses OpenVAS client. [video](https://sendvid.com/sxsbn06f)
 
 ## INSTALLATION
 
@@ -22,3 +22,4 @@ host=host
 port=port
 username=username
 password=password
+```
